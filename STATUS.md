@@ -1,8 +1,43 @@
 # M1 Build Status
 
-Last updated: **2026-04-28** (platform decision resolved — Option C, custom PWA).
+Last updated: **2026-05-05** (client expanded scope; M1 fixes in progress on `m1-fixes` branch; M2/M3 quote sent).
 
-This is the orientation doc for the Coin Appraisal Register M1 build. If you're picking up this project on a new machine, **read this first**, then [docs/pwa-build-plan.md](docs/pwa-build-plan.md) for the build steps.
+This is the orientation doc for the Coin Appraisal Register build. If you're picking up this project on a new machine, **read this first**.
+
+## Resume here (2026-05-05)
+
+The original M1 build was delivered (still live at https://coin-appraisal-register.vercel.app). On 2026-05-05 the client returned with a **dramatically expanded scope** (May 2026 scope doc, [App_Build_Scope.pdf](App_Build_Scope.pdf)) and **three M1 fixes** required before they release the original $175 and fund M2.
+
+**Active work:**
+
+| Item | Where | Status |
+|---|---|---|
+| **M1 fixes — PWA side** | branch [`m1-fixes`](https://github.com/kristof-flowtive/coin-appraisal-register/tree/m1-fixes), commit `b8ef5c1` | ✅ Built, typechecks, builds. **Not yet smoke-tested in a browser or on iPad.** |
+| **M1 fixes — Airtable + Make** | external (no code) | ⏳ Pending. Full step-by-step in [docs/m1-fixes-external-changes.md](docs/m1-fixes-external-changes.md). |
+| **M2 + M3 expanded-scope quote** | [decisions/m2-m3-quote.pdf](decisions/m2-m3-quote.pdf) | ✅ Drafted. **Not yet sent to client.** Quote: **M2 $7,500 + M3 protection layer $3,500** (M3 PWA stays at the contracted $350). |
+
+**Next action when you sit back down:**
+
+1. `git pull --all` — make sure both `main` and `m1-fixes` are current.
+2. Check out `m1-fixes`, run `cd web && npm install && npm run dev`, click through the three fixes locally:
+   - **Times-face pricing:** Numismatic / Other group in the picker should appear (will be empty until Airtable rows are added).
+   - **Numeric keypad:** quantity / weight inputs should never raise the alphanumeric keyboard.
+   - **Dual totals:** "100% Melt + Offer at Margin" block at top of screen. Will show "—" until the Make `config-load` scenario returns spot + margins.
+3. Do the external Make + Airtable changes per [docs/m1-fixes-external-changes.md](docs/m1-fixes-external-changes.md).
+4. Smoke-test on the iPad once 4G is unblocked (checklist: [docs/4G-ipad-smoke-test.md](docs/4G-ipad-smoke-test.md)).
+5. Open PR `m1-fixes` → `main`, merge, mark M1 fixes complete.
+6. Send the M2/M3 quote ([decisions/m2-m3-quote.pdf](decisions/m2-m3-quote.pdf)) to the client and start M2 once they confirm the four open decisions in the quote (DL capture mode, SSN encryption choice, TX report format, all four API credentials live).
+
+**Open client decisions before M2 starts** (full reasoning in the quote PDF):
+
+- DL camera capture: paid SDK ($200–$2K/mo) vs. photo + manual DL number entry?
+- SSN/EIN storage: Airtable encryption-at-rest accepted, or scope a separate vault?
+- Texas 48-hour LE report: PDF email accepted, or specific format required?
+- PCGS CoinFacts + CDN Greysheet + GoldAPI + Apify (paid, 50/day) — all four credentials must be live in Make.com before M2 begins.
+
+---
+
+_The sections below describe the original M1 build that's already delivered and still live. Use them as reference; the active work is in the "Resume here" section above._
 
 ## What M1 is
 

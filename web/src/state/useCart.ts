@@ -41,9 +41,8 @@ export function useCart(): UseCartResult {
     setLines((prev) =>
       prev.map((l) => {
         if (l.id !== id) return l
-        return l.priced_by === 'each_metal'
-          ? { ...l, quantity: value }
-          : { ...l, weight_grams: value }
+        if (l.priced_by === 'weight_grams') return { ...l, weight_grams: value }
+        return { ...l, quantity: value }
       }),
     )
   }, [])

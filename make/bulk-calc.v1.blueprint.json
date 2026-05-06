@@ -1,4 +1,4 @@
-{
+﻿{
     "name": "bulk-calc",
     "flow": [
         {
@@ -429,6 +429,11 @@
                         "label": "priced_by"
                     },
                     {
+                        "name": "unit_label",
+                        "type": "text",
+                        "label": "unit_label"
+                    },
+                    {
                         "name": "oz_metal_per_unit",
                         "type": "number",
                         "label": "oz_metal_per_unit"
@@ -439,9 +444,9 @@
                         "label": "face_value"
                     },
                     {
-                        "name": "unit_label",
-                        "type": "text",
-                        "label": "unit_label"
+                        "name": "fixed_multiplier",
+                        "type": "number",
+                        "label": "fixed_multiplier"
                     },
                     {
                         "name": "active",
@@ -583,16 +588,6 @@
                 ],
                 "interface": [
                     {
-                        "name": "__IMTLENGTH__",
-                        "type": "uinteger",
-                        "label": "Total number of bundles"
-                    },
-                    {
-                        "name": "__IMTINDEX__",
-                        "type": "uinteger",
-                        "label": "Bundle order position"
-                    },
-                    {
                         "name": "id",
                         "type": "text",
                         "label": "ID"
@@ -631,7 +626,7 @@
                 "variables": [
                     {
                         "name": "units",
-                        "value": "{{ifempty(3.quantity; 3.weight_grams)}}"
+                        "value": "{{if(4.priced_by = \"times_face\"; 3.quantity; ifempty(3.quantity; 3.weight_grams))}}"
                     },
                     {
                         "name": "spot",
@@ -639,11 +634,11 @@
                     },
                     {
                         "name": "unit_value",
-                        "value": "{{4.oz_metal_per_unit * switch(4.metal_type; \"silver\"; 2.data.rates.USDXAG; \"gold\"; 2.data.rates.USDXAU; \"platinum\"; 2.data.rates.USDXPT) * 5.margin_pct}}"
+                        "value": "{{if(4.priced_by = \"times_face\"; 4.face_value * 4.fixed_multiplier; 4.oz_metal_per_unit * switch(4.metal_type; \"silver\"; 2.data.rates.USDXAG; \"gold\"; 2.data.rates.USDXAU; \"platinum\"; 2.data.rates.USDXPT) * 5.margin_pct)}}"
                     },
                     {
                         "name": "line_total",
-                        "value": "{{ifempty(3.quantity; 3.weight_grams) * 4.oz_metal_per_unit * switch(4.metal_type; \"silver\"; 2.data.rates.USDXAG; \"gold\"; 2.data.rates.USDXAU; \"platinum\"; 2.data.rates.USDXPT) * 5.margin_pct}}"
+                        "value": "{{if(4.priced_by = \"times_face\"; 3.quantity * 4.face_value * 4.fixed_multiplier; ifempty(3.quantity; 3.weight_grams) * 4.oz_metal_per_unit * switch(4.metal_type; \"silver\"; 2.data.rates.USDXAG; \"gold\"; 2.data.rates.USDXAU; \"platinum\"; 2.data.rates.USDXPT) * 5.margin_pct)}}"
                     }
                 ]
             },

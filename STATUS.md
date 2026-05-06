@@ -1,29 +1,47 @@
 # M1 Build Status
 
-Last updated: **2026-05-05** (client expanded scope; M1 fixes in progress on `m1-fixes` branch; M2/M3 quote sent).
+Last updated: **2026-05-06** (mid-session: 3a done & verified, 3b in progress on the JSON Create margins mapper).
 
 This is the orientation doc for the Coin Appraisal Register build. If you're picking up this project on a new machine, **read this first**.
 
-## Resume here (2026-05-05)
+## Resume here (2026-05-06 — mid-3b)
 
-The original M1 build was delivered (still live at https://coin-appraisal-register.vercel.app). On 2026-05-05 the client returned with a **dramatically expanded scope** (May 2026 scope doc, [App_Build_Scope.pdf](App_Build_Scope.pdf)) and **three M1 fixes** required before they release the original $175 and fund M2.
+The original M1 build was delivered on 2026-04-28 and is still live at https://coin-appraisal-register.vercel.app. On 2026-05-05 the client returned with a **dramatically expanded scope** ([App_Build_Scope.pdf](App_Build_Scope.pdf)) and **three M1 fixes** required before they release the original $175 and fund M2.
 
-**Active work:**
+**Where things stand:**
 
-| Item | Where | Status |
-|---|---|---|
-| **M1 fixes — PWA side** | merged on `main` (commit `832fb2c`); auto-deployed to Vercel | ✅ Built, typechecks, builds, deployed. **Not yet smoke-tested in a browser or on iPad.** Backwards-compatible — degrades gracefully until the Make changes below land. |
-| **M1 fixes — Airtable + Make** | external (no code) | ⏳ Pending. Full step-by-step in [docs/m1-fixes-external-changes.md](docs/m1-fixes-external-changes.md). |
-| **M2 + M3 expanded-scope quote** | [decisions/m2-m3-quote.pdf](decisions/m2-m3-quote.pdf) | ✅ Drafted. **Not yet sent to client.** Quote: **M2 $7,500 + M3 protection layer $3,500** (M3 PWA stays at the contracted $350). |
+| Item | Status |
+|---|---|
+| **PWA side of all 3 M1 fixes** | ✅ Merged to `main` and auto-deployed (commits `832fb2c` → `0cb9753`). Includes a "Last calculated total" badge that shows the authoritative server-computed total whenever Calculate succeeds. |
+| **Airtable changes (step 2)** | ✅ `fixed_multiplier` column added; `times_face` and `numismatic` added to single-select options; numismatic rows added (face_value / fixed_multiplier values still need to be populated by the client per scope). |
+| **Make `bulk-calc` (step 3a)** | ✅ Done and verified end-to-end. The `if(priced_by = "times_face", ...)` wrappers around the four formulas in Module 6 work correctly with placeholder values; verified the math returns the expected number for a Wheat Penny test. |
+| **Make `config-load` (step 3b)** | ⏳ **In progress.** New HTTP module (spot fetch) + Margins Search Records + Margins Aggregator added. Currently stuck on the JSON Create module: the **Margins** field still has its Map toggle off, showing the manual "Item 1 / Add item" form. **Next action: turn the Map toggle ON for Margins (just like Coin types and Reps), then drop in the Margins Aggregator's `array` output.** |
+| **Browser smoke test (step 4)** | ⏳ Pending — do after 3b completes. |
+| **iPad smoke test (step 5)** | ⏳ Pending — also depends on 4G iPad availability ([docs/4G-ipad-smoke-test.md](docs/4G-ipad-smoke-test.md)). |
+| **M2 + M3 expanded-scope quote** | ✅ Drafted at [decisions/m2-m3-quote.pdf](decisions/m2-m3-quote.pdf). **Not yet sent to client.** Quote: **M2 $7,500 + M3 protection layer $3,500** (M3 PWA stays at the contracted $350). |
 
 **Next action when you sit back down:**
 
-1. `git pull` on `main` (the `m1-fixes` branch was merged in via `832fb2c` and is no longer where active work happens).
-2. Open https://coin-appraisal-register.vercel.app to confirm the deploy landed. Picker should still work; dual-totals header at the top will show "—" until the Make `config-load` scenario returns spot + margins.
-3. Do the external Make + Airtable changes per [docs/m1-fixes-external-changes.md](docs/m1-fixes-external-changes.md).
-4. Smoke-test on the iPad once 4G is unblocked (checklist: [docs/4G-ipad-smoke-test.md](docs/4G-ipad-smoke-test.md)).
-5. Mark M1 fixes complete in this doc once the iPad test passes.
-6. Send the M2/M3 quote ([decisions/m2-m3-quote.pdf](decisions/m2-m3-quote.pdf)) to the client and start M2 once they confirm the four open decisions in the quote (DL capture mode, SSN encryption choice, TX report format, all four API credentials live).
+1. `git pull` on `main`.
+2. Open the `config-load` scenario in Make. In the JSON Create module, **toggle Map ON for the Margins field** and pick the Margins Aggregator's `array` output. Save.
+3. Run the scenario once. Verify the response now includes `coin_types[]` (with `fixed_multiplier` + `oz_metal_per_unit`), `reps[]`, `spot: { gold, silver, platinum }`, and `margins: [{ category, margin_pct }]` with **lowercase categories** (the Margins Aggregator uses `lower()` to normalize).
+4. Open https://coin-appraisal-register.vercel.app, tap **Refresh Config**, add a coin. The dual-totals header at the top should populate **without** tapping Calculate.
+5. iPad smoke test ([docs/4G-ipad-smoke-test.md](docs/4G-ipad-smoke-test.md)) once iPad is in hand.
+6. Notify client; send M2/M3 quote ([decisions/m2-m3-quote.pdf](decisions/m2-m3-quote.pdf)); collect answers to the four open decisions below before starting M2.
+
+**Notes from today's working session:**
+
+- Make's String comparisons are case-sensitive — `priced_by = "times_face"` only matches lowercase. Adopted the convention of using lowercase for all single-select values where Make formulas compare them.
+- The Airtable `Config_Margins.category` column has values like `Silver` / `Gold` / `Platinum` (capitalized), but the PWA's `metal_type` is lowercase. Solution baked into the Margins Aggregator: `category` → `{{lower(<MarginsSearch>.category)}}` so the PWA can match on lowercase.
+- Module 4 in `bulk-calc` (and Module 2 in `config-load`) caches the Airtable schema. After adding a column in Airtable, **re-select the table in the module dropdown and save** to force Make to refresh the schema; the new field then appears in downstream pickers.
+- The committed `make/bulk-calc.v1.blueprint.json` is now stale relative to the live scenario (it lacks the `times_face` formula wrappers). Re-export and overwrite when convenient — make sure to scrub the metals-api `access_key` back to `REPLACE_WITH_METALS_API_KEY` before committing.
+
+**Open client decisions before M2 starts** (full reasoning in the quote PDF):
+
+- DL camera capture: paid SDK ($200–$2K/mo) vs. photo + manual DL number entry?
+- SSN/EIN storage: Airtable encryption-at-rest accepted, or scope a separate vault?
+- Texas 48-hour LE report: PDF email accepted, or specific format required?
+- PCGS CoinFacts + CDN Greysheet + GoldAPI + Apify (paid, 50/day) — all four credentials must be live in Make.com before M2 begins.
 
 **Open client decisions before M2 starts** (full reasoning in the quote PDF):
 

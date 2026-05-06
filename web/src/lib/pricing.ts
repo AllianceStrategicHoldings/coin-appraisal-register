@@ -9,6 +9,7 @@ export interface BagTotals {
   meltTotal: number
   offerTotal: number
   hasUnpriceable: boolean
+  unpriceableIds: Set<string>
 }
 
 function spotForMetal(spot: Spot, metal: 'silver' | 'gold' | 'platinum'): number {
@@ -52,15 +53,20 @@ export function valueBag(
 ): BagTotals {
   let melt = 0
   let offer = 0
-  let hasUnpriceable = false
+  const unpriceableIds = new Set<string>()
   for (const line of lines) {
     const v = valueLine(line, spot, margins)
     if (v === null) {
-      hasUnpriceable = true
+      unpriceableIds.add(line.id)
       continue
     }
     melt += v.meltValue
     offer += v.offerValue
   }
-  return { meltTotal: melt, offerTotal: offer, hasUnpriceable }
+  return {
+    meltTotal: melt,
+    offerTotal: offer,
+    hasUnpriceable: unpriceableIds.size > 0,
+    unpriceableIds,
+  }
 }

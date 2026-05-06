@@ -175,15 +175,22 @@ export function CalculatorScreen() {
               </div>
             </div>
           </div>
-          {(!canShowLiveMelt || !canShowLiveOffer || liveTotals.hasUnpriceable) && (
+          {!canShowLiveMelt ? (
             <p className="mt-2 text-[11px] text-slate-500">
-              {!canShowLiveMelt
-                ? 'Tap Calculate Total to refresh spot prices.'
-                : !canShowLiveOffer
-                  ? 'Tap Calculate Total — margins not yet loaded for live offer.'
-                  : 'Some lines are missing pricing data — Calculate for full result.'}
+              Tap Calculate Total to refresh spot prices.
             </p>
-          )}
+          ) : !canShowLiveOffer ? (
+            <p className="mt-2 text-[11px] text-slate-500">
+              Tap Calculate Total — margins not yet loaded for live offer.
+            </p>
+          ) : liveTotals.hasUnpriceable ? (
+            <div
+              role="alert"
+              className="mt-2 px-3 py-2 bg-red-50 border border-red-300 rounded text-sm font-bold text-red-700"
+            >
+              Some lines are missing pricing data — Calculate for full result.
+            </div>
+          ) : null}
         </section>
       )}
 
@@ -233,10 +240,13 @@ export function CalculatorScreen() {
               const value =
                 line.priced_by === 'weight_grams' ? line.weight_grams : line.quantity
               const isDecimal = line.priced_by === 'weight_grams'
+              const isUnpriceable = liveTotals.unpriceableIds.has(line.id)
               return (
                 <li
                   key={line.id}
-                  className="px-3 py-2 flex items-center gap-3"
+                  className={`px-3 py-2 flex items-center gap-3 ${
+                    isUnpriceable ? 'bg-red-50 border-l-4 border-red-500' : ''
+                  }`}
                 >
                   <div className="flex-1 min-w-0">
                     <div className="text-sm font-medium text-slate-900 truncate">
@@ -245,6 +255,11 @@ export function CalculatorScreen() {
                     <div className="text-xs text-slate-500">
                       {value} {line.unit_label}
                     </div>
+                    {isUnpriceable && (
+                      <div className="text-xs font-bold text-red-700 mt-0.5">
+                        Missing pricing data
+                      </div>
+                    )}
                   </div>
                   <input
                     type="text"

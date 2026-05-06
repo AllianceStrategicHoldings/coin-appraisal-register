@@ -1,6 +1,7 @@
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import { calculateBulk, HttpError, NetworkError } from '../api/client'
 import { cartLineToRequestItem } from '../api/types'
+import { valueBag } from '../lib/pricing'
 import { useCart } from '../state/useCart'
 import { useConfig } from '../state/useConfig'
 import { useSession } from '../state/useSession'
@@ -69,10 +70,22 @@ export function CalculatorScreen() {
     }
   }
 
+  const effectiveSpot = config.spot ?? session.lastCalc?.spot ?? null
+  const effectiveMargins = config.margins
+
+  const liveTotals = useMemo(
+    () => valueBag(cart.lines, effectiveSpot, effectiveMargins),
+    [cart.lines, effectiveSpot, effectiveMargins],
+  )
+
   const canCalculate =
     session.selectedRepId !== null && cart.lines.length > 0 && !calcLoading
-  const total = session.lastCalc?.total ?? 0
-  const spot = session.lastCalc?.spot ?? null
+
+  const hasMargins = effectiveMargins.length > 0
+  const canShowLiveOffer = effectiveSpot !== null && hasMargins
+  const canShowLiveMelt = effectiveSpot !== null
+  const showLiveTotalsBlock = cart.lines.length > 0
+  const spot = session.lastCalc?.spot ?? config.spot ?? null
 
   return (
     <main
@@ -133,6 +146,47 @@ export function CalculatorScreen() {
         </select>
       </section>
 
+      {showLiveTotalsBlock && (
+        <section
+          className="px-4 py-3 bg-white border-b border-slate-200"
+          aria-label="Bag totals"
+        >
+          <div className="grid grid-cols-2 gap-3">
+            <div>
+              <div className="text-xs uppercase tracking-wide text-slate-500 font-semibold">
+                100% Melt
+              </div>
+              <div className="text-2xl font-bold text-slate-900 tabular-nums">
+                {canShowLiveMelt ? usd.format(liveTotals.meltTotal) : '—'}
+              </div>
+              <div className="text-[11px] text-slate-500 leading-tight">
+                What the metal is worth
+              </div>
+            </div>
+            <div>
+              <div className="text-xs uppercase tracking-wide text-emerald-700 font-semibold">
+                Offer at Margin
+              </div>
+              <div className="text-2xl font-bold text-emerald-700 tabular-nums">
+                {canShowLiveOffer ? usd.format(liveTotals.offerTotal) : '—'}
+              </div>
+              <div className="text-[11px] text-slate-500 leading-tight">
+                What we pay
+              </div>
+            </div>
+          </div>
+          {(!canShowLiveMelt || !canShowLiveOffer || liveTotals.hasUnpriceable) && (
+            <p className="mt-2 text-[11px] text-slate-500">
+              {!canShowLiveMelt
+                ? 'Tap Calculate Total to refresh spot prices.'
+                : !canShowLiveOffer
+                  ? 'Tap Calculate Total — margins not yet loaded for live offer.'
+                  : 'Some lines are missing pricing data — Calculate for full result.'}
+            </p>
+          )}
+        </section>
+      )}
+
       {spot && (
         <section className="px-4 py-2 bg-slate-100 text-xs text-slate-600 border-b border-slate-200 flex flex-wrap gap-x-4 gap-y-1">
           <span>Gold: {usd.format(spot.gold)}/oz</span>
@@ -163,7 +217,8 @@ export function CalculatorScreen() {
           <ul className="divide-y divide-slate-200 bg-white rounded-md border border-slate-200">
             {cart.lines.map((line) => {
               const value =
-                line.priced_by === 'each_metal' ? line.quantity : line.weight_grams
+                line.priced_by === 'weight_grams' ? line.weight_grams : line.quantity
+              const isDecimal = line.priced_by === 'weight_grams'
               return (
                 <li
                   key={line.id}
@@ -178,16 +233,25 @@ export function CalculatorScreen() {
                     </div>
                   </div>
                   <input
-                    type="number"
-                    inputMode={
-                      line.priced_by === 'each_metal' ? 'numeric' : 'decimal'
-                    }
-                    step={line.priced_by === 'each_metal' ? 1 : 0.01}
-                    min={0}
-                    value={value}
+                    type="text"
+                    inputMode={isDecimal ? 'decimal' : 'numeric'}
+                    pattern={isDecimal ? '[0-9]*\\.?[0-9]*' : '[0-9]*'}
+                    autoComplete="off"
+                    autoCorrect="off"
+                    spellCheck={false}
+                    value={String(value)}
                     onChange={(e) => {
-                      const v = parseFloat(e.target.value)
-                      if (!Number.isNaN(v) && v >= 0) cart.updateLine(line.id, v)
+                      const next = e.target.value
+                      const ok = isDecimal
+                        ? /^[0-9]*\.?[0-9]*$/.test(next)
+                        : /^[0-9]*$/.test(next)
+                      if (!ok) return
+                      const v = parseFloat(next)
+                      if (Number.isNaN(v)) {
+                        cart.updateLine(line.id, 0)
+                      } else if (v >= 0) {
+                        cart.updateLine(line.id, v)
+                      }
                     }}
                     className="w-20 min-h-11 px-2 text-sm rounded border border-slate-300"
                     aria-label={`Edit ${line.name}`}
@@ -210,14 +274,8 @@ export function CalculatorScreen() {
         className="fixed bottom-0 inset-x-0 bg-white border-t border-slate-200 shadow-lg"
         style={{ paddingBottom: 'env(safe-area-inset-bottom, 0px)' }}
       >
-        <div className="px-4 pt-3 pb-1 flex items-baseline justify-between">
-          <span className="text-sm text-slate-600">Total</span>
-          <span className="text-3xl font-bold text-slate-900 tabular-nums">
-            {usd.format(total)}
-          </span>
-        </div>
         {!canCalculate && !calcLoading && (
-          <div className="px-4 pb-1 text-xs text-slate-500 text-right">
+          <div className="px-4 pt-2 pb-1 text-xs text-slate-500 text-right">
             {session.selectedRepId === null
               ? 'Select a rep to calculate.'
               : cart.lines.length === 0
@@ -225,7 +283,7 @@ export function CalculatorScreen() {
                 : null}
           </div>
         )}
-        <div className="px-4 pb-3 pt-2 flex gap-2">
+        <div className="px-4 pb-3 pt-3 flex gap-2">
           <button
             onClick={() => void handleCalculate()}
             disabled={!canCalculate}

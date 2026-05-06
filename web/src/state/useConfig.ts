@@ -1,10 +1,12 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { loadConfig } from '../api/client'
-import type { CoinType, Rep } from '../api/types'
+import type { CoinType, Margin, Rep, Spot } from '../api/types'
 
 interface ConfigState {
   coinTypes: CoinType[]
   reps: Rep[]
+  spot: Spot | null
+  margins: Margin[]
   loading: boolean
   error: Error | null
 }
@@ -17,6 +19,8 @@ export function useConfig(): UseConfigResult {
   const [state, setState] = useState<ConfigState>({
     coinTypes: [],
     reps: [],
+    spot: null,
+    margins: [],
     loading: true,
     error: null,
   })
@@ -32,6 +36,8 @@ export function useConfig(): UseConfigResult {
       setState({
         coinTypes: res.coin_types,
         reps: res.reps,
+        spot: res.spot ?? null,
+        margins: res.margins ?? [],
         loading: false,
         error: null,
       })

@@ -6,11 +6,12 @@ const usd = new Intl.NumberFormat('en-US', {
   currency: 'USD',
 })
 
-const METAL_ORDER: Metal[] = ['silver', 'gold', 'platinum']
+const METAL_ORDER: Metal[] = ['silver', 'gold', 'platinum', 'numismatic']
 const METAL_LABEL: Record<Metal, string> = {
   silver: 'Silver',
   gold: 'Gold',
   platinum: 'Platinum',
+  numismatic: 'Numismatic / Other',
 }
 
 interface AddCoinModalProps {
@@ -41,6 +42,7 @@ export function AddCoinModal({
       silver: [],
       gold: [],
       platinum: [],
+      numismatic: [],
     }
     for (const c of coinTypes) groups[c.metal_type].push(c)
     for (const metal of METAL_ORDER) {
@@ -65,16 +67,26 @@ export function AddCoinModal({
       name: selected.name,
       metal_type: selected.metal_type,
       unit_label: selected.unit_label,
+      face_value: selected.face_value,
+      fixed_multiplier: selected.fixed_multiplier,
+      oz_metal_per_unit: selected.oz_metal_per_unit,
+      category: selected.category,
     }
-    if (selected.priced_by === 'each_metal') {
-      onAdd({ ...base, priced_by: 'each_metal', quantity: numValue })
-    } else {
+    if (selected.priced_by === 'weight_grams') {
       onAdd({ ...base, priced_by: 'weight_grams', weight_grams: numValue })
+    } else if (selected.priced_by === 'times_face') {
+      onAdd({ ...base, priced_by: 'times_face', quantity: numValue })
+    } else {
+      onAdd({ ...base, priced_by: 'each_metal', quantity: numValue })
     }
     onClose()
   }
 
   if (!isOpen) return null
+
+  const inputLabel =
+    selected?.priced_by === 'weight_grams' ? 'Weight (grams)' : 'Quantity'
+  const inputIsDecimal = selected?.priced_by === 'weight_grams'
 
   return (
     <div className="fixed inset-0 z-50 flex flex-col">
@@ -147,27 +159,29 @@ export function AddCoinModal({
               htmlFor="add-coin-value"
               className="block text-sm font-medium text-slate-700 mb-1"
             >
-              {selected.priced_by === 'each_metal'
-                ? 'Quantity'
-                : 'Weight (grams)'}
+              {inputLabel}
             </label>
             <input
               id="add-coin-value"
-              type="number"
+              type="text"
               autoFocus
-              inputMode={
-                selected.priced_by === 'each_metal' ? 'numeric' : 'decimal'
-              }
-              step={selected.priced_by === 'each_metal' ? 1 : 0.01}
-              min={0}
+              inputMode={inputIsDecimal ? 'decimal' : 'numeric'}
+              pattern={inputIsDecimal ? '[0-9]*\\.?[0-9]*' : '[0-9]*'}
+              autoComplete="off"
+              autoCorrect="off"
+              spellCheck={false}
               value={value}
-              onChange={(e) => setValue(e.target.value)}
+              onChange={(e) => {
+                const next = e.target.value
+                const ok = inputIsDecimal
+                  ? /^[0-9]*\.?[0-9]*$/.test(next)
+                  : /^[0-9]*$/.test(next)
+                if (ok) setValue(next)
+              }}
               onKeyDown={(e) => {
                 if (e.key === 'Enter' && canAdd) handleAdd()
               }}
-              placeholder={
-                selected.priced_by === 'each_metal' ? 'e.g. 10' : 'e.g. 23.4'
-              }
+              placeholder={inputIsDecimal ? 'e.g. 23.4' : 'e.g. 10'}
               className="w-full min-h-12 px-3 rounded-md border border-slate-300 bg-white text-base"
             />
           </div>

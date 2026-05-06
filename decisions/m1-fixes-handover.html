@@ -1,0 +1,344 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Coin Appraisal Register — M1 Fixes Handover</title>
+<style>
+  @page { size: A4; margin: 18mm 16mm; }
+  * { box-sizing: border-box; }
+  body {
+    font-family: 'Segoe UI', 'Helvetica Neue', Arial, sans-serif;
+    font-size: 10.5pt;
+    line-height: 1.5;
+    color: #1a1a1a;
+    margin: 0;
+    padding: 0;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+  .cover {
+    page-break-after: always;
+    padding: 60mm 0 0 0;
+    border-top: 4px solid #c9a227;
+  }
+  .cover .eyebrow {
+    font-size: 9pt;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    color: #c9a227;
+    margin-bottom: 8mm;
+    font-weight: 600;
+  }
+  .cover h1 {
+    font-size: 28pt;
+    line-height: 1.15;
+    margin: 0 0 4mm 0;
+    font-weight: 700;
+    letter-spacing: -0.5px;
+  }
+  .cover .subtitle {
+    font-size: 13pt;
+    color: #555;
+    margin-bottom: 30mm;
+    font-weight: 300;
+  }
+  .cover .meta {
+    font-size: 9.5pt;
+    color: #555;
+    border-top: 1px solid #ddd;
+    padding-top: 6mm;
+  }
+  .cover .meta dt { font-weight: 600; color: #1a1a1a; float: left; width: 35mm; clear: left; }
+  .cover .meta dd { margin: 0 0 3mm 35mm; }
+  h2 {
+    font-size: 15pt;
+    margin: 9mm 0 4mm 0;
+    padding-bottom: 2mm;
+    border-bottom: 2px solid #c9a227;
+    font-weight: 600;
+    page-break-after: avoid;
+  }
+  h3 {
+    font-size: 12pt;
+    margin: 6mm 0 2mm 0;
+    font-weight: 600;
+    page-break-after: avoid;
+  }
+  p { margin: 0 0 3mm 0; }
+  ul, ol { margin: 0 0 3mm 0; padding-left: 6mm; }
+  li { margin-bottom: 1.5mm; }
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 3mm 0 5mm 0;
+    font-size: 9.5pt;
+    page-break-inside: avoid;
+  }
+  th {
+    background: #f5f1e6;
+    text-align: left;
+    padding: 2.5mm 3mm;
+    border-bottom: 2px solid #c9a227;
+    font-weight: 600;
+  }
+  td {
+    padding: 2.5mm 3mm;
+    border-bottom: 1px solid #e6e6e6;
+    vertical-align: top;
+  }
+  tr:nth-child(even) td { background: #fafafa; }
+  .summary-box {
+    background: #f5f1e6;
+    border-left: 4px solid #c9a227;
+    padding: 5mm 6mm;
+    margin: 4mm 0 6mm 0;
+    page-break-inside: avoid;
+  }
+  .summary-box p:last-child { margin-bottom: 0; }
+  .url-box {
+    background: #fffbef;
+    border: 1.5px solid #c9a227;
+    padding: 4mm 5mm;
+    margin: 3mm 0 5mm 0;
+    border-radius: 3px;
+    font-size: 11pt;
+    text-align: center;
+    page-break-inside: avoid;
+  }
+  .url-box .label {
+    font-size: 8.5pt;
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+    color: #8a6a00;
+    margin-bottom: 1.5mm;
+    font-weight: 600;
+  }
+  .url-box .url {
+    font-family: 'Consolas', 'Courier New', monospace;
+    font-size: 11pt;
+    font-weight: 600;
+    word-break: break-all;
+  }
+  .step {
+    margin: 0 0 4mm 0;
+    padding-left: 12mm;
+    position: relative;
+    page-break-inside: avoid;
+  }
+  .step .num {
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 8mm;
+    height: 8mm;
+    background: #c9a227;
+    color: white;
+    border-radius: 50%;
+    text-align: center;
+    line-height: 8mm;
+    font-weight: 700;
+    font-size: 9.5pt;
+  }
+  .step h4 {
+    margin: 0 0 1mm 0;
+    font-size: 10.5pt;
+    font-weight: 600;
+  }
+  .step p { margin: 0 0 1.5mm 0; font-size: 10pt; }
+  .step .expect {
+    background: #f0f7f1;
+    border-left: 3px solid #2d6a3a;
+    padding: 2mm 3mm;
+    margin: 1.5mm 0 0 0;
+    font-size: 9.5pt;
+  }
+  .step .expect strong { color: #2d6a3a; }
+  .alert-box {
+    background: #fdf2f2;
+    border-left: 4px solid #c0392b;
+    padding: 4mm 5mm;
+    margin: 4mm 0 5mm 0;
+    page-break-inside: avoid;
+  }
+  .alert-box strong { color: #c0392b; }
+  .footer {
+    margin-top: 12mm;
+    padding-top: 4mm;
+    border-top: 1px solid #ddd;
+    font-size: 8.5pt;
+    color: #888;
+    text-align: center;
+  }
+  .check { color: #2d6a3a; font-weight: 600; }
+  .muted { color: #888; }
+  small { color: #666; font-size: 9pt; }
+  code { font-family: 'Consolas', 'Courier New', monospace; font-size: 9.5pt; background: #f5f5f5; padding: 0.5mm 1.5mm; border-radius: 2px; }
+</style>
+</head>
+<body>
+
+<section class="cover">
+  <div class="eyebrow">Project Update — May 2026</div>
+  <h1>M1 Fixes Handover</h1>
+  <p class="subtitle">The three fixes you flagged are live. Here's what changed and what to verify.</p>
+  <dl class="meta">
+    <dt>Prepared for</dt><dd>Keyshaun</dd>
+    <dt>Project</dt><dd>Coin Appraisal Register — M1</dd>
+    <dt>Date</dt><dd>6 May 2026</dd>
+    <dt>Built by</dt><dd>Flowtive (kristof@getflowtive.com)</dd>
+    <dt>Live URL</dt><dd>https://coin-appraisal-register.vercel.app</dd>
+  </dl>
+</section>
+
+<h2>Summary</h2>
+
+<div class="summary-box">
+  <p>All three M1 fixes from your May 5th note are now deployed and running on the live URL. The remaining items below are <strong>configuration choices that belong with you</strong> — populating the new numismatic coin values in Airtable, and confirming the margin percentages — neither requires any further development work from me.</p>
+  <p>Please run through the verification walkthrough on the next page on a laptop or iPad. It takes about 5 minutes and demonstrates each of the three fixes plus how the new error handling looks.</p>
+</div>
+
+<h2>What was addressed</h2>
+
+<h3>Fix 1 — Numismatic / "times-face" pricing path</h3>
+
+<p>Coins like Wheat Pennies, Buffalo Nickels, Indian Head Pennies, and Costume Jewelry don't price by metal weight — they price as a multiple of face value. The app now supports this end-to-end:</p>
+
+<ul>
+  <li>Eleven new coin types added to the Add Coin picker, grouped under a new <strong>"Numismatic / Other"</strong> section at the bottom of the list.</li>
+  <li>The Airtable <code>Config_CoinTypes</code> table has a new <code>fixed_multiplier</code> column. The offer for each line is computed as <strong>quantity × face value × fixed_multiplier</strong>.</li>
+  <li>These items contribute to the <strong>Offer at Margin</strong> total but not to the <strong>100% Melt</strong> total — by design, since they have no metal value.</li>
+</ul>
+
+<h3>Fix 2 — Numeric keypad on iPad quantity inputs</h3>
+
+<p>Every quantity and weight field on the iPad now opens a number-only keypad. The full alphanumeric keyboard never appears for these inputs. Weight fields (grams) include a decimal point; count fields (coins) are whole numbers only. This applies in both the Add Coin modal and when editing a quantity directly in the bag.</p>
+
+<h3>Fix 3 — Real-time dual totals (without tapping Calculate)</h3>
+
+<p>The header now shows <strong>two totals</strong> that update on every Add or quantity change — without requiring a Calculate Total tap:</p>
+
+<ul>
+  <li><strong>100% Melt</strong> — what the metal in the bag is worth at current spot prices.</li>
+  <li><strong>Offer at Margin</strong> — what your policy says you'll pay for it.</li>
+</ul>
+
+<p>Calculate Total still exists and still runs the authoritative server-side calculation — its result is shown as a green "Last calculated total" badge. The two header values give the rep an instant sense of where the deal sits as items are being added.</p>
+
+<h2>Verification walkthrough</h2>
+
+<p>Run this on the live URL — laptop browser or iPad both work. About 5 minutes.</p>
+
+<div class="url-box">
+  <div class="label">Live App URL</div>
+  <div class="url">https://coin-appraisal-register.vercel.app</div>
+</div>
+
+<div class="step">
+  <div class="num">1</div>
+  <h4>Open the app and tap Refresh Config</h4>
+  <p>This pulls the latest config from Airtable, including spot prices and margins.</p>
+  <div class="expect"><strong>Expect:</strong> Spot prices banner appears at the bottom showing gold, silver, and platinum rates.</div>
+</div>
+
+<div class="step">
+  <div class="num">2</div>
+  <h4>Pick a rep and add a Roosevelt Dime, qty 10</h4>
+  <p>Open Add Coin → Silver section → tap Roosevelt Dime → enter <code>10</code> → Add to Bag.</p>
+  <div class="expect"><strong>Expect:</strong> Both the <strong>100% Melt</strong> and <strong>Offer at Margin</strong> totals at the top of the screen populate immediately — without tapping Calculate Total. (This is Fix 3 working.)</div>
+</div>
+
+<div class="step">
+  <div class="num">3</div>
+  <h4>Add 14K Gold, weight 5 grams</h4>
+  <p>Open Add Coin → Gold section → tap 14K Gold → enter <code>5</code> → Add to Bag. Confirm the keypad shows a decimal point.</p>
+  <div class="expect"><strong>Expect:</strong> Both totals update again, on the Add. The decimal keypad appears for grams. (This is Fix 2 + Fix 3.)</div>
+</div>
+
+<div class="step">
+  <div class="num">4</div>
+  <h4>Add a Wheat/Steel Penny, qty 100</h4>
+  <p>Open Add Coin → scroll to <strong>Numismatic / Other</strong> at the bottom → tap Wheat/Steel Penny → enter <code>100</code> → Add to Bag.</p>
+  <div class="expect"><strong>Expect:</strong> The Offer at Margin goes up by an amount equal to <code>100 × face_value × fixed_multiplier</code> (whatever values you've populated for that row in Airtable). The 100% Melt does <em>not</em> change — numismatic items don't have a melt value. (This is Fix 1 working.)</div>
+</div>
+
+<div class="step">
+  <div class="num">5</div>
+  <h4>Tap Calculate Total</h4>
+  <p>The green button at the bottom of the screen.</p>
+  <div class="expect"><strong>Expect:</strong> A green "Last calculated total" badge appears with the authoritative server-computed total. It should match the live <strong>Offer at Margin</strong> value within a cent or two of rounding.</div>
+</div>
+
+<div class="step">
+  <div class="num">6</div>
+  <h4>Add an Indian Head Penny, qty 5</h4>
+  <p>This row exists in Airtable but its <code>face_value</code> and <code>fixed_multiplier</code> are not yet populated (see the next section). This step demonstrates how the app handles that gracefully.</p>
+  <div class="expect"><strong>Expect:</strong> The Indian Head Penny row in the bag is highlighted with a <strong>red background and a red left border</strong>, with the label <strong>"Missing pricing data"</strong> underneath the quantity. Above the bag, a prominent <strong>red banner</strong> reads "Some lines are missing pricing data — Calculate for full result." The line does not contribute to either total until it's populated.</div>
+</div>
+
+<div class="step">
+  <div class="num">7</div>
+  <h4>Remove the Indian Head Penny row</h4>
+  <p>Tap the × on that row.</p>
+  <div class="expect"><strong>Expect:</strong> The red row disappears, the red banner disappears, both totals recalculate automatically.</div>
+</div>
+
+<h2>What still needs your input</h2>
+
+<p>None of the items below require further development from me. They are configuration choices that live in your Airtable base.</p>
+
+<h3>1. Populate the 10 numismatic coin values in Airtable</h3>
+
+<div class="alert-box">
+  <p><strong>Action:</strong> open the <code>Config_CoinTypes</code> table in Airtable. Ten of the eleven new numismatic rows have <code>face_value</code> and <code>fixed_multiplier</code> blank. Fill those in per your pricing. Until you do, those coins will appear in the picker but will trigger the "Missing pricing data" red banner if a rep adds them.</p>
+</div>
+
+<p>The eleven rows added during the fix:</p>
+
+<table>
+  <thead>
+    <tr><th style="width: 50%">Coin</th><th style="width: 25%">Face value</th><th style="width: 25%">Fixed multiplier</th></tr>
+  </thead>
+  <tbody>
+    <tr><td>Wheat / Steel Penny</td><td><span class="check">populated</span></td><td><span class="check">populated</span></td></tr>
+    <tr><td>Indian Head Penny</td><td>blank</td><td>blank</td></tr>
+    <tr><td>Flying Eagle Penny</td><td>blank</td><td>blank</td></tr>
+    <tr><td>Large Cent</td><td>blank</td><td>blank</td></tr>
+    <tr><td>Half Cent</td><td>blank</td><td>blank</td></tr>
+    <tr><td>2 Cent Piece</td><td>blank</td><td>blank</td></tr>
+    <tr><td>3 Cent Piece</td><td>blank</td><td>blank</td></tr>
+    <tr><td>Shield Nickel</td><td>blank</td><td>blank</td></tr>
+    <tr><td>Victory Nickel</td><td>blank</td><td>blank</td></tr>
+    <tr><td>Buffalo Nickel</td><td>blank</td><td>blank</td></tr>
+    <tr><td>Costume Jewelry</td><td>blank</td><td>blank</td></tr>
+  </tbody>
+</table>
+
+<p>For each row, the offer paid per item is <code>face_value × fixed_multiplier</code>. For example, a Wheat Penny at <code>face_value = 0.01</code> and <code>fixed_multiplier = 5</code> pays $0.05 per coin. You set both numbers — there is no default.</p>
+
+<h3>2. Confirm the margin percentages in <code>Config_Margins</code></h3>
+
+<div class="alert-box">
+  <p><strong>Action:</strong> open the <code>Config_Margins</code> table in Airtable. All four rows currently read <code>margin_pct = 0.9</code>, which means the app pays <strong>90% of melt</strong> for silver, gold, platinum, and collectibles. The original seed value was <code>0.30</code> (i.e., 30% of melt). Please confirm whether 0.9 is intentional before staff use this on the floor for a real customer.</p>
+</div>
+
+<p>The math is the same on both sides: <code>offer = melt × margin_pct</code>. So:</p>
+
+<ul>
+  <li><code>0.30</code> → on $100 of silver melt, the offer is $30.</li>
+  <li><code>0.90</code> → on $100 of silver melt, the offer is $90.</li>
+</ul>
+
+<p>The change is yours to make in Airtable — no code change, no developer in the loop. The next Calculate Total on any iPad will use whatever values are saved when you save the row.</p>
+
+<h3>3. iPad install + on-device smoke test</h3>
+
+<p>Once an iPad is in hand, run the seven-step walkthrough above on the device itself. The most important thing to confirm on iOS specifically — which I cannot test from a laptop browser — is that <strong>every quantity field opens the numeric keypad</strong>, not the full alphanumeric keyboard. If at any point the full keyboard appears for a quantity input, please flag it.</p>
+
+<p>Install steps for adding the app to the iPad home screen are in the original M1 handover document.</p>
+
+<div class="footer">
+  Built by Flowtive · kristof@getflowtive.com · 6 May 2026
+</div>
+
+</body>
+</html>

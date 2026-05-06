@@ -187,6 +187,20 @@ export function CalculatorScreen() {
         </section>
       )}
 
+      {session.lastCalc && (
+        <section
+          className="px-4 py-2 bg-emerald-50 border-b border-emerald-200 flex items-baseline justify-between gap-3"
+          aria-label="Last calculated total"
+        >
+          <span className="text-xs uppercase tracking-wide text-emerald-800 font-semibold">
+            Last calculated total
+          </span>
+          <span className="text-xl font-bold text-emerald-900 tabular-nums">
+            {usd.format(session.lastCalc.total)}
+          </span>
+        </section>
+      )}
+
       {spot && (
         <section className="px-4 py-2 bg-slate-100 text-xs text-slate-600 border-b border-slate-200 flex flex-wrap gap-x-4 gap-y-1">
           <span>Gold: {usd.format(spot.gold)}/oz</span>

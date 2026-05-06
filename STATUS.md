@@ -12,20 +12,17 @@ The original M1 build was delivered (still live at https://coin-appraisal-regist
 
 | Item | Where | Status |
 |---|---|---|
-| **M1 fixes — PWA side** | branch [`m1-fixes`](https://github.com/kristof-flowtive/coin-appraisal-register/tree/m1-fixes), commit `b8ef5c1` | ✅ Built, typechecks, builds. **Not yet smoke-tested in a browser or on iPad.** |
+| **M1 fixes — PWA side** | merged on `main` (commit `832fb2c`); auto-deployed to Vercel | ✅ Built, typechecks, builds, deployed. **Not yet smoke-tested in a browser or on iPad.** Backwards-compatible — degrades gracefully until the Make changes below land. |
 | **M1 fixes — Airtable + Make** | external (no code) | ⏳ Pending. Full step-by-step in [docs/m1-fixes-external-changes.md](docs/m1-fixes-external-changes.md). |
 | **M2 + M3 expanded-scope quote** | [decisions/m2-m3-quote.pdf](decisions/m2-m3-quote.pdf) | ✅ Drafted. **Not yet sent to client.** Quote: **M2 $7,500 + M3 protection layer $3,500** (M3 PWA stays at the contracted $350). |
 
 **Next action when you sit back down:**
 
-1. `git pull --all` — make sure both `main` and `m1-fixes` are current.
-2. Check out `m1-fixes`, run `cd web && npm install && npm run dev`, click through the three fixes locally:
-   - **Times-face pricing:** Numismatic / Other group in the picker should appear (will be empty until Airtable rows are added).
-   - **Numeric keypad:** quantity / weight inputs should never raise the alphanumeric keyboard.
-   - **Dual totals:** "100% Melt + Offer at Margin" block at top of screen. Will show "—" until the Make `config-load` scenario returns spot + margins.
+1. `git pull` on `main` (the `m1-fixes` branch was merged in via `832fb2c` and is no longer where active work happens).
+2. Open https://coin-appraisal-register.vercel.app to confirm the deploy landed. Picker should still work; dual-totals header at the top will show "—" until the Make `config-load` scenario returns spot + margins.
 3. Do the external Make + Airtable changes per [docs/m1-fixes-external-changes.md](docs/m1-fixes-external-changes.md).
 4. Smoke-test on the iPad once 4G is unblocked (checklist: [docs/4G-ipad-smoke-test.md](docs/4G-ipad-smoke-test.md)).
-5. Open PR `m1-fixes` → `main`, merge, mark M1 fixes complete.
+5. Mark M1 fixes complete in this doc once the iPad test passes.
 6. Send the M2/M3 quote ([decisions/m2-m3-quote.pdf](decisions/m2-m3-quote.pdf)) to the client and start M2 once they confirm the four open decisions in the quote (DL capture mode, SSN encryption choice, TX report format, all four API credentials live).
 
 **Open client decisions before M2 starts** (full reasoning in the quote PDF):

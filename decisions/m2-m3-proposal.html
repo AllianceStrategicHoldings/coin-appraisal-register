@@ -1,0 +1,736 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Coin Appraisal Register — M2 &amp; M3 Proposal</title>
+<style>
+  @page { size: A4; margin: 18mm 16mm; }
+  * { box-sizing: border-box; }
+  body {
+    font-family: 'Segoe UI', 'Helvetica Neue', Arial, sans-serif;
+    font-size: 10.5pt;
+    line-height: 1.5;
+    color: #1a1a1a;
+    margin: 0;
+    padding: 0;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+  .cover {
+    page-break-after: always;
+    padding: 60mm 0 0 0;
+    border-top: 4px solid #c9a227;
+  }
+  .cover .eyebrow {
+    font-size: 9pt;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    color: #c9a227;
+    margin-bottom: 8mm;
+    font-weight: 600;
+  }
+  .cover h1 {
+    font-size: 28pt;
+    line-height: 1.15;
+    margin: 0 0 4mm 0;
+    font-weight: 700;
+    letter-spacing: -0.5px;
+  }
+  .cover .subtitle {
+    font-size: 13pt;
+    color: #555;
+    margin-bottom: 30mm;
+    font-weight: 300;
+  }
+  .cover .meta {
+    font-size: 9.5pt;
+    color: #555;
+    border-top: 1px solid #ddd;
+    padding-top: 6mm;
+  }
+  .cover .meta dt { font-weight: 600; color: #1a1a1a; float: left; width: 35mm; clear: left; }
+  .cover .meta dd { margin: 0 0 3mm 35mm; }
+  h2 {
+    font-size: 15pt;
+    margin: 9mm 0 4mm 0;
+    padding-bottom: 2mm;
+    border-bottom: 2px solid #c9a227;
+    font-weight: 600;
+    page-break-after: avoid;
+  }
+  h3 {
+    font-size: 12pt;
+    margin: 6mm 0 2mm 0;
+    font-weight: 600;
+    page-break-after: avoid;
+  }
+  h4 {
+    font-size: 10.5pt;
+    margin: 4mm 0 1.5mm 0;
+    font-weight: 600;
+    page-break-after: avoid;
+  }
+  p { margin: 0 0 3mm 0; }
+  ul, ol { margin: 0 0 3mm 0; padding-left: 6mm; }
+  li { margin-bottom: 1.5mm; }
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 3mm 0 5mm 0;
+    font-size: 9.5pt;
+    page-break-inside: auto;
+  }
+  th {
+    background: #f5f1e6;
+    text-align: left;
+    padding: 2.5mm 3mm;
+    border-bottom: 2px solid #c9a227;
+    font-weight: 600;
+  }
+  td {
+    padding: 2.5mm 3mm;
+    border-bottom: 1px solid #e6e6e6;
+    vertical-align: top;
+  }
+  tr:nth-child(even) td { background: #fafafa; }
+  tr { page-break-inside: avoid; }
+  .summary-box {
+    background: #f5f1e6;
+    border-left: 4px solid #c9a227;
+    padding: 5mm 6mm;
+    margin: 4mm 0 6mm 0;
+    page-break-inside: avoid;
+  }
+  .summary-box p:last-child { margin-bottom: 0; }
+  .quote-box {
+    background: #fffbef;
+    border: 1.5px solid #c9a227;
+    padding: 6mm 7mm;
+    margin: 4mm 0 6mm 0;
+    border-radius: 3px;
+    page-break-inside: avoid;
+  }
+  .quote-box .label {
+    font-size: 8.5pt;
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+    color: #8a6a00;
+    margin-bottom: 1.5mm;
+    font-weight: 600;
+  }
+  .quote-box .price {
+    font-size: 22pt;
+    font-weight: 700;
+    color: #1a1a1a;
+    margin-bottom: 2mm;
+    line-height: 1;
+  }
+  .quote-box .price small {
+    font-size: 10pt;
+    font-weight: 400;
+    color: #555;
+    margin-left: 2mm;
+  }
+  .quote-box .scope-summary {
+    font-size: 10pt;
+    color: #444;
+    margin: 0;
+  }
+  .handoff {
+    border-left: 4px solid #b8442a;
+    background: #fdf6f3;
+    padding: 4mm 5mm;
+    margin: 3mm 0 4mm 0;
+    page-break-inside: avoid;
+  }
+  .handoff .label {
+    font-size: 8.5pt;
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+    color: #b8442a;
+    font-weight: 600;
+    margin-bottom: 1mm;
+  }
+  .handoff h4 { margin-top: 0; }
+  .decision {
+    border-left: 4px solid #4a6fa5;
+    background: #f3f6fb;
+    padding: 4mm 5mm;
+    margin: 3mm 0 4mm 0;
+    page-break-inside: avoid;
+  }
+  .decision .label {
+    font-size: 8.5pt;
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+    color: #4a6fa5;
+    font-weight: 600;
+    margin-bottom: 1mm;
+  }
+  .decision h4 { margin-top: 0; }
+  .footer {
+    margin-top: 12mm;
+    padding-top: 4mm;
+    border-top: 1px solid #ddd;
+    font-size: 8.5pt;
+    color: #888;
+    text-align: center;
+  }
+  .muted { color: #888; }
+  small { color: #666; font-size: 9pt; }
+  .totals-table th, .totals-table td { padding: 3mm 4mm; }
+  .totals-table .price-col { text-align: right; font-weight: 600; white-space: nowrap; }
+  .totals-table .total-row td {
+    border-top: 2px solid #c9a227;
+    border-bottom: none;
+    font-size: 11pt;
+    padding-top: 4mm;
+  }
+  .scope-table { font-size: 9pt; }
+  .scope-table th { font-size: 8.5pt; }
+  .scope-table td { padding: 2mm 2.5mm; vertical-align: top; }
+  .scope-table .col-feature { width: 38%; font-weight: 500; }
+  .scope-table .col-status { width: 18%; }
+  .scope-table .col-notes { width: 44%; color: #444; }
+  .pill {
+    display: inline-block;
+    padding: 0.5mm 2mm;
+    border-radius: 2mm;
+    font-size: 8pt;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    white-space: nowrap;
+  }
+  .pill-build { background: #e6f0e0; color: #2f6a1f; }
+  .pill-build-fb { background: #fff5d9; color: #8a6a00; }
+  .pill-handoff { background: #fce4dd; color: #9a3a22; }
+  .pill-included { background: #e3ecf7; color: #2c4a78; }
+  .section-intro { color: #555; font-size: 10pt; margin-bottom: 4mm; }
+</style>
+</head>
+<body>
+
+<section class="cover">
+  <div class="eyebrow">Project Proposal — Milestones 2 &amp; 3</div>
+  <h1>Coin Appraisal Register</h1>
+  <p class="subtitle">Feature-by-feature build &amp; hand-off plan, with revised pricing.</p>
+  <dl class="meta">
+    <dt>Prepared</dt><dd>May 2026</dd>
+    <dt>For</dt><dd>Coin Appraisal Register — M2 &amp; M3 expansion</dd>
+    <dt>By</dt><dd>Flowtive (kristof@getflowtive.com)</dd>
+    <dt>Reference</dt><dd>App Build Scope, Updated May 2026</dd>
+  </dl>
+</section>
+
+<h2>How to read this proposal</h2>
+
+<p>The May 2026 scope document is substantial. Rather than quote one number for the whole thing, I have gone through it feature by feature and split it into three buckets:</p>
+
+<ul>
+  <li><span class="pill pill-build">Build</span> — Inside our wheelhouse. We will build it as part of this engagement.</li>
+  <li><span class="pill pill-build-fb">Build w/ fallback</span> — We will build the feature using the spec's documented fallback path. The "premium" version (typically a paid SDK or specialist integration) is not included.</li>
+  <li><span class="pill pill-handoff">Hand off</span> — Outside our wheelhouse, or compliance/liability work that should sit with a specialist. We are not building these. Recommended to subcontract or defer.</li>
+</ul>
+
+<p>This approach lets you keep the price down, stay on schedule, and avoid paying our rate on work better suited to a specialist.</p>
+
+<h2>Pricing summary</h2>
+
+<table class="totals-table">
+  <thead>
+    <tr><th>Milestone</th><th class="price-col">Quote</th></tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><strong>M1</strong> — Three fixes (already contracted)</td>
+      <td class="price-col">$175 <small class="muted">no change</small></td>
+    </tr>
+    <tr>
+      <td><strong>M2</strong> — Full scope (build items only — see breakdown)</td>
+      <td class="price-col">$5,800</td>
+    </tr>
+    <tr>
+      <td><strong>M3 — PWA</strong> (already contracted)</td>
+      <td class="price-col">$350 <small class="muted">no change</small></td>
+    </tr>
+    <tr>
+      <td><strong>M3 — Protection layer</strong> (build items only — see breakdown)</td>
+      <td class="price-col">$3,000</td>
+    </tr>
+    <tr class="total-row">
+      <td><strong>Total project value</strong></td>
+      <td class="price-col"><strong>$9,325</strong></td>
+    </tr>
+    <tr>
+      <td><em>Of which new commitment for M2 + M3 protection layer</em></td>
+      <td class="price-col"><em>$8,800</em></td>
+    </tr>
+  </tbody>
+</table>
+
+<div class="summary-box">
+  <p><strong>Headline:</strong> $8,800 covers the bulk of the M2 and M3 scope — every coin type, the full deal flow, all four API integrations, the GHL bidirectional sync, the compliance flags, the Deal_Log build, and the entire M3 protection layer (PIN auth, manager workflows, picker enhancements). The five items in the hand-off list are the parts where a specialist will deliver a better outcome at a lower combined cost than us building them ourselves.</p>
+</div>
+
+<h2>M2 scope — feature-by-feature breakdown</h2>
+
+<p class="section-intro">Every feature listed in the M2 section of the App Build Scope, with our build / hand-off decision and short rationale.</p>
+
+<h3>New coin types &amp; pricing methods</h3>
+
+<table class="scope-table">
+  <thead>
+    <tr><th class="col-feature">Feature</th><th class="col-status">Status</th><th class="col-notes">Notes</th></tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>Bullion coins (8 types) — unit × spot + configurable premium</td>
+      <td><span class="pill pill-build">Build</span></td>
+      <td>Direct extension of existing <code>bulk-calc</code> formulas. Premiums driven from <code>Config_CoinTypes</code>.</td>
+    </tr>
+    <tr>
+      <td>Sterling silver flatware — gram × purity × spot, with hallmark popup</td>
+      <td><span class="pill pill-build">Build</span></td>
+      <td>Mandatory popup blocking weight entry until dismissed.</td>
+    </tr>
+    <tr>
+      <td>Foreign silver coins (4 entries, including manual purity override)</td>
+      <td><span class="pill pill-build">Build</span></td>
+      <td>Stored purity factors + the override selector for the fourth entry.</td>
+    </tr>
+    <tr>
+      <td>Paper money — manual entry with denomination, year, condition, offer, manager-review note</td>
+      <td><span class="pill pill-build">Build</span></td>
+      <td>Standard form. Static note always visible when this item type is open.</td>
+    </tr>
+    <tr>
+      <td>Numismatic grading selector (Circulated / Uncirculated / Slabbed)</td>
+      <td><span class="pill pill-build">Build</span></td>
+      <td>Per-condition multipliers from <code>Config_CoinTypes</code>.</td>
+    </tr>
+    <tr>
+      <td>Pre-1933 US Gold full-screen red hard stop with timestamped acknowledgment</td>
+      <td><span class="pill pill-build">Build</span></td>
+      <td>Cannot be skipped or dismissed via back button. Flag written to deal record.</td>
+    </tr>
+  </tbody>
+</table>
+
+<h3>Lookup integrations</h3>
+
+<table class="scope-table">
+  <thead>
+    <tr><th class="col-feature">Feature</th><th class="col-status">Status</th><th class="col-notes">Notes</th></tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>Graded coin lookup — PCGS CoinFacts cert authentication</td>
+      <td><span class="pill pill-build">Build</span></td>
+      <td>Make.com HTTP integration. Requires PCGS API key live before M2 starts.</td>
+    </tr>
+    <tr>
+      <td>Graded coin lookup — CDN Greysheet Dealer+ wholesale pricing</td>
+      <td><span class="pill pill-build">Build</span></td>
+      <td>Make.com HTTP integration. Requires CDN paid subscription with API tier enabled.</td>
+    </tr>
+    <tr>
+      <td>Fallback chain: CDN → <code>Manual_Price_Override</code> → ask manager</td>
+      <td><span class="pill pill-build">Build</span></td>
+      <td>Side-by-side display of CDN price + offer at margin.</td>
+    </tr>
+    <tr>
+      <td>Barcode scanner — Code 128 + QR (with manual cert fallback)</td>
+      <td><span class="pill pill-build">Build</span></td>
+      <td>Browser-based scanner via ZXing-js. Manual cert entry always available.</td>
+    </tr>
+    <tr>
+      <td>eBay sold-listings comps via Apify actor (low / median / high)</td>
+      <td><span class="pill pill-build">Build</span></td>
+      <td>Range logged to deal record on every lookup. Empty results treated as valid (rep falls back to judgment).</td>
+    </tr>
+  </tbody>
+</table>
+
+<h3>Full deal flow</h3>
+
+<table class="scope-table">
+  <thead>
+    <tr><th class="col-feature">Feature</th><th class="col-status">Status</th><th class="col-notes">Notes</th></tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>Customer intake screen — name, phone, DOB, zip, TCPA opt-in</td>
+      <td><span class="pill pill-build">Build</span></td>
+      <td>All fields required before calculator opens. Standalone zip field, independently queryable.</td>
+    </tr>
+    <tr>
+      <td>Driver's license capture</td>
+      <td><span class="pill pill-build-fb">Build w/ fallback</span></td>
+      <td>We build photo capture (uploaded to Airtable) + manual DL number entry. Automated PDF417 OCR via paid SDK is in the hand-off list below.</td>
+    </tr>
+    <tr>
+      <td>Under-18 hard stop (DOB-driven)</td>
+      <td><span class="pill pill-build">Build</span></td>
+      <td>Deal cannot proceed.</td>
+    </tr>
+    <tr>
+      <td>Mandatory collection photo at intake</td>
+      <td><span class="pill pill-build">Build</span></td>
+      <td>Uploaded to Airtable as attachment, URL stored in <code>Collection_Photo_URL</code>.</td>
+    </tr>
+    <tr>
+      <td>Item entry screen with dual real-time totals (melt + offer)</td>
+      <td><span class="pill pill-build">Build</span></td>
+      <td>Already partially live from M1. Lookup integrations available from this screen.</td>
+    </tr>
+    <tr>
+      <td>Deal summary screen — line items, totals, margin %, Accept/Decline</td>
+      <td><span class="pill pill-build">Build</span></td>
+      <td>Full breakdown before commit.</td>
+    </tr>
+    <tr>
+      <td>Customer-facing flip view (hides margin %)</td>
+      <td><span class="pill pill-build">Build</span></td>
+      <td>One-tap toggle from summary screen.</td>
+    </tr>
+    <tr>
+      <td>Acceptance flow — payment selector, $9,500 cash hard stop, offer letter PDF, signature, item photos, review prompt, SMS</td>
+      <td><span class="pill pill-build">Build</span></td>
+      <td>SMS goes via the GHL webhook to opted-in customers. Offer letter PDF generated client-side.</td>
+    </tr>
+    <tr>
+      <td>Decline flow — 24-hour price lock + declined webhook</td>
+      <td><span class="pill pill-build">Build</span></td>
+      <td>Captures phone if not on file, creates Airtable record with price-lock flag.</td>
+    </tr>
+  </tbody>
+</table>
+
+<h3>GHL integration</h3>
+
+<table class="scope-table">
+  <thead>
+    <tr><th class="col-feature">Feature</th><th class="col-status">Status</th><th class="col-notes">Notes</th></tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>Accepted-deal webhook — full payload per spec</td>
+      <td><span class="pill pill-build">Build</span></td>
+      <td>customer info, deal value, item tags, deal ID.</td>
+    </tr>
+    <tr>
+      <td>Declined-deal webhook — contact info + tag set</td>
+      <td><span class="pill pill-build">Build</span></td>
+      <td>Includes <code>deal_declined</code> and (where applicable) <code>price_lock_24hr</code> tags.</td>
+    </tr>
+    <tr>
+      <td>Bidirectional ID capture — write GHL Contact ID + Opportunity ID back to Airtable</td>
+      <td><span class="pill pill-build">Build</span></td>
+      <td>Make.com captures the GHL response and writes both IDs to the matching deal record.</td>
+    </tr>
+    <tr>
+      <td>Inside-GHL automation (workflows, SMS templates, pipelines)</td>
+      <td><span class="pill pill-handoff">Hand off</span></td>
+      <td>Already excluded by the scope wording. Operator handles GHL-side configuration.</td>
+    </tr>
+  </tbody>
+</table>
+
+<h3>Compliance automation</h3>
+
+<table class="scope-table">
+  <thead>
+    <tr><th class="col-feature">Feature</th><th class="col-status">Status</th><th class="col-notes">Notes</th></tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>Texas 48-hour LE report — nightly Make scenario, formatted PDF email</td>
+      <td><span class="pill pill-build-fb">Build w/ fallback</span></td>
+      <td>We build PDF email per the scope wording. If the recipient (PD or DPS) requires a custom format / state portal upload, that is in the hand-off list below.</td>
+    </tr>
+    <tr>
+      <td>Structuring detection — same name or DL across cash transactions, 24h rolling window</td>
+      <td><span class="pill pill-build">Build</span></td>
+      <td>Manager alert with prior history before either deal can close. Both deals flagged.</td>
+    </tr>
+    <tr>
+      <td>Form 8300 flag — auto-set when single cash transaction exceeds $10,000 after override</td>
+      <td><span class="pill pill-build">Build</span></td>
+      <td>Flag-only, per spec.</td>
+    </tr>
+    <tr>
+      <td>1099-B threshold tracking — per-customer rolling 12-month volume + SSN/EIN capture prompt</td>
+      <td><span class="pill pill-build-fb">Build w/ fallback</span></td>
+      <td>We build the threshold trigger, capture flow, and flag fields. Actual IRS filing automation and audit-grade SSN/EIN encryption are in the hand-off list below.</td>
+    </tr>
+  </tbody>
+</table>
+
+<h3>Data model &amp; documentation</h3>
+
+<table class="scope-table">
+  <thead>
+    <tr><th class="col-feature">Feature</th><th class="col-status">Status</th><th class="col-notes">Notes</th></tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>Deal_Log</code> table with all 35+ fields, exact column names</td>
+      <td><span class="pill pill-build">Build</span></td>
+      <td>Built before any Make scenario is wired.</td>
+    </tr>
+    <tr>
+      <td>Auto-populated <code>Operator_ID</code> + <code>Location_ID</code> on every deal</td>
+      <td><span class="pill pill-build">Build</span></td>
+      <td>Driven from single-row config tables; no developer involvement needed to change.</td>
+    </tr>
+    <tr>
+      <td>Spot price snapshot on deal completion (gold + silver)</td>
+      <td><span class="pill pill-build">Build</span></td>
+      <td>Captured at the exact moment of completion.</td>
+    </tr>
+    <tr>
+      <td>Loom walkthrough — every admin-editable Make setting + every config table</td>
+      <td><span class="pill pill-build">Build</span></td>
+      <td>Recorded so a non-technical admin can update margins, coin types, locations, recipients without breaking the build.</td>
+    </tr>
+  </tbody>
+</table>
+
+<h2>M3 protection layer — feature-by-feature breakdown</h2>
+
+<p class="section-intro">The $350 PWA frontend is already contracted. The breakdown below covers only the new protection and usability layer added on top of it.</p>
+
+<h3>Authentication &amp; permissions</h3>
+
+<table class="scope-table">
+  <thead>
+    <tr><th class="col-feature">Feature</th><th class="col-status">Status</th><th class="col-notes">Notes</th></tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>Rep PIN authentication (4-digit, encrypted, 3-strike lockout, manager alert)</td>
+      <td><span class="pill pill-build">Build</span></td>
+      <td>PIN encrypted in <code>Reps_Master</code>. Lockout for 5 minutes on three failed attempts.</td>
+    </tr>
+    <tr>
+      <td>Manager permission tier — yellow flag override, high-value approval, full activity log access</td>
+      <td><span class="pill pill-build">Build</span></td>
+      <td>Separate manager PIN. Manager-only views in the PWA.</td>
+    </tr>
+    <tr>
+      <td>App auto-lock after 2 minutes inactivity, requires Face ID or PIN</td>
+      <td><span class="pill pill-build">Build</span></td>
+      <td>Inactivity timer + reauth screen.</td>
+    </tr>
+  </tbody>
+</table>
+
+<h3>Flag system &amp; manager workflows</h3>
+
+<table class="scope-table">
+  <thead>
+    <tr><th class="col-feature">Feature</th><th class="col-status">Status</th><th class="col-notes">Notes</th></tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>Three-color flag system (Green / Yellow / Red) with all five red triggers from spec</td>
+      <td><span class="pill pill-build">Build</span></td>
+      <td>High-value, Pre-1933, $9,500 cash, weight mismatch &gt;10%, structuring pattern.</td>
+    </tr>
+    <tr>
+      <td>High-value approval gate — Pending Approval screen until manager acts remotely</td>
+      <td><span class="pill pill-build-fb">Build w/ fallback</span></td>
+      <td>We use Airtable polling (5s interval) for manager response. Native iOS push is in the hand-off list below.</td>
+    </tr>
+    <tr>
+      <td>Ask Manager button — freezes deal, notifies, writes timestamped note</td>
+      <td><span class="pill pill-build">Build</span></td>
+      <td>Permanent button on every screen.</td>
+    </tr>
+    <tr>
+      <td>Not Sure What This Is button — photo to manager, search reference guide, save to pending</td>
+      <td><span class="pill pill-build">Build</span></td>
+      <td>Reference guide content sourced from <code>Config_CoinTypes</code> + key date warnings.</td>
+    </tr>
+    <tr>
+      <td>Suspicious Item workflow — flag pauses deal, manager PIN required to resume</td>
+      <td><span class="pill pill-build">Build</span></td>
+      <td>Reason + rep name + timestamp written to audit trail.</td>
+    </tr>
+  </tbody>
+</table>
+
+<h3>Usability &amp; estimation</h3>
+
+<table class="scope-table">
+  <thead>
+    <tr><th class="col-feature">Feature</th><th class="col-status">Status</th><th class="col-notes">Notes</th></tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>Estate Lot Bulk Estimate Mode — sample-and-extrapolate with disclaimer</td>
+      <td><span class="pill pill-build">Build</span></td>
+      <td>Visible "this is an estimate" disclaimer.</td>
+    </tr>
+    <tr>
+      <td>Picker — coin image + expected gram weight next to each coin</td>
+      <td><span class="pill pill-build">Build</span></td>
+      <td>Pulled from <code>Config_CoinTypes</code>.</td>
+    </tr>
+    <tr>
+      <td>Picker — search and filter bar at the top</td>
+      <td><span class="pill pill-build">Build</span></td>
+      <td>Quick filtering by name / category.</td>
+    </tr>
+    <tr>
+      <td>Picker — recently used (last 6) quick-tap row</td>
+      <td><span class="pill pill-build">Build</span></td>
+      <td>Stored locally per device.</td>
+    </tr>
+    <tr>
+      <td>Picker — key date warnings embedded inline</td>
+      <td><span class="pill pill-build">Build</span></td>
+      <td>Pulled from <code>key_date_warning</code>.</td>
+    </tr>
+    <tr>
+      <td>Spot price 24-hour change indicator on main screen (gold + silver)</td>
+      <td><span class="pill pill-build">Build</span></td>
+      <td>Shows movement since prior day's close.</td>
+    </tr>
+    <tr>
+      <td>Plain English tooltips on Face Value, Melt Value, Times Face</td>
+      <td><span class="pill pill-build">Build</span></td>
+      <td>Tap-to-reveal one-sentence explanation.</td>
+    </tr>
+  </tbody>
+</table>
+
+<h3>PWA infrastructure (already contracted at $350)</h3>
+
+<table class="scope-table">
+  <thead>
+    <tr><th class="col-feature">Feature</th><th class="col-status">Status</th><th class="col-notes">Notes</th></tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>React PWA on Vercel under client GitHub, iPad Safari install flow, 3 months bug-fix support</td>
+      <td><span class="pill pill-included">Included</span></td>
+      <td>Already delivered and live at <code>https://coin-appraisal-register.vercel.app</code>. No change.</td>
+    </tr>
+  </tbody>
+</table>
+
+<h2>What we recommend handing off</h2>
+
+<p>The five items below are inside the scope document but outside our wheelhouse — either because they require a paid third-party SDK, specialist compliance/security work, or a platform we do not support. For each one, we either build a clean fallback path (so the app still works) or recommend you bring in a specialist.</p>
+
+<div class="handoff">
+  <div class="label">Hand off 1 — Specialist (mobile / SDK)</div>
+  <h4>Driver's license PDF417 OCR via paid SDK</h4>
+  <p>Reliable PDF417 barcode parsing on iOS Safari requires a commercial SDK such as Microblink BlinkID, Scandit, or Mitek. Those run $200–2,000/month in license fees and need a developer with their specific SDK experience. Our default build covers photo capture (uploaded to Airtable as the audit record) plus manual DL number entry — which complies with the scope's "or manual entry of DL number" wording. If you want true automated capture later, a mobile / SDK specialist is the right person to wire it in.</p>
+</div>
+
+<div class="handoff">
+  <div class="label">Hand off 2 — Specialist (security / compliance)</div>
+  <h4>Audit-grade SSN / EIN encrypted vault</h4>
+  <p>The scope requires SSN/EIN to be stored encrypted. Airtable provides platform-level encryption-at-rest, which we will use as the default. If your tax counsel requires field-level customer-managed encryption (typical for IRS-reportable PII), the right home for that field is a separate vault — HashiCorp Vault, AWS Secrets Manager, or a managed service like Stripe Identity. That setup is a separate security engagement (~$1,500–3,000) and should be done by someone whose day job is compliance/security work.</p>
+</div>
+
+<div class="handoff">
+  <div class="label">Hand off 3 — Tax / compliance specialist</div>
+  <h4>Actual IRS 1099-B filing automation</h4>
+  <p>The rules for which precious-metals transactions are 1099-B reportable are non-obvious — the threshold is not just "$10,000 cumulative"; it depends on specific items and quantities (e.g. 1,000+oz silver bars, 25+ pieces of pre-1965 90% silver coin, etc.). Our build covers the threshold trigger, the SSN/EIN capture flow, and the flag fields on the deal record. Anything beyond that — the actual filing logic, IRS form generation, classification of which transactions trigger reporting — is tax compliance work and should be handled by a tax-tech specialist or your tax counsel.</p>
+</div>
+
+<div class="handoff">
+  <div class="label">Hand off 4 — Specialist (state portal integration, if required)</div>
+  <h4>Custom Texas LE report formats beyond formatted PDF email</h4>
+  <p>The scope wording says "emails a formatted transaction report" — that is what we build. If the receiving department (local PD or Texas DPS) actually requires a different format (CSV, structured XML, upload to a state portal, proprietary format), each of those is a meaningfully different build and the recipient typically dictates exact requirements. That is integration specialist territory, not Make.com generalist territory. Confirm the recipient's actual requirement before this becomes an issue.</p>
+</div>
+
+<div class="handoff">
+  <div class="label">Hand off 5 — Native mobile (only if required)</div>
+  <h4>Native iOS push notifications for the manager approval gate</h4>
+  <p>iOS Safari Web Push works for installed PWAs (iOS 16.4+) but Apple throttles delivery aggressively — it is not suitable for sub-second manager approval. Our default architecture is short-interval Airtable polling (5s) on the rep's Pending Approval screen, which is reliable on iOS Safari and meets the scope's functional requirement. If you decide later that you need true native push, you are moving from a PWA to a native iOS app — that is a different platform and should be quoted as a separate native build.</p>
+</div>
+
+<h2>Decisions needed before M2 starts</h2>
+
+<div class="decision">
+  <div class="label">Decision 1</div>
+  <h4>API credentials confirmed live in Make.com</h4>
+  <p>Per the scope document, M2 does not start until PCGS CoinFacts, CDN Greysheet Dealer+, GoldAPI, and Apify (paid plan, 50 runs/day minimum) are all confirmed returning data in Make.com under the operator's credentials.</p>
+</div>
+
+<div class="decision">
+  <div class="label">Decision 2</div>
+  <h4>Driver's license capture path</h4>
+  <p>Confirm photo + manual DL number entry is acceptable (default, no extra cost), or budget for a paid SDK and a mobile/SDK specialist to integrate it.</p>
+</div>
+
+<div class="decision">
+  <div class="label">Decision 3</div>
+  <h4>SSN / EIN storage path</h4>
+  <p>Confirm Airtable platform encryption-at-rest is acceptable for <code>SSN_EIN_Captured</code> (default, no extra cost), or scope a separate vault engagement.</p>
+</div>
+
+<div class="decision">
+  <div class="label">Decision 4</div>
+  <h4>Texas 48-hour report format</h4>
+  <p>Confirm formatted PDF email is acceptable, or specify the recipient's required format / system.</p>
+</div>
+
+<h2>Honest timeline</h2>
+
+<p>The scope document targets a fully deployed app within 90 days. With this build/hand-off split:</p>
+
+<table>
+  <thead>
+    <tr><th>Phase</th><th>Realistic duration</th><th>Notes</th></tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><strong>M2 — build items</strong></td>
+      <td>50–75 days</td>
+      <td>From confirmed API access. Compliance flags + deal flow are the largest blocks.</td>
+    </tr>
+    <tr>
+      <td><strong>M3 — protection layer build items</strong></td>
+      <td>25–40 days</td>
+      <td>Largely additive on top of M2. Some overlap with M2 testing is possible.</td>
+    </tr>
+    <tr>
+      <td><strong>Combined M2 + M3 (build only)</strong></td>
+      <td>75–110 days</td>
+      <td>90 days is achievable with zero blockers on APIs and the four decisions resolved week 1.</td>
+    </tr>
+  </tbody>
+</table>
+
+<h2>Payment structure</h2>
+
+<p>Recommended payment milestones for both new quotes:</p>
+
+<ul>
+  <li><strong>M2 ($5,800):</strong> 40% on kickoff once APIs and decisions are confirmed ($2,320), 30% at the deal flow + compliance engine demo ($1,740), 30% on iPad acceptance test pass ($1,740).</li>
+  <li><strong>M3 protection layer ($3,000):</strong> 50% on kickoff after M2 sign-off ($1,500), 50% on iPad acceptance test pass ($1,500).</li>
+</ul>
+
+<h2>What is <em>not</em> in this proposal</h2>
+
+<ul>
+  <li><strong>The five hand-off items above</strong> — DL OCR SDK, encrypted vault, IRS 1099-B filing automation, custom LE report formats, native iOS push.</li>
+  <li><strong>Inside-GHL automation</strong> — workflows, SMS templates, follow-up sequences, opportunity pipeline configuration. Outbound webhook only on our side.</li>
+  <li><strong>Recurring third-party API and infrastructure costs</strong> — PCGS, CDN Greysheet, GoldAPI, Apify, Make.com Pro tier, Vercel, Airtable, optional DL OCR SDK, optional SSN vault. These are operator costs, not dev costs.</li>
+  <li><strong>Hardware</strong> — iPads, mounts, external barcode scanners.</li>
+  <li><strong>Branding assets</strong> — logo, accent color, app name. Build proceeds with placeholders; final assets land via follow-up update.</li>
+  <li><strong>Post-launch new features</strong> — the M3 PWA contract includes 3 months of bug-fix support. New features after launch are separate scope.</li>
+</ul>
+
+<div class="footer">
+  Prepared by Flowtive · kristof@getflowtive.com · May 2026 · Coin Appraisal Register M2 + M3 Proposal
+</div>
+
+</body>
+</html>

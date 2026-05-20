@@ -1,0 +1,599 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Coin Appraisal Register — Revised SOW (M1 + M2 + M3 Protection Layer)</title>
+<style>
+  @page { size: A4; margin: 18mm 16mm; }
+  * { box-sizing: border-box; }
+  body {
+    font-family: 'Segoe UI', 'Helvetica Neue', Arial, sans-serif;
+    font-size: 10.5pt;
+    line-height: 1.5;
+    color: #1a1a1a;
+    margin: 0;
+    padding: 0;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+  .cover {
+    page-break-after: always;
+    padding: 60mm 0 0 0;
+    border-top: 4px solid #c9a227;
+  }
+  .cover .eyebrow {
+    font-size: 9pt;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    color: #c9a227;
+    margin-bottom: 8mm;
+    font-weight: 600;
+  }
+  .cover h1 {
+    font-size: 28pt;
+    line-height: 1.15;
+    margin: 0 0 4mm 0;
+    font-weight: 700;
+    letter-spacing: -0.5px;
+  }
+  .cover .subtitle {
+    font-size: 13pt;
+    color: #555;
+    margin-bottom: 30mm;
+    font-weight: 300;
+  }
+  .cover .meta {
+    font-size: 9.5pt;
+    color: #555;
+    border-top: 1px solid #ddd;
+    padding-top: 6mm;
+  }
+  .cover .meta dt { font-weight: 600; color: #1a1a1a; float: left; width: 35mm; clear: left; }
+  .cover .meta dd { margin: 0 0 3mm 35mm; }
+  h2 {
+    font-size: 15pt;
+    margin: 9mm 0 4mm 0;
+    padding-bottom: 2mm;
+    border-bottom: 2px solid #c9a227;
+    font-weight: 600;
+    page-break-after: avoid;
+  }
+  h3 {
+    font-size: 12pt;
+    margin: 6mm 0 2mm 0;
+    font-weight: 600;
+    page-break-after: avoid;
+  }
+  h4 {
+    font-size: 10.5pt;
+    margin: 4mm 0 1.5mm 0;
+    font-weight: 600;
+    page-break-after: avoid;
+  }
+  p { margin: 0 0 3mm 0; }
+  ul, ol { margin: 0 0 3mm 0; padding-left: 6mm; }
+  li { margin-bottom: 1.5mm; }
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 3mm 0 5mm 0;
+    font-size: 9.5pt;
+    page-break-inside: auto;
+  }
+  th {
+    background: #f5f1e6;
+    text-align: left;
+    padding: 2.5mm 3mm;
+    border-bottom: 2px solid #c9a227;
+    font-weight: 600;
+  }
+  td {
+    padding: 2.5mm 3mm;
+    border-bottom: 1px solid #e6e6e6;
+    vertical-align: top;
+  }
+  tr:nth-child(even) td { background: #fafafa; }
+  tr { page-break-inside: avoid; }
+  .summary-box {
+    background: #f5f1e6;
+    border-left: 4px solid #c9a227;
+    padding: 5mm 6mm;
+    margin: 4mm 0 6mm 0;
+    page-break-inside: avoid;
+  }
+  .summary-box p:last-child { margin-bottom: 0; }
+  .quote-box {
+    background: #fffbef;
+    border: 1.5px solid #c9a227;
+    padding: 6mm 7mm;
+    margin: 4mm 0 6mm 0;
+    border-radius: 3px;
+    page-break-inside: avoid;
+  }
+  .quote-box .label {
+    font-size: 8.5pt;
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+    color: #8a6a00;
+    margin-bottom: 1.5mm;
+    font-weight: 600;
+  }
+  .quote-box .price {
+    font-size: 22pt;
+    font-weight: 700;
+    color: #1a1a1a;
+    margin-bottom: 2mm;
+    line-height: 1;
+  }
+  .quote-box .price small {
+    font-size: 10pt;
+    font-weight: 400;
+    color: #555;
+    margin-left: 2mm;
+  }
+  .quote-box .scope-summary {
+    font-size: 10pt;
+    color: #444;
+    margin: 0;
+  }
+  .note {
+    border-left: 4px solid #4a6fa5;
+    background: #f3f6fb;
+    padding: 4mm 5mm;
+    margin: 3mm 0 4mm 0;
+    page-break-inside: avoid;
+  }
+  .note .label {
+    font-size: 8.5pt;
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+    color: #4a6fa5;
+    font-weight: 600;
+    margin-bottom: 1mm;
+  }
+  .note h4 { margin-top: 0; }
+  .footer {
+    margin-top: 12mm;
+    padding-top: 4mm;
+    border-top: 1px solid #ddd;
+    font-size: 8.5pt;
+    color: #888;
+    text-align: center;
+  }
+  .muted { color: #888; }
+  small { color: #666; font-size: 9pt; }
+  .totals-table th, .totals-table td { padding: 3mm 4mm; }
+  .totals-table .price-col { text-align: right; font-weight: 600; white-space: nowrap; }
+  .totals-table .subtotal-row td {
+    background: #f5f1e6 !important;
+    font-weight: 600;
+  }
+  .totals-table .total-row td {
+    border-top: 2px solid #c9a227;
+    border-bottom: none;
+    font-size: 11pt;
+    padding-top: 4mm;
+    font-weight: 700;
+  }
+  .line-table { font-size: 9.5pt; }
+  .line-table .col-section { width: 12%; font-weight: 600; }
+  .line-table .col-name { width: 30%; font-weight: 500; }
+  .line-table .col-summary { width: 43%; color: #444; }
+  .line-table .col-price { width: 15%; text-align: right; font-weight: 600; white-space: nowrap; }
+  .timeline-table .col-phase { width: 12%; }
+  .timeline-table .col-name { width: 30%; font-weight: 500; }
+  .timeline-table .col-trigger { width: 38%; color: #444; }
+  .timeline-table .col-when { width: 12%; white-space: nowrap; }
+  .timeline-table .col-pct { width: 8%; text-align: right; font-weight: 600; }
+  .section-intro { color: #555; font-size: 10pt; margin-bottom: 4mm; }
+</style>
+</head>
+<body>
+
+<section class="cover">
+  <div class="eyebrow">Revised Statement of Work</div>
+  <h1>Coin Appraisal Register</h1>
+  <p class="subtitle">M1 acceptance, M2 full scope, and M3 protection layer — itemized per the App Build Final specification.</p>
+  <dl class="meta">
+    <dt>Prepared</dt><dd>May 2026</dd>
+    <dt>For</dt><dd>Coin Appraisal Register — operator engagement</dd>
+    <dt>By</dt><dd>Flowtive (kristof@getflowtive.com)</dd>
+    <dt>Reference</dt><dd>App Build Final — Build Specification, Sections 1–8</dd>
+  </dl>
+</section>
+
+<h2>Summary</h2>
+
+<p>This SOW is priced directly against Sections 1 through 8 of the App Build Final specification. Section 5 (Boundary of Engagement) is acknowledged in full — anything not specified in Sections 1–8 is not in scope. Items below are priced per subsection of Sections 2 and 3 as requested in Section 8.</p>
+
+<table class="totals-table">
+  <thead>
+    <tr><th>Component</th><th class="price-col">Price</th></tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><strong>M1</strong> — Three fixes (already contracted, held pending acceptance test)</td>
+      <td class="price-col">$175 <small class="muted">no change</small></td>
+    </tr>
+    <tr>
+      <td><strong>M2</strong> — Full scope (Section 2.1 through 2.16, itemized below)</td>
+      <td class="price-col">$8,050</td>
+    </tr>
+    <tr>
+      <td><strong>M3 — PWA Infrastructure</strong> (already contracted, delivered, live)</td>
+      <td class="price-col">$350 <small class="muted">no change</small></td>
+    </tr>
+    <tr>
+      <td><strong>M3 — Protection Layer</strong> (Section 3.1 through 3.7, itemized below)</td>
+      <td class="price-col">$2,550</td>
+    </tr>
+    <tr class="total-row">
+      <td><strong>Total project value</strong></td>
+      <td class="price-col"><strong>$11,125</strong></td>
+    </tr>
+    <tr>
+      <td><em>Of which new commitment under this revised SOW (M2 + M3 protection layer)</em></td>
+      <td class="price-col"><em>$10,600</em></td>
+    </tr>
+  </tbody>
+</table>
+
+<div class="summary-box">
+  <p><strong>How this number was reached.</strong> The revised spec shifted in both directions versus the May 12 proposal. Removed: bidirectional GHL ID capture, barcode-scanner SDK, full compliance automation (LE reporting, structuring, Form 8300, 1099-B), Suspicious Item flag, Estate Lot bulk-estimate mode, 24-hour spot-change indicator, picker coin images and recently-used row. Added: Dual Pricing Engine (Max Payout / Actual Offer / Negotiation Delta), cloud storage in S3 or R2, webhook fan-out to four destinations with independent retry, Multi-Location and Roadshow mode, Override Code Mechanism, Manager Dashboard with per-rep performance, Test Mode, Customer_Master and returning-customer lookup, offline degradation, and a five-state deal status workflow. Net: scope is meaningfully larger than the prior proposal, and the SOW reflects that.</p>
+</div>
+
+<h2>Section 1 — M1 Acceptance</h2>
+
+<p>All M1 deliverables are built and live on the staging URL. The four items listed in Section 1 are ready for the Section 1 acceptance review.</p>
+
+<table>
+  <thead>
+    <tr><th>Item</th><th>Status</th></tr>
+  </thead>
+  <tbody>
+    <tr><td>Bulk calculator extensions, M1 coin types</td><td>Built and live on staging.</td></tr>
+    <tr><td>Numismatic grading selector (Circulated / Uncirculated / Slabbed)</td><td>Built. Multipliers driven from <code>Config_CoinTypes</code>.</td></tr>
+    <tr><td>Custom numeric keypad (decimal, backspace, clear, tap-outside dismiss)</td><td>Built. iPad-only keypad path.</td></tr>
+    <tr><td>Running totals (Total Value, Total Offer)</td><td>Built. Real-time update; zero-out on full bag clear.</td></tr>
+  </tbody>
+</table>
+
+<p><strong>Target date for M1 acceptance: 2026-05-22.</strong> $175 released same-day on acceptance. M2 + M3 kickoff payment is wired only after M1 has passed, per Section 1.</p>
+
+<h2>Section 2 — M2 Itemized Pricing</h2>
+
+<p class="section-intro">Each subsection of Section 2 below is priced individually as requested in Section 8. The "build summary" column confirms what is delivered against the spec wording in the App Build Final document.</p>
+
+<table class="line-table">
+  <thead>
+    <tr>
+      <th class="col-section">Subsection</th>
+      <th class="col-name">Scope</th>
+      <th class="col-summary">Build summary</th>
+      <th class="col-price">Price</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td class="col-section">2.1</td>
+      <td class="col-name">Customer Intake</td>
+      <td class="col-summary">Five-field intake form with under-18 hard stop; single lot photo upload to cloud storage; DL photo + manual DL number entry; standalone zip field; returning-customer lookup against <code>Customer_Master</code> on phone + DOB.</td>
+      <td class="col-price">$750</td>
+    </tr>
+    <tr>
+      <td class="col-section">2.2</td>
+      <td class="col-name">Item Entry &amp; Pricing Engine</td>
+      <td class="col-summary">Bulk calculator for all M1 types; bullion (8 coins) priced at unit × spot + configurable premium; sterling flatware with hallmark popup blocking weight entry; foreign silver (4 entries with manual purity override); paper money manual entry; numismatic grading selector extended to all graded categories; Pre-1933 US Gold full-screen red hard stop with timestamped manager-PIN acknowledgment.</td>
+      <td class="col-price">$700</td>
+    </tr>
+    <tr>
+      <td class="col-section">2.3</td>
+      <td class="col-name">Lookup Integrations</td>
+      <td class="col-summary">PCGS CoinFacts cert authentication via Make.com HTTP; CDN Greysheet Dealer+ wholesale pricing; fallback chain CDN → <code>Manual_Price_Override</code> → Ask Manager with side-by-side display of CDN price and offer at configured margin; manual cert entry; eBay sold-listings comps via the Apify actor with low / median / high logged on every lookup; live gold / silver / platinum via Metals-API.</td>
+      <td class="col-price">$1,100</td>
+    </tr>
+    <tr>
+      <td class="col-section">2.4</td>
+      <td class="col-name">Dual Pricing Engine</td>
+      <td class="col-summary">Max Payout per item (calculated ceiling from Section 2.2 / 2.3 value minus the <code>Config_Margins</code> margin); rep-entered Actual Offer constrained to ≤ Max Payout unless an override code applies (Section 2.13); Negotiation Delta computed per item; roll-up totals at deal level (Total Max Payout, Total Actual Offer, Total Delta); live margin % display in rep view only.</td>
+      <td class="col-price">$550</td>
+    </tr>
+    <tr>
+      <td class="col-section">2.5</td>
+      <td class="col-name">Deal Summary &amp; Customer View</td>
+      <td class="col-summary">Internal rep-facing deal summary with line items, totals, margin %, and Accept / Decline actions; swipe-gesture transition to a clean customer-facing summary that hides margin information.</td>
+      <td class="col-price">$300</td>
+    </tr>
+    <tr>
+      <td class="col-section">2.6</td>
+      <td class="col-name">Acceptance Flow</td>
+      <td class="col-summary">Payment-method selector (cash / check / wire / other) written to deal record; $9,500 cash single-transaction full-screen stop with manager-PIN proceed; client-side offer letter PDF generated with deal terms, offer amount, customer info, and signature line; uploaded to cloud storage with URL on the deal record; touch-screen customer signature stored as PNG and embedded into the offer letter PDF; mandatory final lot photo at acceptance; review-prompt fires the GHL accepted-deal webhook with opt-in flag.</td>
+      <td class="col-price">$700</td>
+    </tr>
+    <tr>
+      <td class="col-section">2.7</td>
+      <td class="col-name">Decline Flow</td>
+      <td class="col-summary">24-hour price-lock capture (phone if not on file, deal record flagged <code>price_lock_24hr</code>); declined webhook fires outbound with <code>deal_declined</code> and (where applicable) <code>price_lock_24hr</code> tags.</td>
+      <td class="col-price">$250</td>
+    </tr>
+    <tr>
+      <td class="col-section">2.8</td>
+      <td class="col-name">Manager-Required Workflows</td>
+      <td class="col-summary">Permanent Ask Manager button (freezes deal, notifies manager, writes timestamped note, manager resumes via PIN); Not Sure What This Is button (sends item photo to manager, opens <code>Config_CoinTypes</code> reference search, saves the deal to a pending state until manager input).</td>
+      <td class="col-price">$300</td>
+    </tr>
+    <tr>
+      <td class="col-section">2.9</td>
+      <td class="col-name">GHL Integration</td>
+      <td class="col-summary">Outbound accepted-deal webhook with full payload (customer info, TCPA opt-in, deal value, item tags, deal ID, payment type, photo URLs, signed offer letter URL); outbound declined-deal webhook with contact info and tag set. No bidirectional ID capture; no inside-GHL configuration.</td>
+      <td class="col-price">$250</td>
+    </tr>
+    <tr>
+      <td class="col-section">2.10</td>
+      <td class="col-name">Webhook Fan-Out</td>
+      <td class="col-summary">Every accepted or declined deal fans out independently to four destinations (primary database, GHL, Zoho mapped to operator schema, configurable fourth URL from <code>Config_Operator</code>) with independent retry logic so a failure in one does not block the others.</td>
+      <td class="col-price">$450</td>
+    </tr>
+    <tr>
+      <td class="col-section">2.11</td>
+      <td class="col-name">Multi-Location &amp; Roadshow</td>
+      <td class="col-summary"><code>Config_Locations</code> table (admin-editable, per-deployment location records with branding placeholders and default config); location-scoped deals with auto-populated <code>Location_ID</code>; shared rep pool from <code>Reps_Master</code>; <code>Config_Events</code> roadshow event records; event-tagged deals with <code>Event_ID</code> populated in event mode; manager-PIN-gated event mode toggle.</td>
+      <td class="col-price">$600</td>
+    </tr>
+    <tr>
+      <td class="col-section">2.12</td>
+      <td class="col-name">Cloud Storage</td>
+      <td class="col-summary">All photos (intake lot photo, DL photo, acceptance lot photo, item photos) and all generated PDFs (signed offer letter) stored in S3 or Cloudflare R2 with URL written to the deal record. Includes bucket setup spec, CORS configuration, presigned-URL signing flow, and upload integration from the PWA. No platform-native attachment fields used.</td>
+      <td class="col-price">$800</td>
+    </tr>
+    <tr>
+      <td class="col-section">2.13</td>
+      <td class="col-name">Override Code Mechanism</td>
+      <td class="col-summary">Manager-issued 6-digit single-use code bound to a specific deal; 30-minute expiry; required when rep enters Actual Offer above Max Payout; override logged with deal ID, rep, issuing manager, item, amount over max, reason, and timestamp.</td>
+      <td class="col-price">$300</td>
+    </tr>
+    <tr>
+      <td class="col-section">2.14</td>
+      <td class="col-name">Data Model</td>
+      <td class="col-summary"><code>Deal_Log</code> table with all 35+ deal-level fields per the kickoff field map; three attribution fields per deal (<code>Rep_PIN_ID</code>, <code>Credited_Salesman</code>, <code>Referrer</code>); auto-populated <code>Operator_ID</code> and <code>Location_ID</code> from single-row config tables; spot-price snapshot (gold and silver) at acceptance; five-state deal status workflow (Pending, Approved, Closed, Reconciled, Disputed); separate <code>Customer_Master</code> table keyed on phone + DOB; offline degradation (cached spot prices, webhook queue and retry); standard data types throughout; no business logic in database formulas; all workflow runs in Make.com.</td>
+      <td class="col-price">$600</td>
+    </tr>
+    <tr>
+      <td class="col-section">2.15</td>
+      <td class="col-name">Configuration Tables</td>
+      <td class="col-summary">Build of all six config tables to spec: <code>Config_CoinTypes</code>, <code>Config_Margins</code>, <code>Config_Operator</code>, <code>Config_Locations</code>, <code>Config_Events</code>, <code>Reps_Master</code>.</td>
+      <td class="col-price">$200</td>
+    </tr>
+    <tr>
+      <td class="col-section">2.16</td>
+      <td class="col-name">Loom Walkthroughs</td>
+      <td class="col-summary">Recorded walkthroughs covering every admin-editable Make.com setting and every configuration table — written so a non-technical admin can update margins, coin types, locations, recipients, and rep records without breaking the build.</td>
+      <td class="col-price">$200</td>
+    </tr>
+    <tr class="subtotal-row">
+      <td colspan="3"><strong>M2 subtotal</strong></td>
+      <td class="col-price"><strong>$8,050</strong></td>
+    </tr>
+  </tbody>
+</table>
+
+<h2>Section 3 — M3 Protection Layer Itemized Pricing</h2>
+
+<p class="section-intro">Sits on top of the PWA infrastructure already contracted at $350. Each subsection priced individually per Section 8.</p>
+
+<table class="line-table">
+  <thead>
+    <tr>
+      <th class="col-section">Subsection</th>
+      <th class="col-name">Scope</th>
+      <th class="col-summary">Build summary</th>
+      <th class="col-price">Price</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td class="col-section">3.1</td>
+      <td class="col-name">Authentication</td>
+      <td class="col-summary">4-digit rep PIN encrypted at rest in <code>Reps_Master</code> with 3-strike 5-minute lockout and manager alert on lockout; separate manager PIN tier with manager-tier flag and manager-only views for override issuance, approval gates, activity log, dashboard, and test-mode toggle; app auto-lock after 2 minutes of inactivity with re-auth via Face ID or PIN.</td>
+      <td class="col-price">$500</td>
+    </tr>
+    <tr>
+      <td class="col-section">3.2</td>
+      <td class="col-name">Two-State Flag System</td>
+      <td class="col-summary">Normal / Manager Required state model with no intermediate tier. Five Manager Required triggers wired: Pre-1933 US Gold, $9,500 cash hard stop, Actual Offer above Max Payout, Ask Manager pressed, Not Sure What This Is pressed.</td>
+      <td class="col-price">$300</td>
+    </tr>
+    <tr>
+      <td class="col-section">3.3</td>
+      <td class="col-name">Approval Gate</td>
+      <td class="col-summary">Pending Approval screen on the rep device when a deal triggers Manager Required; short-interval (5-second) polling for manager response; 15-minute timeout that returns the deal to the rep in a manager-unavailable state, resumable when a manager becomes available.</td>
+      <td class="col-price">$350</td>
+    </tr>
+    <tr>
+      <td class="col-section">3.4</td>
+      <td class="col-name">Manager Dashboard</td>
+      <td class="col-summary">Per-rep performance metrics for the current quarter (deal count, total gross profit, average margin captured, average negotiation delta, override count); override audit log view (rep, issuing manager, item, amount over max, reason, timestamp); live Pending Approval queue; override-code issuance UI bound to a specific deal.</td>
+      <td class="col-price">$800</td>
+    </tr>
+    <tr>
+      <td class="col-section">3.5</td>
+      <td class="col-name">Test Mode</td>
+      <td class="col-summary">Manager-PIN-gated toggle that switches the app into Test Mode; deals created in Test Mode written to <code>Test_Deal_Log</code> instead of <code>Deal_Log</code> and webhook fan-out suppressed; persistent banner across the top of the app for the duration of Test Mode.</td>
+      <td class="col-price">$300</td>
+    </tr>
+    <tr>
+      <td class="col-section">3.6</td>
+      <td class="col-name">Picker</td>
+      <td class="col-summary">Names-only picker with search and filter bar (name or category); inline key-date warnings pulled from <code>Config_CoinTypes.key_date_warning</code>. No coin images, no expected gram weights, no recently-used row, per spec.</td>
+      <td class="col-price">$200</td>
+    </tr>
+    <tr>
+      <td class="col-section">3.7</td>
+      <td class="col-name">Plain English Tooltips</td>
+      <td class="col-summary">Tap-to-reveal one-sentence explanations on Face Value, Melt Value, Times Face, Max Payout, Actual Offer, and Negotiation Delta — written in plain English suitable for non-numismatist customers viewing the screen.</td>
+      <td class="col-price">$100</td>
+    </tr>
+    <tr class="subtotal-row">
+      <td colspan="3"><strong>M3 Protection Layer subtotal</strong></td>
+      <td class="col-price"><strong>$2,550</strong></td>
+    </tr>
+  </tbody>
+</table>
+
+<h2>Signature Implementation (Section 4)</h2>
+
+<p>Section 4 is covered as part of subsection 2.6 (touch-screen capture, PNG upload to cloud storage with URL on the deal record at <code>Signature_Image_URL</code>, embedded inline in the acceptance PDF above the signature line, timestamped audit on the deal record). No separate line item.</p>
+
+<h2>Section 5 — Boundary of Engagement (acknowledged)</h2>
+
+<p>The hand-off boundaries below are confirmed in full. Items in this list are <strong>not</strong> in scope under this SOW; they are either handled by other parties, are operator costs, or are explicitly deferred:</p>
+
+<ul>
+  <li>Inside-GHL configuration (workflows, SMS templates, follow-up sequences, opportunity pipeline configuration)</li>
+  <li>CRM-side configuration (mapping, dashboards, reports in the operator's primary CRM)</li>
+  <li>Hardware procurement (iPads, stands, scales)</li>
+  <li>Branding finalization (logo, accent color, app name — placeholders during build; final assets land via follow-up update)</li>
+  <li>Recurring third-party costs (PCGS, CDN Greysheet, Metals-API, Apify, Make.com Pro, Vercel, primary database, cloud storage)</li>
+  <li>Compliance automation (state law-enforcement reporting, structuring detection, Form 8300 automation, 1099-B threshold tracking and filing, encrypted PII vault)</li>
+  <li>Native iOS push notifications (5-second polling per Section 3.3 is the manager-notification mechanism)</li>
+  <li>Post-launch new features (the M3 PWA milestone includes 3 months of bug-fix support; new features are separate scope)</li>
+</ul>
+
+<h2>Section 6 — Pre-Kickoff Requirements (acknowledged)</h2>
+
+<p>The following must be in place before the Milestone 1 (Kickoff) payment is wired:</p>
+
+<ul>
+  <li>M1 passed acceptance per Section 1; $175 released</li>
+  <li>This revised SOW signed</li>
+  <li>PCGS CoinFacts, CDN Greysheet Dealer+, Metals-API, and Apify (paid plan, 50 runs/day minimum) returning data in Make.com under operator credentials</li>
+  <li>S3 or Cloudflare R2 account provisioned with dedicated bucket; access keys available</li>
+  <li>Photo + manual DL number entry confirmed as the capture path (no paid OCR SDK in scope)</li>
+</ul>
+
+<p>Configuration data to be provided by operator at kickoff: coin type configuration spreadsheet, <code>Config_Margins</code> values, <code>Config_Operator</code> values, <code>Config_Locations</code> values, <code>Config_Events</code> values, <code>Reps_Master</code> entries, GHL accepted/declined webhook URLs, Zoho webhook URL, and the field map for the deal payload across destinations.</p>
+
+<h2>Section 7 — Payment Structure (confirmed)</h2>
+
+<p>The four-milestone structure in Section 7 of the spec is confirmed as written. Percentages apply to the combined M2 + M3 protection layer total of $10,600. M1 ($175) and M3 PWA infrastructure ($350) remain separate and already contracted.</p>
+
+<table class="timeline-table">
+  <thead>
+    <tr>
+      <th class="col-phase">#</th>
+      <th class="col-name">Milestone</th>
+      <th class="col-trigger">Trigger</th>
+      <th class="col-when">Target</th>
+      <th class="col-pct">%</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td class="col-phase">1</td>
+      <td class="col-name">Kickoff</td>
+      <td class="col-trigger">API access confirmed in writing, cloud storage account live, SOW signed, M1 accepted.</td>
+      <td class="col-when">Day 0</td>
+      <td class="col-pct">20%</td>
+    </tr>
+    <tr>
+      <td class="col-phase">2</td>
+      <td class="col-name">Deal Flow + Dual Pricing Demo</td>
+      <td class="col-trigger">M2 deal flow demo with dual pricing (Max Payout, Actual Offer, Negotiation Delta) working end-to-end on iPad.</td>
+      <td class="col-when">Day 30–40</td>
+      <td class="col-pct">30%</td>
+    </tr>
+    <tr>
+      <td class="col-phase">3</td>
+      <td class="col-name">M2 iPad Acceptance</td>
+      <td class="col-trigger">Full M2 scope tested on iPad in production environment.</td>
+      <td class="col-when">Day 60–75</td>
+      <td class="col-pct">25%</td>
+    </tr>
+    <tr>
+      <td class="col-phase">4</td>
+      <td class="col-name">M3 iPad Acceptance</td>
+      <td class="col-trigger">Full M3 protection layer tested on iPad. Loom walkthroughs delivered.</td>
+      <td class="col-when">Day 80–90</td>
+      <td class="col-pct">25%</td>
+    </tr>
+    <tr>
+      <td colspan="4"><strong>Dollar values</strong></td>
+      <td class="col-pct"><strong>$10,600</strong></td>
+    </tr>
+    <tr>
+      <td colspan="2"></td>
+      <td>Milestone 1 — 20% of $10,600</td>
+      <td colspan="2" style="text-align: right;"><strong>$2,120</strong></td>
+    </tr>
+    <tr>
+      <td colspan="2"></td>
+      <td>Milestone 2 — 30% of $10,600</td>
+      <td colspan="2" style="text-align: right;"><strong>$3,180</strong></td>
+    </tr>
+    <tr>
+      <td colspan="2"></td>
+      <td>Milestone 3 — 25% of $10,600</td>
+      <td colspan="2" style="text-align: right;"><strong>$2,650</strong></td>
+    </tr>
+    <tr>
+      <td colspan="2"></td>
+      <td>Milestone 4 — 25% of $10,600</td>
+      <td colspan="2" style="text-align: right;"><strong>$2,650</strong></td>
+    </tr>
+  </tbody>
+</table>
+
+<h2>Realistic Timeline per Phase</h2>
+
+<p>Day numbering below is from the Milestone 1 (Kickoff) payment date, assuming all Section 6 pre-kickoff requirements are met on that day.</p>
+
+<table>
+  <thead>
+    <tr><th>Phase</th><th>Realistic duration</th><th>Notes</th></tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><strong>M1 acceptance</strong></td>
+      <td>By 2026-05-22</td>
+      <td>Section 1 acceptance review on the live staging URL. $175 released same-day on pass.</td>
+    </tr>
+    <tr>
+      <td><strong>Phase 1 — Kickoff</strong></td>
+      <td>Day 0</td>
+      <td>All Section 6 prerequisites in place; Milestone 1 payment wired.</td>
+    </tr>
+    <tr>
+      <td><strong>Phase 2 — Deal Flow + Dual Pricing Demo</strong></td>
+      <td>Day 30–40 from kickoff</td>
+      <td>Customer intake → item entry → dual pricing → summary → acceptance + decline paths working end-to-end on iPad with one test deployment location.</td>
+    </tr>
+    <tr>
+      <td><strong>Phase 3 — M2 iPad Acceptance</strong></td>
+      <td>Day 60–75 from kickoff</td>
+      <td>Full M2 scope tested in production environment: all coin types, all lookup integrations, webhook fan-out to four destinations, cloud storage end-to-end, multi-location and event mode, override code mechanism.</td>
+    </tr>
+    <tr>
+      <td><strong>Phase 4 — M3 iPad Acceptance</strong></td>
+      <td>Day 80–90 from kickoff</td>
+      <td>Authentication, two-state flag system, approval gate, manager dashboard, test mode, picker, and tooltips on iPad. Loom walkthroughs delivered. Combined elapsed time from kickoff: roughly 13 weeks.</td>
+    </tr>
+  </tbody>
+</table>
+
+<h2>What is not in this SOW</h2>
+
+<p>In addition to the Section 5 boundary list above, the following are confirmed out of scope:</p>
+
+<ul>
+  <li>Anything not specified in Sections 1 through 8 of the App Build Final document</li>
+  <li>Any feature listed under Section 5 (Boundary of Engagement) — repeated above for explicit confirmation</li>
+  <li>Migration of any data not produced by this build</li>
+  <li>Training delivery beyond the Loom walkthroughs in Section 2.16</li>
+</ul>
+
+<div class="footer">
+  Prepared by Flowtive · kristof@getflowtive.com · May 2026 · Coin Appraisal Register — Revised SOW (Sections 1–8)
+</div>
+
+</body>
+</html>

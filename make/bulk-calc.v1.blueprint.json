@@ -68,6 +68,15 @@
                                     "label": null,
                                     "default": null,
                                     "required": false
+                                },
+                                {
+                                    "help": "",
+                                    "name": "grade",
+                                    "type": "text",
+                                    "label": null,
+                                    "default": null,
+                                    "required": false,
+                                    "multiline": false
                                 }
                             ],
                             "type": "collection",
@@ -449,6 +458,21 @@
                         "label": "fixed_multiplier"
                     },
                     {
+                        "name": "mult_circulated",
+                        "type": "number",
+                        "label": "mult_circulated"
+                    },
+                    {
+                        "name": "mult_uncirculated",
+                        "type": "number",
+                        "label": "mult_uncirculated"
+                    },
+                    {
+                        "name": "mult_slabbed",
+                        "type": "number",
+                        "label": "mult_slabbed"
+                    },
+                    {
                         "name": "active",
                         "type": "boolean",
                         "label": "active"
@@ -634,11 +658,11 @@
                     },
                     {
                         "name": "unit_value",
-                        "value": "{{if(4.priced_by = \"times_face\"; 4.face_value * 4.fixed_multiplier; 4.oz_metal_per_unit * switch(4.metal_type; \"silver\"; 2.data.rates.USDXAG; \"gold\"; 2.data.rates.USDXAU; \"platinum\"; 2.data.rates.USDXPT) * 5.margin_pct)}}"
+                        "value": "{{if(4.priced_by = \"times_face\"; 4.face_value * switch(3.grade; \"circulated\"; 4.mult_circulated; \"uncirculated\"; 4.mult_uncirculated; \"slabbed\"; 4.mult_slabbed; 4.fixed_multiplier); 4.oz_metal_per_unit * switch(4.metal_type; \"silver\"; 2.data.rates.USDXAG; \"gold\"; 2.data.rates.USDXAU; \"platinum\"; 2.data.rates.USDXPT) * 5.margin_pct)}}"
                     },
                     {
                         "name": "line_total",
-                        "value": "{{if(4.priced_by = \"times_face\"; 3.quantity * 4.face_value * 4.fixed_multiplier; ifempty(3.quantity; 3.weight_grams) * 4.oz_metal_per_unit * switch(4.metal_type; \"silver\"; 2.data.rates.USDXAG; \"gold\"; 2.data.rates.USDXAU; \"platinum\"; 2.data.rates.USDXPT) * 5.margin_pct)}}"
+                        "value": "{{if(4.priced_by = \"times_face\"; 3.quantity * 4.face_value * switch(3.grade; \"circulated\"; 4.mult_circulated; \"uncirculated\"; 4.mult_uncirculated; \"slabbed\"; 4.mult_slabbed; 4.fixed_multiplier); ifempty(3.quantity; 3.weight_grams) * 4.oz_metal_per_unit * switch(4.metal_type; \"silver\"; 2.data.rates.USDXAG; \"gold\"; 2.data.rates.USDXAU; \"platinum\"; 2.data.rates.USDXPT) * 5.margin_pct)}}"
                     }
                 ]
             },

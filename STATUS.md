@@ -1,54 +1,55 @@
 # M1 Build Status
 
-Last updated: **2026-05-06** (mid-session: 3a done & verified, 3b in progress on the JSON Create margins mapper).
+Last updated: **2026-05-25** — M1 complete against `App Build Final.pdf` §1; iPad smoke test passed; awaiting client acceptance to release $175 and unblock M2 + M3 kickoff payment.
 
 This is the orientation doc for the Coin Appraisal Register build. If you're picking up this project on a new machine, **read this first**.
 
-## Resume here (2026-05-06 — mid-3b)
+## Resume here (2026-05-25 — M1 sign-off ready)
 
-The original M1 build was delivered on 2026-04-28 and is still live at https://coin-appraisal-register.vercel.app. On 2026-05-05 the client returned with a **dramatically expanded scope** ([App_Build_Scope.pdf](App_Build_Scope.pdf)) and **three M1 fixes** required before they release the original $175 and fund M2.
+The build is now feature-complete against Section 1 of the client's authoritative spec, [App Build Final.pdf](App%20Build%20Final.pdf) (received 2026-05-20). The four §1 deliverables — bulk calculator, numismatic grading selector, custom numeric keypad, always-on Total Value / Total Offer — are live at https://coin-appraisal-register.vercel.app and verified on iPad Safari. M1 acceptance triggers the held $175 and unblocks the M2 + M3 kickoff payment (20% per [decisions/m2-m3-sow.pdf](decisions/m2-m3-sow.pdf)).
 
 **Where things stand:**
 
 | Item | Status |
 |---|---|
-| **PWA side of all 3 M1 fixes** | ✅ Merged to `main` and auto-deployed (commits `832fb2c` → `0cb9753`). Includes a "Last calculated total" badge that shows the authoritative server-computed total whenever Calculate succeeds. |
-| **Airtable changes (step 2)** | ✅ `fixed_multiplier` column added; `times_face` and `numismatic` added to single-select options; numismatic rows added (face_value / fixed_multiplier values still need to be populated by the client per scope). |
-| **Make `bulk-calc` (step 3a)** | ✅ Done and verified end-to-end. The `if(priced_by = "times_face", ...)` wrappers around the four formulas in Module 6 work correctly with placeholder values; verified the math returns the expected number for a Wheat Penny test. |
-| **Make `config-load` (step 3b)** | ⏳ **In progress.** New HTTP module (spot fetch) + Margins Search Records + Margins Aggregator added. Currently stuck on the JSON Create module: the **Margins** field still has its Map toggle off, showing the manual "Item 1 / Add item" form. **Next action: turn the Map toggle ON for Margins (just like Coin types and Reps), then drop in the Margins Aggregator's `array` output.** |
-| **Browser smoke test (step 4)** | ⏳ Pending — do after 3b completes. |
-| **iPad smoke test (step 5)** | ⏳ Pending — also depends on 4G iPad availability ([docs/4G-ipad-smoke-test.md](docs/4G-ipad-smoke-test.md)). |
-| **M2 + M3 expanded-scope quote** | ✅ Revised SOW at [decisions/m2-m3-sow.pdf](decisions/m2-m3-sow.pdf) ([html](decisions/m2-m3-sow.html)) priced against the client's `App Build Final.pdf` spec (received 2026-05-20). **Not yet sent to client.** Quote: **M2 $8,050 + M3 protection layer $2,550** = $10,600 new commitment (M3 PWA stays at $350; M1 stays at $175). Itemized per subsection of Sections 2 and 3 as requested. Net scope is larger than the prior `m2-m3-proposal` draft — compliance automation and bidirectional GHL were cut, but Dual Pricing Engine, S3/R2 cloud storage, webhook fan-out to 4 destinations, Multi-Location + Roadshow, Override Code Mechanism, Manager Dashboard, Test Mode, `Customer_Master`, and offline degradation were all added. Clarifying questions for the client (8 items, 3 price-affecting) drafted at [decisions/m2-m3-clarifications.md](decisions/m2-m3-clarifications.md) — **send these first**, then send the SOW once answers are in. Earlier `m2-m3-quote.*` (May 6) and `m2-m3-proposal.*` (May 14) drafts are superseded. |
+| **§1 deliverable 1 — Bulk calculator** | ✅ Live. All `Config_CoinTypes` rows price correctly on iPad. |
+| **§1 deliverable 2 — Numismatic grading selector** | ✅ Live. Three new columns on `Config_CoinTypes` (`mult_circulated`, `mult_uncirculated`, `mult_slabbed`); PWA shows a required Circulated/Uncirculated/Slabbed selector for numismatic items; Make `bulk-calc` switches on `grade` per item. Procedure documented at [docs/m1-grading-make-update.md](docs/m1-grading-make-update.md). |
+| **§1 deliverable 3 — Custom numeric keypad** | ✅ Live. `NumericKeypad` + `KeypadField` components replace native iOS keyboard on every quantity / weight input. Decimal (conditional), backspace, Clear, tap-outside dismiss, plus hardware keyboard bindings. |
+| **§1 deliverable 4 — Total Value + Total Offer always visible** | ✅ Live. Block no longer hides when bag is empty; labels match spec wording. |
+| **iPad Safari smoke test** | ✅ Passed (2026-05-25). |
+| **Make `bulk-calc` scenario** | ✅ Updated for grade switch; verified `grade=Uncirculated` with empty Airtable column returns $0 (proves switch is reading, not fallthrough). Committed blueprint at [make/bulk-calc.v1.blueprint.json](make/bulk-calc.v1.blueprint.json) mirrors live (manually edited to reflect grade changes; next true Make re-export is the authoritative form). |
+| **Make `config-load` scenario (legacy 3b)** | ⏳ Still parked mid-build (Margins field's Map toggle off in the JSON Create module). Does not block M1 acceptance — live `Total Value` shows "—" until first Calculate, then populates from spot returned by `bulk-calc`. Pick this up when convenient. |
+| **M1 sign-off handover doc** | ✅ [decisions/m1-signoff-handover.pdf](decisions/m1-signoff-handover.pdf) ([html](decisions/m1-signoff-handover.html)) — ready to send to Keyshaun. Proposes 2026-05-30 as the target acceptance date. |
+| **M2 + M3 expanded-scope quote** | ✅ Drafted at [decisions/m2-m3-sow.pdf](decisions/m2-m3-sow.pdf). **Not yet sent to client.** $10,600 new commitment (M2 $8,050 + M3 protection $2,550). Clarifying questions at [decisions/m2-m3-clarifications.md](decisions/m2-m3-clarifications.md) — send these first, then SOW. |
 
 **Next action when you sit back down:**
 
-1. `git pull` on `main`.
-2. Open the `config-load` scenario in Make. In the JSON Create module, **toggle Map ON for the Margins field** and pick the Margins Aggregator's `array` output. Save.
-3. Run the scenario once. Verify the response now includes `coin_types[]` (with `fixed_multiplier` + `oz_metal_per_unit`), `reps[]`, `spot: { gold, silver, platinum }`, and `margins: [{ category, margin_pct }]` with **lowercase categories** (the Margins Aggregator uses `lower()` to normalize).
-4. Open https://coin-appraisal-register.vercel.app, tap **Refresh Config**, add a coin. The dual-totals header at the top should populate **without** tapping Calculate.
-5. iPad smoke test ([docs/4G-ipad-smoke-test.md](docs/4G-ipad-smoke-test.md)) once iPad is in hand.
-6. Notify client; send M2/M3 quote ([decisions/m2-m3-quote.pdf](decisions/m2-m3-quote.pdf)); collect answers to the four open decisions below before starting M2.
+1. Send [decisions/m1-signoff-handover.pdf](decisions/m1-signoff-handover.pdf) to Keyshaun and ask them to confirm acceptance by the proposed date.
+2. Independently, send [decisions/m2-m3-clarifications.md](decisions/m2-m3-clarifications.md) so answers are in flight while M1 acceptance lands.
+3. Once M1 accepted: collect $175, then send [decisions/m2-m3-sow.pdf](decisions/m2-m3-sow.pdf) with confirmation that the four pre-kickoff items from §6 of the spec are met (paid PCGS / CDN Greysheet / Metals-API / Apify access, S3 or R2 bucket, photo + manual DL number capture path).
+4. (Optional) Reclassify `Costume Jewelry` in `Config_CoinTypes` off `times_face` — it has no face value so the grading model doesn't fit. Flagged in the handover doc; belongs in M2's broader item-entry scope.
+5. (Optional) Resume `config-load` 3b so the live totals populate without requiring a Calculate round-trip.
+6. (Optional) Replace the sample multiplier values I seeded in the ten numismatic rows of `Config_CoinTypes` with authoritative pricing before reps use the app on the floor. Values listed in the handover doc.
 
-**Notes from today's working session:**
+**Working notes (still relevant):**
 
-- Make's String comparisons are case-sensitive — `priced_by = "times_face"` only matches lowercase. Adopted the convention of using lowercase for all single-select values where Make formulas compare them.
-- The Airtable `Config_Margins.category` column has values like `Silver` / `Gold` / `Platinum` (capitalized), but the PWA's `metal_type` is lowercase. Solution baked into the Margins Aggregator: `category` → `{{lower(<MarginsSearch>.category)}}` so the PWA can match on lowercase.
-- Module 4 in `bulk-calc` (and Module 2 in `config-load`) caches the Airtable schema. After adding a column in Airtable, **re-select the table in the module dropdown and save** to force Make to refresh the schema; the new field then appears in downstream pickers.
-- The committed `make/bulk-calc.v1.blueprint.json` is now stale relative to the live scenario (it lacks the `times_face` formula wrappers). Re-export and overwrite when convenient — make sure to scrub the metals-api `access_key` back to `REPLACE_WITH_METALS_API_KEY` before committing.
+- Make's String comparisons are case-sensitive — `priced_by = "times_face"` only matches lowercase. Same convention applies to `grade` values (`circulated` / `uncirculated` / `slabbed`).
+- `Config_Margins.category` column values are capitalized (`Silver` / `Gold` / `Platinum`), but the PWA's `metal_type` is lowercase. The Margins Aggregator in `config-load` normalizes via `lower()` — keep this if you finish 3b.
+- Module 4 in `bulk-calc` (and Module 2 in `config-load`) caches the Airtable schema. After adding a column, **re-select the table in the module dropdown and save** to refresh.
+- For webhook data structure updates (Module 1 in `bulk-calc`), edit the data structure directly via the pencil icon next to the Data structure dropdown — adding a field to the `items` array makes it available on the Iterator (Module 3) downstream.
+- The Make formula in Module 6 uses `switch(3.grade; "circulated"; 4.mult_circulated; "uncirculated"; 4.mult_uncirculated; "slabbed"; 4.mult_slabbed; 4.fixed_multiplier)`. The trailing `4.fixed_multiplier` is the default — fires only when no grade is sent (legacy callers). Per-grade values explicitly returned for active grade selections, even when blank (so misconfigured Airtable rows surface as $0 / red instead of silent fallback).
+- The PWA's `pricing.ts` mirrors Make's behavior: when grade is set, only the matching per-grade column is used — no fallback to `fixed_multiplier`. A blank column surfaces as a red "Missing pricing data" warning, not a wrong number.
 
-**Open client decisions before M2 starts** (full reasoning in the quote PDF):
+**Open client decisions before M2 starts** (full reasoning in [decisions/m2-m3-sow.pdf](decisions/m2-m3-sow.pdf) and [decisions/m2-m3-clarifications.md](decisions/m2-m3-clarifications.md)):
 
-- DL camera capture: paid SDK ($200–$2K/mo) vs. photo + manual DL number entry?
-- SSN/EIN storage: Airtable encryption-at-rest accepted, or scope a separate vault?
+- Primary database — Airtable continues, or move to Postgres / Supabase?
+- DL camera capture: paid SDK vs. photo + manual DL number entry? (Spec §6 confirms photo + manual is in scope; this just needs final client ack.)
+- SSN/EIN storage: Airtable encryption-at-rest accepted, or separate vault?
 - Texas 48-hour LE report: PDF email accepted, or specific format required?
-- PCGS CoinFacts + CDN Greysheet + GoldAPI + Apify (paid, 50/day) — all four credentials must be live in Make.com before M2 begins.
-
-**Open client decisions before M2 starts** (full reasoning in the quote PDF):
-
-- DL camera capture: paid SDK ($200–$2K/mo) vs. photo + manual DL number entry?
-- SSN/EIN storage: Airtable encryption-at-rest accepted, or scope a separate vault?
-- Texas 48-hour LE report: PDF email accepted, or specific format required?
-- PCGS CoinFacts + CDN Greysheet + GoldAPI + Apify (paid, 50/day) — all four credentials must be live in Make.com before M2 begins.
+- Cloud storage choice: S3 vs. Cloudflare R2?
+- Manager Dashboard surface: route inside PWA, or separate web admin app?
+- Override code UX, returning-customer match conflicts, offline degradation scope — full list in [decisions/m2-m3-clarifications.md](decisions/m2-m3-clarifications.md).
+- PCGS CoinFacts + CDN Greysheet + Metals-API + Apify (paid, 50/day) — all four credentials must be live in Make.com before M2 begins.
 
 ---
 

@@ -1,0 +1,376 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Coin Appraisal Register — M1 Sign-Off Handover</title>
+<style>
+  @page { size: A4; margin: 18mm 16mm; }
+  * { box-sizing: border-box; }
+  body {
+    font-family: 'Segoe UI', 'Helvetica Neue', Arial, sans-serif;
+    font-size: 10.5pt;
+    line-height: 1.5;
+    color: #1a1a1a;
+    margin: 0;
+    padding: 0;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+  .cover {
+    page-break-after: always;
+    padding: 60mm 0 0 0;
+    border-top: 4px solid #c9a227;
+  }
+  .cover .eyebrow {
+    font-size: 9pt;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    color: #c9a227;
+    margin-bottom: 8mm;
+    font-weight: 600;
+  }
+  .cover h1 {
+    font-size: 28pt;
+    line-height: 1.15;
+    margin: 0 0 4mm 0;
+    font-weight: 700;
+    letter-spacing: -0.5px;
+  }
+  .cover .subtitle {
+    font-size: 13pt;
+    color: #555;
+    margin-bottom: 30mm;
+    font-weight: 300;
+  }
+  .cover .meta {
+    font-size: 9.5pt;
+    color: #555;
+    border-top: 1px solid #ddd;
+    padding-top: 6mm;
+  }
+  .cover .meta dt { font-weight: 600; color: #1a1a1a; float: left; width: 35mm; clear: left; }
+  .cover .meta dd { margin: 0 0 3mm 35mm; }
+  h2 {
+    font-size: 15pt;
+    margin: 9mm 0 4mm 0;
+    padding-bottom: 2mm;
+    border-bottom: 2px solid #c9a227;
+    font-weight: 600;
+    page-break-after: avoid;
+  }
+  h3 {
+    font-size: 12pt;
+    margin: 6mm 0 2mm 0;
+    font-weight: 600;
+    page-break-after: avoid;
+  }
+  p { margin: 0 0 3mm 0; }
+  ul, ol { margin: 0 0 3mm 0; padding-left: 6mm; }
+  li { margin-bottom: 1.5mm; }
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 3mm 0 5mm 0;
+    font-size: 9.5pt;
+    page-break-inside: avoid;
+  }
+  th {
+    background: #f5f1e6;
+    text-align: left;
+    padding: 2.5mm 3mm;
+    border-bottom: 2px solid #c9a227;
+    font-weight: 600;
+  }
+  td {
+    padding: 2.5mm 3mm;
+    border-bottom: 1px solid #e6e6e6;
+    vertical-align: top;
+  }
+  tr:nth-child(even) td { background: #fafafa; }
+  .summary-box {
+    background: #f5f1e6;
+    border-left: 4px solid #c9a227;
+    padding: 5mm 6mm;
+    margin: 4mm 0 6mm 0;
+    page-break-inside: avoid;
+  }
+  .summary-box p:last-child { margin-bottom: 0; }
+  .url-box {
+    background: #fffbef;
+    border: 1.5px solid #c9a227;
+    padding: 4mm 5mm;
+    margin: 3mm 0 5mm 0;
+    border-radius: 3px;
+    font-size: 11pt;
+    text-align: center;
+    page-break-inside: avoid;
+  }
+  .url-box .label {
+    font-size: 8.5pt;
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+    color: #8a6a00;
+    margin-bottom: 1.5mm;
+    font-weight: 600;
+  }
+  .url-box .url {
+    font-family: 'Consolas', 'Courier New', monospace;
+    font-size: 11pt;
+    font-weight: 600;
+    word-break: break-all;
+  }
+  .step {
+    margin: 0 0 4mm 0;
+    padding-left: 12mm;
+    position: relative;
+    page-break-inside: avoid;
+  }
+  .step .num {
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 8mm;
+    height: 8mm;
+    background: #c9a227;
+    color: white;
+    border-radius: 50%;
+    text-align: center;
+    line-height: 8mm;
+    font-weight: 700;
+    font-size: 9.5pt;
+  }
+  .step h4 {
+    margin: 0 0 1mm 0;
+    font-size: 10.5pt;
+    font-weight: 600;
+  }
+  .step p { margin: 0 0 1.5mm 0; font-size: 10pt; }
+  .step .expect {
+    background: #f0f7f1;
+    border-left: 3px solid #2d6a3a;
+    padding: 2mm 3mm;
+    margin: 1.5mm 0 0 0;
+    font-size: 9.5pt;
+  }
+  .step .expect strong { color: #2d6a3a; }
+  .alert-box {
+    background: #fdf2f2;
+    border-left: 4px solid #c0392b;
+    padding: 4mm 5mm;
+    margin: 4mm 0 5mm 0;
+    page-break-inside: avoid;
+  }
+  .alert-box strong { color: #c0392b; }
+  .accept-box {
+    background: #f0f7f1;
+    border: 2px solid #2d6a3a;
+    padding: 5mm 6mm;
+    margin: 6mm 0 6mm 0;
+    border-radius: 3px;
+    page-break-inside: avoid;
+  }
+  .accept-box h3 { margin-top: 0; color: #2d6a3a; }
+  .accept-box p:last-child { margin-bottom: 0; }
+  .footer {
+    margin-top: 12mm;
+    padding-top: 4mm;
+    border-top: 1px solid #ddd;
+    font-size: 8.5pt;
+    color: #888;
+    text-align: center;
+  }
+  .check { color: #2d6a3a; font-weight: 600; }
+  .muted { color: #888; }
+  small { color: #666; font-size: 9pt; }
+  code { font-family: 'Consolas', 'Courier New', monospace; font-size: 9.5pt; background: #f5f5f5; padding: 0.5mm 1.5mm; border-radius: 2px; }
+</style>
+</head>
+<body>
+
+<section class="cover">
+  <div class="eyebrow">M1 Sign-Off — May 2026</div>
+  <h1>M1 Sign-Off Handover</h1>
+  <p class="subtitle">All four M1 deliverables in <em>App Build Final</em> Section 1 are live and verified on iPad Safari. Ready for acceptance.</p>
+  <dl class="meta">
+    <dt>Prepared for</dt><dd>Keyshaun</dd>
+    <dt>Project</dt><dd>Coin Appraisal Register — M1</dd>
+    <dt>Reference spec</dt><dd>App Build Final.pdf, Section 1</dd>
+    <dt>Date</dt><dd>25 May 2026</dd>
+    <dt>Built by</dt><dd>Flowtive (kristof@getflowtive.com)</dd>
+    <dt>Live URL</dt><dd>https://coin-appraisal-register.vercel.app</dd>
+  </dl>
+</section>
+
+<h2>Summary</h2>
+
+<div class="summary-box">
+  <p>The four M1 deliverables defined in Section 1 of <em>App Build Final.pdf</em> — the bulk calculator, the numismatic grading selector, the custom numeric keypad, and the always-on running totals — are all live on the URL above and verified on iPad Safari. Section 1's acceptance criteria are met.</p>
+  <p>This handover walks you through each deliverable, gives you a five-minute verification path you can run yourself, and lists the small number of configuration items (sample multiplier values and one misclassified row) that you may want to revisit before reps use the app on the floor. None of those block acceptance.</p>
+</div>
+
+<div class="accept-box">
+  <h3>Sign-off and next steps</h3>
+  <p>Per <em>App Build Final</em>, M1 acceptance releases the held <strong>$175</strong> and unblocks the M2 + M3 kickoff payment. To accept, run through the verification walkthrough on the next page on an iPad and reply with a confirmation. We propose a target acceptance date of <strong>30 May 2026</strong> — adjust as needed.</p>
+</div>
+
+<h2>What Section 1 required vs. what is delivered</h2>
+
+<table>
+  <thead>
+    <tr><th style="width: 45%">Section 1 deliverable</th><th style="width: 55%">Status</th></tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>Bulk calculator extensions covering the M1 coin types</td>
+      <td><span class="check">Delivered.</span> All <code>Config_CoinTypes</code> rows price correctly: silver / gold / platinum bullion via spot × content × margin, and numismatic via grade × face × per-condition multiplier.</td>
+    </tr>
+    <tr>
+      <td>Numismatic grading selector (Circulated / Uncirculated / Slabbed) with per-condition multipliers from <code>Config_CoinTypes</code></td>
+      <td><span class="check">Delivered.</span> Three new columns added to <code>Config_CoinTypes</code> (<code>mult_circulated</code>, <code>mult_uncirculated</code>, <code>mult_slabbed</code>). The grading selector appears whenever a numismatic coin is picked in Add Coin; a grade must be chosen before the line can be added. The selected grade is shown as a chip on the cart line.</td>
+    </tr>
+    <tr>
+      <td>Custom numeric keypad: decimal, backspace, clear, tap-outside to dismiss</td>
+      <td><span class="check">Delivered.</span> Custom on-screen keypad replaces the native iOS keyboard on every quantity and weight input. Behaviors: digits 0–9, decimal point (shown only for weight inputs), backspace (⌫), Clear button, tap-outside to dismiss, Done button to commit. Hardware-keyboard bindings (digits, Backspace, Escape, Enter) are also wired for desktop testing.</td>
+    </tr>
+    <tr>
+      <td>Running totals: Total Value and Total Offer, displayed at all times</td>
+      <td><span class="check">Delivered.</span> The header always shows <strong>Total Value</strong> (what the metal is worth) and <strong>Total Offer</strong> (what we pay) using the exact spec wording. Both values are visible even when the bag is empty, update live as items are added or quantities change, and return to zero when the bag is emptied.</td>
+    </tr>
+  </tbody>
+</table>
+
+<h3>Section 1 acceptance criteria — checklist</h3>
+
+<table>
+  <thead>
+    <tr><th style="width: 65%">Criterion</th><th style="width: 35%">Verified</th></tr>
+  </thead>
+  <tbody>
+    <tr><td>Each coin type within M1's contracted scope calculates correctly</td><td><span class="check">Yes</span> (iPad Safari)</td></tr>
+    <tr><td>Weight-based items calculate correctly across a range of gram weights including decimals</td><td><span class="check">Yes</span> (iPad Safari)</td></tr>
+    <tr><td>Grading selector applies the correct multiplier</td><td><span class="check">Yes</span> (iPad Safari)</td></tr>
+    <tr><td>Keypad behaves correctly</td><td><span class="check">Yes</span> (iPad Safari)</td></tr>
+    <tr><td>Running totals update in real time and zero out when all items are removed</td><td><span class="check">Yes</span> (iPad Safari)</td></tr>
+    <tr><td>Tested on the deployed staging URL on iPad Safari</td><td><span class="check">Yes</span></td></tr>
+  </tbody>
+</table>
+
+<h2>Verification walkthrough</h2>
+
+<p>Run this on the live URL — laptop browser or iPad both work, though iPad Safari is the spec's acceptance target. Takes about five minutes.</p>
+
+<div class="url-box">
+  <div class="label">Live App URL</div>
+  <div class="url">https://coin-appraisal-register.vercel.app</div>
+</div>
+
+<div class="step">
+  <div class="num">1</div>
+  <h4>Open the app, tap Refresh Config, pick a rep</h4>
+  <p>This pulls the latest config from Airtable — spot prices, coin types, and margins.</p>
+  <div class="expect"><strong>Expect:</strong> spot prices banner appears (gold, silver, platinum). Rep dropdown populates.</div>
+</div>
+
+<div class="step">
+  <div class="num">2</div>
+  <h4>Confirm Total Value and Total Offer are visible with an empty bag</h4>
+  <p>Before adding anything, look at the header.</p>
+  <div class="expect"><strong>Expect:</strong> both labels are shown; values display as a dash <code>—</code> (Total Value populates after the first Calculate, since spot only loads after the first server round-trip).</div>
+</div>
+
+<div class="step">
+  <div class="num">3</div>
+  <h4>Add a Roosevelt Dime, qty 10</h4>
+  <p>Open Add Coin → Silver section → Roosevelt Dime → enter <code>10</code> on the custom keypad → Done → Add to Bag.</p>
+  <div class="expect"><strong>Expect:</strong> the keypad shows digits with no decimal point. Cart line appears. Tap <strong>Calculate Total</strong>. Total Value, Total Offer, and the Last Calculated Total badge all populate.</div>
+</div>
+
+<div class="step">
+  <div class="num">4</div>
+  <h4>Add 14K Gold, weight 5.7 grams</h4>
+  <p>Open Add Coin → Gold section → 14K Gold → enter <code>5.7</code> on the keypad → Done → Add to Bag.</p>
+  <div class="expect"><strong>Expect:</strong> the keypad shows digits <em>plus a decimal point</em> for weight inputs. Both totals update without tapping Calculate. Tap Calculate Total to confirm the server matches.</div>
+</div>
+
+<div class="step">
+  <div class="num">5</div>
+  <h4>Add a numismatic coin with a grade — Indian Head Penny, Slabbed, qty 1</h4>
+  <p>Open Add Coin → scroll to <strong>Numismatic / Other</strong> at the bottom → Indian Head Penny → the <strong>grade selector</strong> appears at the bottom of the modal with three buttons. Pick <strong>Slabbed</strong>. Enter <code>1</code> → Add to Bag.</p>
+  <div class="expect"><strong>Expect:</strong> the cart line shows the coin name with a <code>SLABBED</code> chip beside the quantity. Total Offer goes up by <code>1 × face_value × mult_slabbed</code> as currently configured in Airtable.</div>
+</div>
+
+<div class="step">
+  <div class="num">6</div>
+  <h4>Try to add a numismatic coin without picking a grade</h4>
+  <p>Open Add Coin → pick any Numismatic / Other coin → enter a quantity but do not tap a grade button → notice <strong>Add to Bag</strong> stays disabled.</p>
+  <div class="expect"><strong>Expect:</strong> Add to Bag is greyed out until a grade is chosen. This enforces the spec rule that grade must be applied per item.</div>
+</div>
+
+<div class="step">
+  <div class="num">7</div>
+  <h4>Test the keypad's four required behaviors</h4>
+  <p>Open Add Coin on any coin, tap the value field, then in the keypad: type <code>1234</code>, tap <strong>⌫</strong> (backspace) to remove the last digit, tap <strong>Clear</strong> to wipe the field, type a new number, then tap the dark area above the keypad.</p>
+  <div class="expect"><strong>Expect:</strong> decimal (where allowed), backspace, clear, and tap-outside-to-dismiss all behave as described.</div>
+</div>
+
+<div class="step">
+  <div class="num">8</div>
+  <h4>Remove everything and confirm totals zero out</h4>
+  <p>Tap the × on each cart line until the bag is empty.</p>
+  <div class="expect"><strong>Expect:</strong> Total Value and Total Offer return to <code>—</code> (or zero), but the header section remains visible — it does not collapse.</div>
+</div>
+
+<h2>What still belongs with you (not blocking sign-off)</h2>
+
+<p>None of the items below require further development work. They are configuration choices in Airtable.</p>
+
+<h3>1. Sample multiplier values</h3>
+
+<p>To complete the smoke test, the ten unpopulated numismatic rows in <code>Config_CoinTypes</code> were filled with <strong>plausible sample values</strong> for <code>mult_circulated</code> / <code>mult_uncirculated</code> / <code>mult_slabbed</code>. These are <em>placeholders</em>, not authoritative pricing. Review and overwrite per your actual policy before reps use the app on the floor.</p>
+
+<table>
+  <thead>
+    <tr><th>Coin</th><th>Face</th><th>Circ</th><th>Unc</th><th>Slab</th></tr>
+  </thead>
+  <tbody>
+    <tr><td>Wheat / Steel Penny</td><td>$0.01</td><td>5</td><td>25</td><td>100</td></tr>
+    <tr><td>2 Cent Piece</td><td>$0.02</td><td>100</td><td>500</td><td>1,500</td></tr>
+    <tr><td>Buffalo Nickel</td><td>$0.05</td><td>5</td><td>50</td><td>200</td></tr>
+    <tr><td>Large Cent</td><td>$0.01</td><td>1,500</td><td>5,000</td><td>15,000</td></tr>
+    <tr><td>Shield Nickel</td><td>$0.05</td><td>50</td><td>200</td><td>800</td></tr>
+    <tr><td>Indian Head Penny</td><td>$0.01</td><td>100</td><td>500</td><td>2,000</td></tr>
+    <tr><td>Half Cent</td><td>$0.01</td><td>5,000</td><td>20,000</td><td>80,000</td></tr>
+    <tr><td>Flying Eagle Penny</td><td>$0.01</td><td>1,500</td><td>5,000</td><td>15,000</td></tr>
+    <tr><td>Victory Nickel</td><td>$0.05</td><td>100</td><td>500</td><td>2,000</td></tr>
+    <tr><td>3 Cent Piece</td><td>$0.03</td><td>300</td><td>1,500</td><td>5,000</td></tr>
+  </tbody>
+</table>
+
+<p>For each row, the offer per item at a given grade is <code>face_value × mult_&lt;grade&gt;</code>. So an Indian Head Penny graded Slabbed pays <code>$0.01 × 2,000 = $20.00</code> per coin at the sample values above. The Make scenario reads the column matching the selected grade on every Calculate.</p>
+
+<h3>2. Costume Jewelry is misclassified</h3>
+
+<div class="alert-box">
+  <p>The <em>Costume Jewelry</em> row in <code>Config_CoinTypes</code> is currently set to <code>priced_by = times_face</code>, but it has no real face value — the grading model doesn't fit. It is the only numismatic row left unpopulated. Before reps reach for it on the floor, it should be reclassified — most likely to <code>weight_grams</code> with a precious-metal content value, or handled as a manual-entry path. This belongs in M2's broader item-entry scope but flagging here so it doesn't surprise anyone.</p>
+</div>
+
+<h3>3. Margin percentages in <code>Config_Margins</code></h3>
+
+<p>Outstanding from the prior handover: confirm that the current <code>margin_pct</code> values in <code>Config_Margins</code> match your floor policy. The original seed was <code>0.30</code> (the app pays 30% of melt). Update directly in Airtable as needed — no code change.</p>
+
+<h2>What changed under the hood</h2>
+
+<p>For completeness, a short note on the moving parts so any future engineer landing in the repo can find their way around. None of this is action for you.</p>
+
+<ul>
+  <li><strong>Airtable.</strong> Three new columns on <code>Config_CoinTypes</code>: <code>mult_circulated</code>, <code>mult_uncirculated</code>, <code>mult_slabbed</code>. All are optional Number fields, four-decimal precision.</li>
+  <li><strong>Make scenario <code>bulk-calc</code>.</strong> Webhook data structure extended with optional <code>grade</code> text field per item. Module 6's <code>unit_value</code> and <code>line_total</code> formulas wrapped the existing <code>fixed_multiplier</code> in a <code>switch(grade; ...)</code> that picks the matching per-grade column and falls back to <code>fixed_multiplier</code> when no grade is sent — so any legacy caller keeps working.</li>
+  <li><strong>PWA.</strong> Two new components: <code>NumericKeypad</code> (the overlay) and <code>KeypadField</code> (the input wrapper that opens the keypad on tap and suppresses the native iOS keyboard). Added <code>Grade</code> type, optional grade-multiplier fields on <code>CoinType</code> and <code>CartLine</code>, and a grade selector in <code>AddCoinModal</code>. Live pricing in <code>pricing.ts</code> mirrors Make's behavior: when grade is set, use the per-grade column only — no silent fallback to <code>fixed_multiplier</code>, so a misconfigured Airtable row is surfaced as a red "Missing pricing data" warning rather than a wrong number.</li>
+</ul>
+
+<div class="footer">
+  Built by Flowtive · kristof@getflowtive.com · 25 May 2026
+</div>
+
+</body>
+</html>

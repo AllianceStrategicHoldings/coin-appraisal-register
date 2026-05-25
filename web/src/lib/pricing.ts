@@ -24,14 +24,13 @@ function marginForCategory(margins: Margin[], category: MarginCategory): number 
 function multiplierForLine(
   line: Extract<CartLine, { priced_by: 'times_face' }>,
 ): number | null {
-  const byGrade: Record<Grade, number | undefined> = {
-    circulated: line.mult_circulated,
-    uncirculated: line.mult_uncirculated,
-    slabbed: line.mult_slabbed,
-  }
   if (line.grade) {
-    const m = byGrade[line.grade]
-    if (m != null) return m
+    const byGrade: Record<Grade, number | undefined> = {
+      circulated: line.mult_circulated,
+      uncirculated: line.mult_uncirculated,
+      slabbed: line.mult_slabbed,
+    }
+    return byGrade[line.grade] ?? null
   }
   return line.fixed_multiplier ?? null
 }

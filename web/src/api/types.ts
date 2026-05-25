@@ -1,6 +1,7 @@
 export type Metal = 'silver' | 'gold' | 'platinum' | 'numismatic'
 export type PricedBy = 'each_metal' | 'weight_grams' | 'times_face'
 export type MarginCategory = 'silver' | 'gold' | 'platinum' | 'numismatic'
+export type Grade = 'circulated' | 'uncirculated' | 'slabbed'
 
 export interface CoinType {
   id: string
@@ -10,6 +11,9 @@ export interface CoinType {
   unit_label: string
   face_value?: number
   fixed_multiplier?: number
+  mult_circulated?: number
+  mult_uncirculated?: number
+  mult_slabbed?: number
   oz_metal_per_unit?: number
   category?: MarginCategory
 }
@@ -38,7 +42,7 @@ export interface ConfigLoadResponse {
 }
 
 export type BulkCalcRequestItem =
-  | { coin_type_id: string; quantity: number }
+  | { coin_type_id: string; quantity: number; grade?: Grade }
   | { coin_type_id: string; weight_grams: number }
 
 export interface BulkCalcLine {
@@ -64,6 +68,9 @@ interface CartLineBase {
   unit_label: string
   face_value?: number
   fixed_multiplier?: number
+  mult_circulated?: number
+  mult_uncirculated?: number
+  mult_slabbed?: number
   oz_metal_per_unit?: number
   category?: MarginCategory
 }
@@ -71,7 +78,7 @@ interface CartLineBase {
 export type CartLine =
   | (CartLineBase & { priced_by: 'each_metal'; quantity: number })
   | (CartLineBase & { priced_by: 'weight_grams'; weight_grams: number })
-  | (CartLineBase & { priced_by: 'times_face'; quantity: number })
+  | (CartLineBase & { priced_by: 'times_face'; quantity: number; grade?: Grade })
 
 type DistributiveOmit<T, K extends keyof CartLineBase | keyof CartLine> =
   T extends unknown ? Omit<T, K> : never
@@ -81,6 +88,9 @@ export type CartLineInput = DistributiveOmit<CartLine, 'id'>
 export function cartLineToRequestItem(line: CartLine): BulkCalcRequestItem {
   if (line.priced_by === 'weight_grams') {
     return { coin_type_id: line.coin_type_id, weight_grams: line.weight_grams }
+  }
+  if (line.priced_by === 'times_face' && line.grade) {
+    return { coin_type_id: line.coin_type_id, quantity: line.quantity, grade: line.grade }
   }
   return { coin_type_id: line.coin_type_id, quantity: line.quantity }
 }

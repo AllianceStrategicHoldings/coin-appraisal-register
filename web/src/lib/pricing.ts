@@ -1,4 +1,4 @@
-import type { CartLine, Margin, MarginCategory, Spot } from '../api/types'
+import type { CartLine, Grade, Margin, MarginCategory, Spot } from '../api/types'
 
 export interface LineValuation {
   meltValue: number
@@ -21,14 +21,31 @@ function marginForCategory(margins: Margin[], category: MarginCategory): number 
   return m ? m.margin_pct : null
 }
 
+function multiplierForLine(
+  line: Extract<CartLine, { priced_by: 'times_face' }>,
+): number | null {
+  const byGrade: Record<Grade, number | undefined> = {
+    circulated: line.mult_circulated,
+    uncirculated: line.mult_uncirculated,
+    slabbed: line.mult_slabbed,
+  }
+  if (line.grade) {
+    const m = byGrade[line.grade]
+    if (m != null) return m
+  }
+  return line.fixed_multiplier ?? null
+}
+
 export function valueLine(
   line: CartLine,
   spot: Spot | null,
   margins: Margin[],
 ): LineValuation | null {
   if (line.priced_by === 'times_face') {
-    if (line.face_value == null || line.fixed_multiplier == null) return null
-    const offer = line.quantity * line.face_value * line.fixed_multiplier
+    if (line.face_value == null) return null
+    const mult = multiplierForLine(line)
+    if (mult == null) return null
+    const offer = line.quantity * line.face_value * mult
     return { meltValue: 0, offerValue: offer }
   }
 

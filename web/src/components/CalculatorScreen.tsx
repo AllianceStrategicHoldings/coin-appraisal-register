@@ -6,6 +6,7 @@ import { useCart } from '../state/useCart'
 import { useConfig } from '../state/useConfig'
 import { useSession } from '../state/useSession'
 import { AddCoinModal } from './AddCoinModal'
+import { KeypadField } from './KeypadField'
 
 const usd = new Intl.NumberFormat('en-US', {
   style: 'currency',
@@ -84,7 +85,6 @@ export function CalculatorScreen() {
   const hasMargins = effectiveMargins.length > 0
   const canShowLiveOffer = effectiveSpot !== null && hasMargins
   const canShowLiveMelt = effectiveSpot !== null
-  const showLiveTotalsBlock = cart.lines.length > 0
   const spot = session.lastCalc?.spot ?? config.spot ?? null
 
   return (
@@ -146,36 +146,36 @@ export function CalculatorScreen() {
         </select>
       </section>
 
-      {showLiveTotalsBlock && (
-        <section
-          className="px-4 py-3 bg-white border-b border-slate-200"
-          aria-label="Bag totals"
-        >
-          <div className="grid grid-cols-2 gap-3">
-            <div>
-              <div className="text-xs uppercase tracking-wide text-slate-500 font-semibold">
-                100% Melt
-              </div>
-              <div className="text-2xl font-bold text-slate-900 tabular-nums">
-                {canShowLiveMelt ? usd.format(liveTotals.meltTotal) : '—'}
-              </div>
-              <div className="text-[11px] text-slate-500 leading-tight">
-                What the metal is worth
-              </div>
+      <section
+        className="px-4 py-3 bg-white border-b border-slate-200"
+        aria-label="Bag totals"
+      >
+        <div className="grid grid-cols-2 gap-3">
+          <div>
+            <div className="text-xs uppercase tracking-wide text-slate-500 font-semibold">
+              Total Value
             </div>
-            <div>
-              <div className="text-xs uppercase tracking-wide text-emerald-700 font-semibold">
-                Offer at Margin
-              </div>
-              <div className="text-2xl font-bold text-emerald-700 tabular-nums">
-                {canShowLiveOffer ? usd.format(liveTotals.offerTotal) : '—'}
-              </div>
-              <div className="text-[11px] text-slate-500 leading-tight">
-                What we pay
-              </div>
+            <div className="text-2xl font-bold text-slate-900 tabular-nums">
+              {canShowLiveMelt ? usd.format(liveTotals.meltTotal) : '—'}
+            </div>
+            <div className="text-[11px] text-slate-500 leading-tight">
+              What the metal is worth
             </div>
           </div>
-          {!canShowLiveMelt ? (
+          <div>
+            <div className="text-xs uppercase tracking-wide text-emerald-700 font-semibold">
+              Total Offer
+            </div>
+            <div className="text-2xl font-bold text-emerald-700 tabular-nums">
+              {canShowLiveOffer ? usd.format(liveTotals.offerTotal) : '—'}
+            </div>
+            <div className="text-[11px] text-slate-500 leading-tight">
+              What we pay
+            </div>
+          </div>
+        </div>
+        {cart.lines.length > 0 && (
+          !canShowLiveMelt ? (
             <p className="mt-2 text-[11px] text-slate-500">
               Tap Calculate Total to refresh spot prices.
             </p>
@@ -190,9 +190,9 @@ export function CalculatorScreen() {
             >
               Some lines are missing pricing data — Calculate for full result.
             </div>
-          ) : null}
-        </section>
-      )}
+          ) : null
+        )}
+      </section>
 
       {session.lastCalc && (
         <section
@@ -254,6 +254,11 @@ export function CalculatorScreen() {
                     </div>
                     <div className="text-xs text-slate-500">
                       {value} {line.unit_label}
+                      {line.priced_by === 'times_face' && line.grade ? (
+                        <span className="ml-2 inline-block px-1.5 py-0.5 rounded bg-slate-100 text-slate-700 text-[10px] uppercase tracking-wide">
+                          {line.grade}
+                        </span>
+                      ) : null}
                     </div>
                     {isUnpriceable && (
                       <div className="text-xs font-bold text-red-700 mt-0.5">
@@ -261,30 +266,25 @@ export function CalculatorScreen() {
                       </div>
                     )}
                   </div>
-                  <input
-                    type="text"
-                    inputMode={isDecimal ? 'decimal' : 'numeric'}
-                    pattern={isDecimal ? '[0-9]*\\.?[0-9]*' : '[0-9]*'}
-                    autoComplete="off"
-                    autoCorrect="off"
-                    spellCheck={false}
-                    value={String(value)}
-                    onChange={(e) => {
-                      const next = e.target.value
-                      const ok = isDecimal
-                        ? /^[0-9]*\.?[0-9]*$/.test(next)
-                        : /^[0-9]*$/.test(next)
-                      if (!ok) return
-                      const v = parseFloat(next)
-                      if (Number.isNaN(v)) {
-                        cart.updateLine(line.id, 0)
-                      } else if (v >= 0) {
-                        cart.updateLine(line.id, v)
-                      }
-                    }}
-                    className="w-20 min-h-11 px-2 text-sm rounded border border-slate-300"
-                    aria-label={`Edit ${line.name}`}
-                  />
+                  <div className="w-24">
+                    <KeypadField
+                      value={String(value)}
+                      onChange={(next) => {
+                        if (next === '' || next === '.') {
+                          cart.updateLine(line.id, 0)
+                          return
+                        }
+                        const v = parseFloat(next)
+                        if (!Number.isNaN(v) && v >= 0) {
+                          cart.updateLine(line.id, v)
+                        }
+                      }}
+                      allowDecimal={isDecimal}
+                      ariaLabel={`Edit ${line.name}`}
+                      keypadLabel={`${line.name} — ${line.unit_label}`}
+                      className="w-full min-h-11 px-2 text-sm rounded border border-slate-300 bg-white text-right"
+                    />
+                  </div>
                   <button
                     onClick={() => cart.removeLine(line.id)}
                     className="text-slate-400 hover:text-red-500 min-h-11 min-w-11 text-2xl leading-none"

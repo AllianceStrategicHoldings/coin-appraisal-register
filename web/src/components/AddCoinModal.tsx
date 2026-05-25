@@ -1,5 +1,12 @@
 import { useEffect, useMemo, useState } from 'react'
-import type { CartLineInput, CoinType, Metal } from '../api/types'
+import type { CartLineInput, CoinType, Grade, Metal } from '../api/types'
+import { KeypadField } from './KeypadField'
+
+const GRADES: Array<{ value: Grade; label: string }> = [
+  { value: 'circulated', label: 'Circulated' },
+  { value: 'uncirculated', label: 'Uncirculated' },
+  { value: 'slabbed', label: 'Slabbed' },
+]
 
 const usd = new Intl.NumberFormat('en-US', {
   style: 'currency',
@@ -29,13 +36,19 @@ export function AddCoinModal({
 }: AddCoinModalProps) {
   const [selectedId, setSelectedId] = useState<string | null>(null)
   const [value, setValue] = useState<string>('')
+  const [grade, setGrade] = useState<Grade | null>(null)
 
   useEffect(() => {
     if (isOpen) {
       setSelectedId(null)
       setValue('')
+      setGrade(null)
     }
   }, [isOpen])
+
+  useEffect(() => {
+    setGrade(null)
+  }, [selectedId])
 
   const grouped = useMemo(() => {
     const groups: Record<Metal, CoinType[]> = {
@@ -57,8 +70,13 @@ export function AddCoinModal({
   )
 
   const numValue = parseFloat(value)
+  const isNumismatic = selected?.metal_type === 'numismatic'
+  const needsGrade = isNumismatic
   const canAdd =
-    selected !== null && !Number.isNaN(numValue) && numValue > 0
+    selected !== null &&
+    !Number.isNaN(numValue) &&
+    numValue > 0 &&
+    (!needsGrade || grade !== null)
 
   function handleAdd() {
     if (!selected || !canAdd) return
@@ -69,13 +87,21 @@ export function AddCoinModal({
       unit_label: selected.unit_label,
       face_value: selected.face_value,
       fixed_multiplier: selected.fixed_multiplier,
+      mult_circulated: selected.mult_circulated,
+      mult_uncirculated: selected.mult_uncirculated,
+      mult_slabbed: selected.mult_slabbed,
       oz_metal_per_unit: selected.oz_metal_per_unit,
       category: selected.category,
     }
     if (selected.priced_by === 'weight_grams') {
       onAdd({ ...base, priced_by: 'weight_grams', weight_grams: numValue })
     } else if (selected.priced_by === 'times_face') {
-      onAdd({ ...base, priced_by: 'times_face', quantity: numValue })
+      onAdd({
+        ...base,
+        priced_by: 'times_face',
+        quantity: numValue,
+        ...(grade ? { grade } : {}),
+      })
     } else {
       onAdd({ ...base, priced_by: 'each_metal', quantity: numValue })
     }
@@ -154,36 +180,50 @@ export function AddCoinModal({
         </div>
 
         {selected && (
-          <div className="px-4 py-3 border-t border-slate-200 bg-slate-50">
-            <label
-              htmlFor="add-coin-value"
-              className="block text-sm font-medium text-slate-700 mb-1"
-            >
-              {inputLabel}
-            </label>
-            <input
-              id="add-coin-value"
-              type="text"
-              autoFocus
-              inputMode={inputIsDecimal ? 'decimal' : 'numeric'}
-              pattern={inputIsDecimal ? '[0-9]*\\.?[0-9]*' : '[0-9]*'}
-              autoComplete="off"
-              autoCorrect="off"
-              spellCheck={false}
-              value={value}
-              onChange={(e) => {
-                const next = e.target.value
-                const ok = inputIsDecimal
-                  ? /^[0-9]*\.?[0-9]*$/.test(next)
-                  : /^[0-9]*$/.test(next)
-                if (ok) setValue(next)
-              }}
-              onKeyDown={(e) => {
-                if (e.key === 'Enter' && canAdd) handleAdd()
-              }}
-              placeholder={inputIsDecimal ? 'e.g. 23.4' : 'e.g. 10'}
-              className="w-full min-h-12 px-3 rounded-md border border-slate-300 bg-white text-base"
-            />
+          <div className="px-4 py-3 border-t border-slate-200 bg-slate-50 space-y-3">
+            {needsGrade && (
+              <div>
+                <span className="block text-sm font-medium text-slate-700 mb-1">
+                  Grade
+                </span>
+                <div className="grid grid-cols-3 gap-2">
+                  {GRADES.map((g) => {
+                    const isActive = grade === g.value
+                    return (
+                      <button
+                        key={g.value}
+                        type="button"
+                        onClick={() => setGrade(g.value)}
+                        className={`min-h-12 px-2 rounded-md border text-sm font-medium ${
+                          isActive
+                            ? 'bg-emerald-600 border-emerald-700 text-white'
+                            : 'bg-white border-slate-300 text-slate-700'
+                        }`}
+                        aria-pressed={isActive}
+                      >
+                        {g.label}
+                      </button>
+                    )
+                  })}
+                </div>
+              </div>
+            )}
+            <div>
+              <label
+                htmlFor="add-coin-value"
+                className="block text-sm font-medium text-slate-700 mb-1"
+              >
+                {inputLabel}
+              </label>
+              <KeypadField
+                value={value}
+                onChange={setValue}
+                allowDecimal={inputIsDecimal}
+                ariaLabel={inputLabel}
+                keypadLabel={inputLabel}
+                placeholder={inputIsDecimal ? 'e.g. 23.4' : 'e.g. 10'}
+              />
+            </div>
           </div>
         )}
 

@@ -111,7 +111,9 @@ export function AddCoinModal({
   if (!isOpen) return null
 
   const inputLabel =
-    selected?.priced_by === 'weight_grams' ? 'Weight (grams)' : 'Quantity'
+    selected?.priced_by === 'weight_grams'
+      ? `Weight (${selected.unit_label ?? 'grams'})`
+      : 'Quantity'
   const inputIsDecimal = selected?.priced_by === 'weight_grams'
 
   return (

@@ -1,25 +1,27 @@
-name,metal_type,priced_by,oz_metal_per_unit,face_value,unit_label,active
-Roosevelt Dime,silver,each_metal,0.07234,0.10,coin,TRUE
-Mercury Dime,silver,each_metal,0.07234,0.10,coin,TRUE
-Barber Dime,silver,each_metal,0.07234,0.10,coin,TRUE
-Seated Liberty Dime,silver,each_metal,0.07234,0.10,coin,TRUE
-Washington Quarter,silver,each_metal,0.18084,0.25,coin,TRUE
-Standing Liberty Quarter,silver,each_metal,0.18084,0.25,coin,TRUE
-Barber Quarter,silver,each_metal,0.18084,0.25,coin,TRUE
-Kennedy Half 1964,silver,each_metal,0.36169,0.50,coin,TRUE
-Kennedy Half 1965-70,silver,each_metal,0.14790,0.50,coin,TRUE
-Walking Liberty Half,silver,each_metal,0.36169,0.50,coin,TRUE
-Franklin Half,silver,each_metal,0.36169,0.50,coin,TRUE
-Barber Half,silver,each_metal,0.36169,0.50,coin,TRUE
-Seated Liberty Half,silver,each_metal,0.36169,0.50,coin,TRUE
-Morgan Silver Dollar,silver,each_metal,0.77344,1.00,coin,TRUE
-Peace Silver Dollar,silver,each_metal,0.77344,1.00,coin,TRUE
-Eisenhower 40% Dollar,silver,each_metal,0.31624,1.00,coin,TRUE
-Jefferson War Nickel,silver,each_metal,0.05626,0.05,coin,TRUE
-.999 Fine Silver,silver,weight_grams,0.03215,,gram,TRUE
-Sterling Silver,silver,weight_grams,0.02974,,gram,TRUE
-10K Gold,gold,weight_grams,0.01337,,gram,TRUE
-14K Gold,gold,weight_grams,0.01874,,gram,TRUE
-18K Gold,gold,weight_grams,0.02412,,gram,TRUE
-22K Gold,gold,weight_grams,0.02947,,gram,TRUE
-Platinum Scrap,platinum,weight_grams,0.02572,,gram,TRUE
+name,metal_type,priced_by,oz_metal_per_unit,face_value,unit_label,active,mult_circulated,mult_uncirculated,mult_slabbed
+Roosevelt Dime,silver,each_metal,0.07234,0.10,coin,TRUE,,,
+Mercury Dime,silver,each_metal,0.07234,0.10,coin,TRUE,,,
+Barber Dime,silver,each_metal,0.07234,0.10,coin,TRUE,,,
+Seated Liberty Dime,silver,each_metal,0.07234,0.10,coin,TRUE,,,
+Washington Quarter,silver,each_metal,0.18084,0.25,coin,TRUE,,,
+Standing Liberty Quarter,silver,each_metal,0.18084,0.25,coin,TRUE,,,
+Barber Quarter,silver,each_metal,0.18084,0.25,coin,TRUE,,,
+Kennedy Half 1964,silver,each_metal,0.36169,0.50,coin,TRUE,,,
+Kennedy Half 1965-70,silver,each_metal,0.14790,0.50,coin,TRUE,,,
+Walking Liberty Half,silver,each_metal,0.36169,0.50,coin,TRUE,,,
+Franklin Half,silver,each_metal,0.36169,0.50,coin,TRUE,,,
+Barber Half,silver,each_metal,0.36169,0.50,coin,TRUE,,,
+Seated Liberty Half,silver,each_metal,0.36169,0.50,coin,TRUE,,,
+Morgan Silver Dollar,silver,each_metal,0.77344,1.00,coin,TRUE,,,
+Peace Silver Dollar,silver,each_metal,0.77344,1.00,coin,TRUE,,,
+Morgan Silver Dollar (Graded),numismatic,times_face,,1.00,coin,TRUE,35,55,90
+Peace Silver Dollar (Graded),numismatic,times_face,,1.00,coin,TRUE,32,50,85
+Eisenhower 40% Dollar,silver,each_metal,0.31624,1.00,coin,TRUE,,,
+Jefferson War Nickel,silver,each_metal,0.05626,0.05,coin,TRUE,,,
+.999 Fine Silver,silver,weight_grams,1.0,,troy oz,TRUE,,,
+Sterling Silver,silver,weight_grams,0.02974,,gram,TRUE,,,
+10K Gold,gold,weight_grams,0.01337,,gram,TRUE,,,
+14K Gold,gold,weight_grams,0.01874,,gram,TRUE,,,
+18K Gold,gold,weight_grams,0.02412,,gram,TRUE,,,
+22K Gold,gold,weight_grams,0.02947,,gram,TRUE,,,
+Platinum Scrap,platinum,weight_grams,0.02572,,gram,TRUE,,,

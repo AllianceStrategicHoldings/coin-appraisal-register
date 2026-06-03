@@ -1,392 +1,1264 @@
 {
-  "name": "config-load",
-  "flow": [
-    {
-      "id": 1,
-      "module": "gateway:CustomWebHook",
-      "version": 1,
-      "parameters": {
-        "hook": null,
-        "maxResults": 1
-      },
-      "mapper": {},
-      "metadata": {
-        "designer": {
-          "x": 0,
-          "y": 0
-        },
-        "restore": {
-          "parameters": {
-            "hook": {
-              "data": {
-                "editable": "true"
-              },
-              "label": "config-load"
-            }
-          }
-        },
-        "parameters": [
-          {
-            "name": "hook",
-            "type": "hook:gateway-webhook",
-            "label": "Webhook",
-            "required": true
-          },
-          {
-            "name": "maxResults",
-            "type": "number",
-            "label": "Maximum number of results"
-          }
-        ]
-      }
-    },
-    {
-      "id": 2,
-      "module": "airtable:ActionSearchRecords",
-      "version": 3,
-      "parameters": {
-        "__IMTCONN__": null
-      },
-      "mapper": {
-        "base": "app8Nd28yqiXl4pcQ",
-        "table": "tbl65pXZIR60gnZ26",
-        "formula": "{active} = TRUE()",
-        "maxRecords": "100",
-        "useColumnId": false
-      },
-      "metadata": {
-        "designer": {
-          "x": 300,
-          "y": 0
-        },
-        "restore": {
-          "parameters": {
-            "__IMTCONN__": {
-              "data": {
-                "scoped": "true",
-                "connection": "airtable3"
-              },
-              "label": "client-airtable"
-            }
-          },
-          "expect": {
-            "base": {
-              "label": "Coin Appraisal Register",
-              "mode": "chose"
+    "name": "config-load",
+    "flow": [
+        {
+            "id": 1,
+            "module": "gateway:CustomWebHook",
+            "version": 1,
+            "parameters": {
+                "hook": 2221248,
+                "maxResults": 1
             },
-            "table": {
-              "label": "Config_CoinTypes",
-              "mode": "chose"
+            "mapper": {},
+            "metadata": {
+                "designer": {
+                    "x": 0,
+                    "y": 0
+                },
+                "restore": {
+                    "parameters": {
+                        "hook": {
+                            "data": {
+                                "editable": "true"
+                            },
+                            "label": "config-load"
+                        }
+                    }
+                },
+                "parameters": [
+                    {
+                        "name": "hook",
+                        "type": "hook:gateway-webhook",
+                        "label": "Webhook",
+                        "required": true
+                    },
+                    {
+                        "name": "maxResults",
+                        "type": "number",
+                        "label": "Maximum number of results"
+                    }
+                ]
             }
-          }
         },
-        "parameters": [
-          {
-            "name": "__IMTCONN__",
-            "type": "account:airtable3,airtable2",
-            "label": "Connection",
-            "required": true
-          }
-        ],
-        "expect": [
-          {
-            "name": "base",
-            "type": "select",
-            "label": "Base",
-            "required": true
-          },
-          {
-            "name": "table",
-            "type": "select",
-            "label": "Table",
-            "required": true
-          },
-          {
-            "name": "formula",
-            "type": "text",
-            "label": "Formula"
-          },
-          {
-            "name": "maxRecords",
-            "type": "uinteger",
-            "label": "Limit"
-          }
-        ]
-      }
-    },
-    {
-      "id": 3,
-      "module": "builtin:BasicAggregator",
-      "version": 1,
-      "parameters": {
-        "feeder": 2
-      },
-      "mapper": {
-        "id": "{{2.id}}",
-        "name": "{{2.name}}",
-        "metal_type": "{{2.metal_type}}",
-        "priced_by": "{{2.priced_by}}",
-        "unit_label": "{{2.unit_label}}",
-        "face_value": "{{2.face_value}}"
-      },
-      "metadata": {
-        "designer": {
-          "x": 600,
-          "y": 0
-        },
-        "restore": {
-          "extra": {
-            "feeder": {
-              "label": "Search Records [2]"
+        {
+            "id": 2,
+            "module": "airtable:ActionSearchRecords",
+            "version": 3,
+            "parameters": {
+                "__IMTCONN__": 8572507
             },
-            "target": {
-              "label": "Custom"
+            "mapper": {
+                "base": "app8Nd28yqiXl4pcQ",
+                "useColumnId": false,
+                "table": "tbl65pXZIR60gnZ26",
+                "formula": "{active} = TRUE()",
+                "maxRecords": "100"
+            },
+            "metadata": {
+                "designer": {
+                    "x": 300,
+                    "y": 0
+                },
+                "restore": {
+                    "parameters": {
+                        "__IMTCONN__": {
+                            "label": "My Airtable Token or Key connection",
+                            "data": {
+                                "scoped": "true",
+                                "connection": "airtable2"
+                            }
+                        }
+                    },
+                    "expect": {
+                        "base": {
+                            "mode": "chose",
+                            "label": "Coin Appraisal Register"
+                        },
+                        "useColumnId": {
+                            "mode": "chose"
+                        },
+                        "table": {
+                            "mode": "chose",
+                            "label": "Config_CoinTypes"
+                        },
+                        "sort": {
+                            "mode": "chose"
+                        },
+                        "view": {
+                            "mode": "chose"
+                        },
+                        "fields": {
+                            "mode": "chose"
+                        }
+                    }
+                },
+                "parameters": [
+                    {
+                        "name": "__IMTCONN__",
+                        "type": "account:airtable3,airtable2",
+                        "label": "Connection",
+                        "required": true
+                    }
+                ],
+                "expect": [
+                    {
+                        "name": "base",
+                        "type": "select",
+                        "label": "Base",
+                        "required": true
+                    },
+                    {
+                        "name": "useColumnId",
+                        "type": "boolean",
+                        "label": "Use Column ID",
+                        "required": true
+                    },
+                    {
+                        "name": "table",
+                        "type": "select",
+                        "label": "Table",
+                        "required": true
+                    },
+                    {
+                        "name": "formula",
+                        "type": "text",
+                        "label": "Formula"
+                    },
+                    {
+                        "name": "maxRecords",
+                        "type": "integer",
+                        "label": "Limit"
+                    },
+                    {
+                        "name": "sort",
+                        "type": "array",
+                        "label": "Sort",
+                        "spec": [
+                            {
+                                "name": "field",
+                                "type": "select",
+                                "label": "Field",
+                                "options": [],
+                                "dynamic": true
+                            },
+                            {
+                                "name": "direction",
+                                "type": "select",
+                                "label": "Direction",
+                                "options": [
+                                    {
+                                        "label": "Descending",
+                                        "value": "desc"
+                                    },
+                                    {
+                                        "label": "Ascending",
+                                        "value": "asc"
+                                    }
+                                ]
+                            }
+                        ]
+                    },
+                    {
+                        "name": "view",
+                        "type": "select",
+                        "label": "View"
+                    },
+                    {
+                        "name": "fields",
+                        "type": "select",
+                        "label": "Output Fields",
+                        "multiple": true
+                    }
+                ],
+                "interface": [
+                    {
+                        "name": "__IMTLENGTH__",
+                        "label": "Total number of bundles",
+                        "type": "uinteger"
+                    },
+                    {
+                        "name": "__IMTINDEX__",
+                        "label": "Bundle order position",
+                        "type": "uinteger"
+                    },
+                    {
+                        "name": "id",
+                        "type": "text",
+                        "label": "ID"
+                    },
+                    {
+                        "name": "createdTime",
+                        "type": "date",
+                        "label": "Created Time"
+                    },
+                    {
+                        "name": "name",
+                        "label": "name",
+                        "type": "text"
+                    },
+                    {
+                        "name": "metal_type",
+                        "label": "metal_type",
+                        "type": "text"
+                    },
+                    {
+                        "name": "priced_by",
+                        "label": "priced_by",
+                        "type": "text"
+                    },
+                    {
+                        "name": "unit_label",
+                        "label": "unit_label",
+                        "type": "text"
+                    },
+                    {
+                        "name": "oz_metal_per_unit",
+                        "label": "oz_metal_per_unit",
+                        "type": "number"
+                    },
+                    {
+                        "name": "face_value",
+                        "label": "face_value",
+                        "type": "number"
+                    },
+                    {
+                        "name": "fixed_multiplier",
+                        "label": "fixed_multiplier",
+                        "type": "number"
+                    },
+                    {
+                        "name": "active",
+                        "label": "active",
+                        "type": "boolean"
+                    },
+                    {
+                        "name": "mult_circulated",
+                        "label": "mult_circulated",
+                        "type": "number"
+                    },
+                    {
+                        "name": "mult_uncirculated",
+                        "label": "mult_uncirculated",
+                        "type": "number"
+                    },
+                    {
+                        "name": "mult_slabbed",
+                        "label": "mult_slabbed",
+                        "type": "number"
+                    }
+                ]
             }
-          }
+        },
+        {
+            "id": 3,
+            "module": "builtin:BasicAggregator",
+            "version": 1,
+            "parameters": {
+                "feeder": 2
+            },
+            "mapper": {
+                "id": "{{2.id}}",
+                "name": "{{2.name}}",
+                "metal_type": "{{2.metal_type}}",
+                "priced_by": "{{2.priced_by}}",
+                "unit_label": "{{2.unit_label}}",
+                "oz_metal_per_unit": "{{2.oz_metal_per_unit}}",
+                "face_value": "{{2.face_value}}",
+                "fixed_multiplier": "{{2.fixed_multiplier}}",
+                "mult_circulated": "{{2.mult_circulated}}",
+                "mult_uncirculated": "{{2.mult_uncirculated}}",
+                "mult_slabbed": "{{2.mult_slabbed}}"
+            },
+            "metadata": {
+                "designer": {
+                    "x": 600,
+                    "y": 0
+                },
+                "restore": {
+                    "extra": {
+                        "feeder": {
+                            "label": "Airtable - Search Records [2]"
+                        },
+                        "target": {
+                            "label": "Custom"
+                        }
+                    }
+                }
+            }
+        },
+        {
+            "id": 4,
+            "module": "airtable:ActionSearchRecords",
+            "version": 3,
+            "parameters": {
+                "__IMTCONN__": 8572507
+            },
+            "mapper": {
+                "base": "app8Nd28yqiXl4pcQ",
+                "table": "tblDS6EE5exkxN9mm",
+                "formula": "{active} = TRUE()",
+                "maxRecords": "100",
+                "useColumnId": false
+            },
+            "metadata": {
+                "designer": {
+                    "x": 900,
+                    "y": 0
+                },
+                "restore": {
+                    "expect": {
+                        "base": {
+                            "mode": "chose",
+                            "label": "Coin Appraisal Register"
+                        },
+                        "sort": {
+                            "mode": "chose"
+                        },
+                        "view": {
+                            "mode": "chose",
+                            "label": "Empty"
+                        },
+                        "table": {
+                            "mode": "chose",
+                            "label": "Config_Reps"
+                        },
+                        "fields": {
+                            "mode": "chose"
+                        },
+                        "useColumnId": {
+                            "mode": "chose"
+                        }
+                    },
+                    "parameters": {
+                        "__IMTCONN__": {
+                            "data": {
+                                "scoped": "true",
+                                "connection": "airtable2"
+                            },
+                            "label": "My Airtable Token or Key connection"
+                        }
+                    }
+                },
+                "parameters": [
+                    {
+                        "name": "__IMTCONN__",
+                        "type": "account:airtable3,airtable2",
+                        "label": "Connection",
+                        "required": true
+                    }
+                ],
+                "expect": [
+                    {
+                        "name": "base",
+                        "type": "select",
+                        "label": "Base",
+                        "required": true
+                    },
+                    {
+                        "name": "useColumnId",
+                        "type": "boolean",
+                        "label": "Use Column ID",
+                        "required": true
+                    },
+                    {
+                        "name": "table",
+                        "type": "select",
+                        "label": "Table",
+                        "required": true
+                    },
+                    {
+                        "name": "formula",
+                        "type": "text",
+                        "label": "Formula"
+                    },
+                    {
+                        "name": "maxRecords",
+                        "type": "integer",
+                        "label": "Limit"
+                    },
+                    {
+                        "name": "sort",
+                        "spec": [
+                            {
+                                "name": "field",
+                                "type": "select",
+                                "label": "Field",
+                                "dynamic": true,
+                                "options": []
+                            },
+                            {
+                                "name": "direction",
+                                "type": "select",
+                                "label": "Direction",
+                                "options": [
+                                    {
+                                        "label": "Descending",
+                                        "value": "desc"
+                                    },
+                                    {
+                                        "label": "Ascending",
+                                        "value": "asc"
+                                    }
+                                ]
+                            }
+                        ],
+                        "type": "array",
+                        "label": "Sort"
+                    },
+                    {
+                        "name": "view",
+                        "type": "select",
+                        "label": "View"
+                    },
+                    {
+                        "name": "fields",
+                        "type": "select",
+                        "label": "Output Fields",
+                        "multiple": true
+                    }
+                ],
+                "interface": [
+                    {
+                        "name": "__IMTLENGTH__",
+                        "type": "uinteger",
+                        "label": "Total number of bundles"
+                    },
+                    {
+                        "name": "__IMTINDEX__",
+                        "type": "uinteger",
+                        "label": "Bundle order position"
+                    },
+                    {
+                        "name": "id",
+                        "type": "text",
+                        "label": "ID"
+                    },
+                    {
+                        "name": "createdTime",
+                        "type": "date",
+                        "label": "Created Time"
+                    },
+                    {
+                        "name": "name",
+                        "type": "text",
+                        "label": "name"
+                    },
+                    {
+                        "name": "active",
+                        "type": "boolean",
+                        "label": "active"
+                    }
+                ]
+            }
+        },
+        {
+            "id": 5,
+            "module": "builtin:BasicAggregator",
+            "version": 1,
+            "parameters": {
+                "feeder": 4
+            },
+            "mapper": {
+                "id": "{{4.id}}",
+                "name": "{{4.name}}"
+            },
+            "metadata": {
+                "designer": {
+                    "x": 1200,
+                    "y": 0
+                },
+                "restore": {
+                    "extra": {
+                        "feeder": {
+                            "label": "Search Records [4]"
+                        },
+                        "target": {
+                            "label": "Custom"
+                        }
+                    }
+                }
+            }
+        },
+        {
+            "id": 8,
+            "module": "http:MakeRequest",
+            "version": 4,
+            "parameters": {
+                "tlsType": "",
+                "proxyKeychain": "",
+                "authenticationType": "noAuth"
+            },
+            "filter": null,
+            "mapper": {
+                "url": "https://metals-api.com/api/latest?access_key=REPLACE_WITH_METALS_API_KEY&base=USD&symbols=XAU,XAG,XPT",
+                "method": "get",
+                "shareCookies": false,
+                "parseResponse": true,
+                "allowRedirects": true,
+                "stopOnHttpError": true,
+                "requestCompressedContent": true
+            },
+            "metadata": {
+                "designer": {
+                    "x": 1500,
+                    "y": 0
+                },
+                "restore": {
+                    "expect": {
+                        "method": {
+                            "mode": "chose",
+                            "label": "GET"
+                        },
+                        "headers": {
+                            "mode": "chose"
+                        },
+                        "contentType": {
+                            "label": "Empty"
+                        },
+                        "shareCookies": {
+                            "mode": "chose"
+                        },
+                        "parseResponse": {
+                            "mode": "chose"
+                        },
+                        "allowRedirects": {
+                            "mode": "chose"
+                        },
+                        "paginationType": {
+                            "label": "Empty"
+                        },
+                        "queryParameters": {
+                            "mode": "chose"
+                        },
+                        "stopOnHttpError": {
+                            "mode": "chose"
+                        },
+                        "requestCompressedContent": {
+                            "mode": "chose"
+                        }
+                    },
+                    "parameters": {
+                        "tlsType": {
+                            "label": "Empty"
+                        },
+                        "proxyKeychain": {
+                            "label": "Choose a key"
+                        },
+                        "authenticationType": {
+                            "label": "No authenticationUse when no credentials are required for the request."
+                        }
+                    }
+                },
+                "parameters": [
+                    {
+                        "name": "authenticationType",
+                        "type": "select",
+                        "label": "Authentication type",
+                        "required": true,
+                        "validate": {
+                            "enum": [
+                                "noAuth",
+                                "apiKey",
+                                "basicAuth",
+                                "oAuth"
+                            ]
+                        }
+                    },
+                    {
+                        "name": "tlsType",
+                        "type": "select",
+                        "label": "Transport layer security (TLS)",
+                        "validate": {
+                            "enum": [
+                                "mTls",
+                                "tls"
+                            ]
+                        }
+                    },
+                    {
+                        "name": "proxyKeychain",
+                        "type": "keychain:proxy",
+                        "label": "Proxy"
+                    }
+                ],
+                "expect": [
+                    {
+                        "name": "url",
+                        "type": "url",
+                        "label": "URL",
+                        "required": true
+                    },
+                    {
+                        "name": "method",
+                        "type": "select",
+                        "label": "Method",
+                        "required": true,
+                        "validate": {
+                            "enum": [
+                                "get",
+                                "head",
+                                "post",
+                                "put",
+                                "patch",
+                                "delete",
+                                "options"
+                            ]
+                        }
+                    },
+                    {
+                        "name": "headers",
+                        "spec": {
+                            "name": "value",
+                            "spec": [
+                                {
+                                    "name": "name",
+                                    "type": "text",
+                                    "label": "Name",
+                                    "required": true,
+                                    "validate": {
+                                        "pattern": "^[-!#$%&'*+.^_`|~0-9A-Za-z]+$"
+                                    }
+                                },
+                                {
+                                    "name": "value",
+                                    "type": "text",
+                                    "label": "Value"
+                                }
+                            ],
+                            "type": "collection",
+                            "label": "Header"
+                        },
+                        "type": "array",
+                        "label": "Headers"
+                    },
+                    {
+                        "name": "queryParameters",
+                        "spec": {
+                            "name": "value",
+                            "spec": [
+                                {
+                                    "name": "name",
+                                    "type": "text",
+                                    "label": "Name",
+                                    "required": true
+                                },
+                                {
+                                    "name": "value",
+                                    "type": "text",
+                                    "label": "Value"
+                                }
+                            ],
+                            "type": "collection",
+                            "label": "Parameter"
+                        },
+                        "type": "array",
+                        "label": "Query parameters"
+                    },
+                    {
+                        "name": "contentType",
+                        "type": "select",
+                        "label": "Body content type",
+                        "validate": {
+                            "enum": [
+                                "json",
+                                "multipart",
+                                "urlEncoded",
+                                "custom"
+                            ]
+                        }
+                    },
+                    {
+                        "name": "parseResponse",
+                        "type": "boolean",
+                        "label": "Parse response",
+                        "required": true
+                    },
+                    {
+                        "name": "stopOnHttpError",
+                        "type": "boolean",
+                        "label": "Return error if HTTP request fails",
+                        "required": true
+                    },
+                    {
+                        "name": "timeout",
+                        "type": "uinteger",
+                        "label": "Timeout",
+                        "validate": {
+                            "max": 300,
+                            "min": 1
+                        }
+                    },
+                    {
+                        "name": "allowRedirects",
+                        "type": "boolean",
+                        "label": "Allow redirects",
+                        "required": true
+                    },
+                    {
+                        "name": "shareCookies",
+                        "type": "boolean",
+                        "label": "Share cookies with other HTTP modules",
+                        "required": true
+                    },
+                    {
+                        "name": "requestCompressedContent",
+                        "type": "boolean",
+                        "label": "Request compressed content",
+                        "required": true
+                    },
+                    {
+                        "name": "paginationType",
+                        "type": "select",
+                        "label": "Pagination type",
+                        "validate": {
+                            "enum": [
+                                "offsetBased",
+                                "pageBased",
+                                "urlBased",
+                                "tokenBased"
+                            ]
+                        }
+                    }
+                ],
+                "interface": [
+                    {
+                        "name": "data",
+                        "type": "any",
+                        "label": "Data"
+                    },
+                    {
+                        "name": "statusCode",
+                        "type": "number",
+                        "label": "Status Code"
+                    },
+                    {
+                        "name": "headers",
+                        "spec": [
+                            {
+                                "name": "content-length",
+                                "type": "text",
+                                "label": "Content-Length"
+                            },
+                            {
+                                "name": "content-encoding",
+                                "type": "text",
+                                "label": "Content-Encoding"
+                            },
+                            {
+                                "name": "content-type",
+                                "type": "text",
+                                "label": "Content-Type"
+                            },
+                            {
+                                "name": "server",
+                                "type": "text",
+                                "label": "Server"
+                            },
+                            {
+                                "name": "cache-control",
+                                "type": "text",
+                                "label": "Cache-Control"
+                            },
+                            {
+                                "name": "set-cookie",
+                                "spec": {
+                                    "type": "text"
+                                },
+                                "type": "array",
+                                "label": "Set-Cookie"
+                            }
+                        ],
+                        "type": "collection",
+                        "label": "Headers"
+                    }
+                ]
+            }
+        },
+        {
+            "id": 9,
+            "module": "airtable:ActionSearchRecords",
+            "version": 3,
+            "parameters": {
+                "__IMTCONN__": 8572507
+            },
+            "filter": null,
+            "mapper": {
+                "base": "app8Nd28yqiXl4pcQ",
+                "table": "tblZ59ohYZolethfW",
+                "maxRecords": "100",
+                "useColumnId": false
+            },
+            "metadata": {
+                "designer": {
+                    "x": 1800,
+                    "y": 0,
+                    "name": "Margins"
+                },
+                "restore": {
+                    "expect": {
+                        "base": {
+                            "mode": "chose",
+                            "label": "Coin Appraisal Register"
+                        },
+                        "sort": {
+                            "mode": "chose"
+                        },
+                        "view": {
+                            "mode": "chose",
+                            "label": "Empty"
+                        },
+                        "table": {
+                            "mode": "chose",
+                            "label": "Config_Margins"
+                        },
+                        "fields": {
+                            "mode": "chose"
+                        },
+                        "useColumnId": {
+                            "mode": "chose"
+                        }
+                    },
+                    "parameters": {
+                        "__IMTCONN__": {
+                            "data": {
+                                "scoped": "true",
+                                "connection": "airtable2"
+                            },
+                            "label": "My Airtable Token or Key connection"
+                        }
+                    }
+                },
+                "parameters": [
+                    {
+                        "name": "__IMTCONN__",
+                        "type": "account:airtable3,airtable2",
+                        "label": "Connection",
+                        "required": true
+                    }
+                ],
+                "expect": [
+                    {
+                        "name": "base",
+                        "type": "select",
+                        "label": "Base",
+                        "required": true
+                    },
+                    {
+                        "name": "useColumnId",
+                        "type": "boolean",
+                        "label": "Use Column ID",
+                        "required": true
+                    },
+                    {
+                        "name": "table",
+                        "type": "select",
+                        "label": "Table",
+                        "required": true
+                    },
+                    {
+                        "name": "formula",
+                        "type": "text",
+                        "label": "Formula"
+                    },
+                    {
+                        "name": "maxRecords",
+                        "type": "integer",
+                        "label": "Limit"
+                    },
+                    {
+                        "name": "sort",
+                        "spec": [
+                            {
+                                "name": "field",
+                                "type": "select",
+                                "label": "Field",
+                                "dynamic": true,
+                                "options": []
+                            },
+                            {
+                                "name": "direction",
+                                "type": "select",
+                                "label": "Direction",
+                                "options": [
+                                    {
+                                        "label": "Descending",
+                                        "value": "desc"
+                                    },
+                                    {
+                                        "label": "Ascending",
+                                        "value": "asc"
+                                    }
+                                ]
+                            }
+                        ],
+                        "type": "array",
+                        "label": "Sort"
+                    },
+                    {
+                        "name": "view",
+                        "type": "select",
+                        "label": "View"
+                    },
+                    {
+                        "name": "fields",
+                        "type": "select",
+                        "label": "Output Fields",
+                        "multiple": true
+                    }
+                ],
+                "interface": [
+                    {
+                        "name": "__IMTLENGTH__",
+                        "type": "uinteger",
+                        "label": "Total number of bundles"
+                    },
+                    {
+                        "name": "__IMTINDEX__",
+                        "type": "uinteger",
+                        "label": "Bundle order position"
+                    },
+                    {
+                        "name": "id",
+                        "type": "text",
+                        "label": "ID"
+                    },
+                    {
+                        "name": "createdTime",
+                        "type": "date",
+                        "label": "Created Time"
+                    },
+                    {
+                        "name": "Category",
+                        "type": "text",
+                        "label": "Category"
+                    },
+                    {
+                        "name": "margin_pct",
+                        "type": "number",
+                        "label": "margin_pct"
+                    },
+                    {
+                        "name": "Notes",
+                        "type": "text",
+                        "label": "Notes",
+                        "multiline": true
+                    }
+                ]
+            }
+        },
+        {
+            "id": 10,
+            "module": "builtin:BasicAggregator",
+            "version": 1,
+            "parameters": {
+                "feeder": 9,
+                "target": "6.margins"
+            },
+            "filter": null,
+            "mapper": {
+                "category": "{{lower(9.Category)}}",
+                "margin_pct": "{{9.margin_pct}}"
+            },
+            "metadata": {
+                "designer": {
+                    "x": 2100,
+                    "y": 0
+                },
+                "restore": {
+                    "extra": {
+                        "feeder": {
+                            "label": "Margins - Search Records [9]"
+                        },
+                        "target": {
+                            "label": "Margins"
+                        }
+                    }
+                },
+                "expect": [
+                    {
+                        "name": "category",
+                        "type": "text",
+                        "label": null
+                    },
+                    {
+                        "name": "margin_pct",
+                        "type": "number",
+                        "label": null
+                    }
+                ]
+            }
+        },
+        {
+            "id": 6,
+            "module": "json:CreateJSON",
+            "version": 1,
+            "parameters": {
+                "type": 361117,
+                "space": ""
+            },
+            "mapper": {
+                "coin_types": "{{3.array}}",
+                "reps": "{{5.array}}",
+                "spot": {
+                    "gold": "{{8.data.rates.USDXAU}}",
+                    "silver": "{{8.data.rates.USDXAG}}",
+                    "platinum": "{{8.data.rates.USDXPT}}"
+                },
+                "margins": "{{10.array}}"
+            },
+            "metadata": {
+                "designer": {
+                    "x": 2400,
+                    "y": 0
+                },
+                "restore": {
+                    "parameters": {
+                        "type": {
+                            "label": "My data structure"
+                        },
+                        "space": {
+                            "label": "Empty"
+                        }
+                    },
+                    "expect": {
+                        "coin_types": {
+                            "mode": "edit"
+                        },
+                        "reps": {
+                            "mode": "edit"
+                        },
+                        "margins": {
+                            "mode": "edit"
+                        }
+                    }
+                },
+                "parameters": [
+                    {
+                        "name": "type",
+                        "type": "udt",
+                        "label": "Data structure",
+                        "required": true
+                    },
+                    {
+                        "name": "space",
+                        "type": "select",
+                        "label": "Indentation",
+                        "validate": {
+                            "enum": [
+                                "tab",
+                                "2",
+                                "4"
+                            ]
+                        }
+                    }
+                ],
+                "expect": [
+                    {
+                        "name": "coin_types",
+                        "type": "array",
+                        "label": "Coin types",
+                        "spec": {
+                            "type": "collection",
+                            "spec": [
+                                {
+                                    "name": "id",
+                                    "label": null,
+                                    "type": "text"
+                                },
+                                {
+                                    "name": "name",
+                                    "label": null,
+                                    "type": "text"
+                                },
+                                {
+                                    "name": "metal_type",
+                                    "label": null,
+                                    "type": "text"
+                                },
+                                {
+                                    "name": "priced_by",
+                                    "label": null,
+                                    "type": "text"
+                                },
+                                {
+                                    "name": "unit_label",
+                                    "label": null,
+                                    "type": "text"
+                                },
+                                {
+                                    "name": "face_value",
+                                    "label": null,
+                                    "type": "number"
+                                },
+                                {
+                                    "name": "fixed_multiplier",
+                                    "label": null,
+                                    "type": "number"
+                                },
+                                {
+                                    "name": "mult_circulated",
+                                    "label": null,
+                                    "type": "number"
+                                },
+                                {
+                                    "name": "mult_uncirculated",
+                                    "label": null,
+                                    "type": "number"
+                                },
+                                {
+                                    "name": "mult_slabbed",
+                                    "label": null,
+                                    "type": "number"
+                                },
+                                {
+                                    "name": "oz_metal_per_unit",
+                                    "label": null,
+                                    "type": "number"
+                                }
+                            ],
+                            "name": "value"
+                        }
+                    },
+                    {
+                        "name": "reps",
+                        "type": "array",
+                        "label": "Reps",
+                        "spec": {
+                            "type": "collection",
+                            "spec": [
+                                {
+                                    "name": "id",
+                                    "label": null,
+                                    "type": "text"
+                                },
+                                {
+                                    "name": "name",
+                                    "label": null,
+                                    "type": "text"
+                                }
+                            ],
+                            "name": "value"
+                        }
+                    },
+                    {
+                        "name": "spot",
+                        "type": "collection",
+                        "label": "Spot",
+                        "spec": [
+                            {
+                                "name": "gold",
+                                "type": "number",
+                                "label": "Gold"
+                            },
+                            {
+                                "name": "silver",
+                                "type": "number",
+                                "label": "Silver"
+                            },
+                            {
+                                "name": "platinum",
+                                "type": "number",
+                                "label": "Platinum"
+                            }
+                        ]
+                    },
+                    {
+                        "name": "margins",
+                        "type": "array",
+                        "label": "Margins",
+                        "spec": {
+                            "type": "collection",
+                            "spec": [
+                                {
+                                    "name": "category",
+                                    "label": null,
+                                    "type": "text"
+                                },
+                                {
+                                    "name": "margin_pct",
+                                    "label": null,
+                                    "type": "number"
+                                }
+                            ],
+                            "name": "value"
+                        }
+                    }
+                ]
+            }
+        },
+        {
+            "id": 7,
+            "module": "gateway:WebhookRespond",
+            "version": 1,
+            "parameters": {},
+            "mapper": {
+                "body": "{{6.json}}",
+                "status": "200",
+                "headers": [
+                    {
+                        "key": "Content-Type",
+                        "value": "application/json"
+                    }
+                ]
+            },
+            "metadata": {
+                "designer": {
+                    "x": 2700,
+                    "y": 0
+                },
+                "restore": {},
+                "expect": [
+                    {
+                        "name": "status",
+                        "type": "uinteger",
+                        "label": "Status",
+                        "required": true
+                    },
+                    {
+                        "name": "body",
+                        "type": "any",
+                        "label": "Body"
+                    },
+                    {
+                        "name": "headers",
+                        "spec": [
+                            {
+                                "name": "key",
+                                "type": "text",
+                                "label": "Key"
+                            },
+                            {
+                                "name": "value",
+                                "type": "text",
+                                "label": "Value"
+                            }
+                        ],
+                        "type": "array",
+                        "label": "Custom headers"
+                    }
+                ]
+            }
         }
-      }
-    },
-    {
-      "id": 4,
-      "module": "airtable:ActionSearchRecords",
-      "version": 3,
-      "parameters": {
-        "__IMTCONN__": null
-      },
-      "mapper": {
-        "base": "app8Nd28yqiXl4pcQ",
-        "table": "tblDS6EE5exkxN9mm",
-        "formula": "{active} = TRUE()",
-        "maxRecords": "100",
-        "useColumnId": false
-      },
-      "metadata": {
+    ],
+    "metadata": {
+        "instant": true,
+        "version": 1,
+        "scenario": {
+            "roundtrips": 1,
+            "maxErrors": 3,
+            "autoCommit": true,
+            "autoCommitTriggerLast": true,
+            "sequential": false,
+            "slots": null,
+            "confidential": false,
+            "dataloss": false,
+            "dlq": false,
+            "freshVariables": false
+        },
         "designer": {
-          "x": 900,
-          "y": 0
+            "orphans": []
         },
-        "restore": {
-          "parameters": {
-            "__IMTCONN__": {
-              "data": {
-                "scoped": "true",
-                "connection": "airtable3"
-              },
-              "label": "client-airtable"
-            }
-          },
-          "expect": {
-            "base": {
-              "label": "Coin Appraisal Register",
-              "mode": "chose"
-            },
-            "table": {
-              "label": "Config_Reps",
-              "mode": "chose"
-            }
-          }
-        },
-        "parameters": [
-          {
-            "name": "__IMTCONN__",
-            "type": "account:airtable3,airtable2",
-            "label": "Connection",
-            "required": true
-          }
-        ],
-        "expect": [
-          {
-            "name": "base",
-            "type": "select",
-            "label": "Base",
-            "required": true
-          },
-          {
-            "name": "table",
-            "type": "select",
-            "label": "Table",
-            "required": true
-          },
-          {
-            "name": "formula",
-            "type": "text",
-            "label": "Formula"
-          },
-          {
-            "name": "maxRecords",
-            "type": "uinteger",
-            "label": "Limit"
-          }
-        ]
-      }
-    },
-    {
-      "id": 5,
-      "module": "builtin:BasicAggregator",
-      "version": 1,
-      "parameters": {
-        "feeder": 4
-      },
-      "mapper": {
-        "id": "{{4.id}}",
-        "name": "{{4.name}}"
-      },
-      "metadata": {
-        "designer": {
-          "x": 1200,
-          "y": 0
-        },
-        "restore": {
-          "extra": {
-            "feeder": {
-              "label": "Search Records [4]"
-            },
-            "target": {
-              "label": "Custom"
-            }
-          }
-        }
-      }
-    },
-    {
-      "id": 6,
-      "module": "json:CreateJSON",
-      "version": 1,
-      "parameters": {
-        "type": null,
-        "space": ""
-      },
-      "mapper": {
-        "coin_types": "{{3.array}}",
-        "reps": "{{5.array}}"
-      },
-      "metadata": {
-        "designer": {
-          "x": 1500,
-          "y": 0
-        },
-        "restore": {
-          "parameters": {
-            "type": {
-              "label": "config-load-response-v1"
-            },
-            "space": {
-              "label": "Empty"
-            }
-          }
-        },
-        "parameters": [
-          {
-            "name": "type",
-            "type": "udt",
-            "label": "Data structure",
-            "required": true
-          },
-          {
-            "name": "space",
-            "type": "select",
-            "label": "Indentation",
-            "validate": {
-              "enum": ["tab", "2", "4"]
-            }
-          }
-        ],
-        "expect": [
-          {
-            "name": "coin_types",
-            "type": "array",
-            "label": "Coin Types",
-            "spec": {
-              "type": "collection",
-              "spec": [
-                { "name": "id", "type": "text", "label": "id" },
-                { "name": "name", "type": "text", "label": "name" },
-                { "name": "metal_type", "type": "text", "label": "metal_type" },
-                { "name": "priced_by", "type": "text", "label": "priced_by" },
-                { "name": "unit_label", "type": "text", "label": "unit_label" },
-                { "name": "face_value", "type": "number", "label": "face_value" }
-              ]
-            }
-          },
-          {
-            "name": "reps",
-            "type": "array",
-            "label": "Reps",
-            "spec": {
-              "type": "collection",
-              "spec": [
-                { "name": "id", "type": "text", "label": "id" },
-                { "name": "name", "type": "text", "label": "name" }
-              ]
-            }
-          }
-        ]
-      }
-    },
-    {
-      "id": 7,
-      "module": "gateway:WebhookRespond",
-      "version": 1,
-      "parameters": {},
-      "mapper": {
-        "status": "200",
-        "body": "{{6.json}}",
-        "headers": [
-          {
-            "key": "Content-Type",
-            "value": "application/json"
-          }
-        ]
-      },
-      "metadata": {
-        "designer": {
-          "x": 1800,
-          "y": 0
-        },
-        "restore": {},
-        "expect": [
-          { "name": "status", "type": "uinteger", "label": "Status", "required": true },
-          { "name": "body", "type": "any", "label": "Body" },
-          {
-            "name": "headers",
-            "type": "array",
-            "label": "Custom headers",
-            "spec": [
-              { "name": "key", "type": "text", "label": "Key" },
-              { "name": "value", "type": "text", "label": "Value" }
-            ]
-          }
-        ]
-      }
+        "zone": "us2.make.com",
+        "notes": []
     }
-  ],
-  "metadata": {
-    "instant": true,
-    "version": 1,
-    "scenario": {
-      "roundtrips": 1,
-      "maxErrors": 3,
-      "autoCommit": true,
-      "autoCommitTriggerLast": true,
-      "sequential": false,
-      "confidential": false,
-      "dataloss": false,
-      "dlq": false,
-      "freshVariables": false
-    },
-    "designer": {
-      "orphans": []
-    },
-    "zone": "us2.make.com",
-    "notes": [
-      {
-        "moduleIds": [2, 4],
-        "content": "Map the connection to your client-airtable connection during import. Base + table IDs are pre-set for the Coin Appraisal Register base."
-      },
-      {
-        "moduleIds": [6],
-        "content": "Data structure 'config-load-response-v1' will need to be created during import — Make may prompt for it. If not, define it manually with the Generator using a sample response from the api-integrations doc."
-      }
-    ]
-  }
 }

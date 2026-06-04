@@ -164,7 +164,7 @@ export function CalculatorScreen() {
           </div>
           <div>
             <div className="text-xs uppercase tracking-wide text-emerald-700 font-semibold">
-              Total Offer
+              Max Offer
             </div>
             <div className="text-2xl font-bold text-emerald-700 tabular-nums">
               {canShowLiveOffer ? usd.format(liveTotals.offerTotal) : '—'}

@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { calculateBulk, HttpError, NetworkError } from '../api/client'
 import { cartLineToRequestItem } from '../api/types'
-import { valueBag } from '../lib/pricing'
+import { valueBag, valueLine } from '../lib/pricing'
 import { useCart } from '../state/useCart'
 import { useConfig } from '../state/useConfig'
 import { useSession } from '../state/useSession'
@@ -159,7 +159,7 @@ export function CalculatorScreen() {
               {canShowLiveMelt ? usd.format(liveTotals.meltTotal) : '—'}
             </div>
             <div className="text-[11px] text-slate-500 leading-tight">
-              What the metal is worth
+              What the items are worth
             </div>
           </div>
           <div>
@@ -241,6 +241,7 @@ export function CalculatorScreen() {
                 line.priced_by === 'weight_grams' ? line.weight_grams : line.quantity
               const isDecimal = line.priced_by === 'weight_grams'
               const isUnpriceable = liveTotals.unpriceableIds.has(line.id)
+              const lineVal = valueLine(line, effectiveSpot, effectiveMargins)
               return (
                 <li
                   key={line.id}
@@ -260,6 +261,16 @@ export function CalculatorScreen() {
                         </span>
                       ) : null}
                     </div>
+                    {lineVal && (
+                      <div className="text-xs mt-0.5 tabular-nums text-slate-500">
+                        {lineVal.meltValue > 0 ? (
+                          <>Value {usd.format(lineVal.meltValue)} · </>
+                        ) : null}
+                        <span className="font-semibold text-emerald-700">
+                          Max {usd.format(lineVal.offerValue)}
+                        </span>
+                      </div>
+                    )}
                     {isUnpriceable && (
                       <div className="text-xs font-bold text-red-700 mt-0.5">
                         Missing pricing data

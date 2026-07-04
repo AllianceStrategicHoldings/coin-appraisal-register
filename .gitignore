@@ -28,6 +28,10 @@ yarn-error.log*
 /scratch/
 *.tmp
 
+# Private notes / thinking — never pushed to any shared remote.
+# Backed up separately via its own nested git repo (personal only).
+/_private/
+
 # PWA build (web/) — explicit, even though patterns above cover them
 web/node_modules
 web/dist

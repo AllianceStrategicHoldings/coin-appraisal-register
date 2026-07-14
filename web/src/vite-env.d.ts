@@ -8,6 +8,8 @@ interface ImportMetaEnv {
   readonly VITE_CONFIG_LOAD_URL: string
   readonly VITE_BULK_CALC_URL: string
   readonly VITE_CUSTOMER_LOOKUP_URL?: string
+  readonly VITE_DEAL_SUBMIT_URL?: string
+  readonly VITE_MANAGER_PIN_CHECK_URL?: string
 }
 
 interface ImportMeta {

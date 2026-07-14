@@ -5,92 +5,14 @@
 
 import { useEffect, useRef, useState } from 'react'
 import { lookupCustomer } from '../api/client'
-import { uploadDealFile, type UploadKind } from '../lib/storage'
-import {
-  normalizePhone,
-  type PhotoState,
-  type UseIntakeResult,
-} from '../state/useIntake'
+import { normalizePhone, type UseIntakeResult } from '../state/useIntake'
+import { PhotoCapture } from './PhotoCapture'
 
 const usd = new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' })
 
 interface IntakeScreenProps {
   intake: UseIntakeResult
   onOpenCalculator: () => void
-}
-
-function PhotoCapture({
-  label,
-  kind,
-  dealDraftId,
-  photo,
-  onChange,
-}: {
-  label: string
-  kind: UploadKind
-  dealDraftId: string
-  photo: PhotoState
-  onChange: (p: PhotoState) => void
-}) {
-  const inputRef = useRef<HTMLInputElement>(null)
-
-  async function handleFile(file: File) {
-    const previewUrl = URL.createObjectURL(file)
-    onChange({ status: 'uploading', objectKey: null, previewUrl })
-    try {
-      const { objectKey } = await uploadDealFile(kind, dealDraftId, file, file.type)
-      onChange({ status: 'uploaded', objectKey, previewUrl })
-    } catch {
-      // Storage backend not reachable (e.g. token still pending) — keep the
-      // capture and mark it for re-upload by Make/at acceptance.
-      onChange({ status: 'pending_upload', objectKey: null, previewUrl })
-    }
-  }
-
-  return (
-    <div>
-      <span className="block text-sm font-medium text-slate-700 mb-1">{label}</span>
-      <div className="flex items-center gap-3">
-        <button
-          type="button"
-          onClick={() => inputRef.current?.click()}
-          className="min-h-11 px-4 text-sm rounded-md border border-slate-300 bg-white hover:bg-slate-100"
-        >
-          {photo.status === 'none' ? 'Take photo' : 'Retake'}
-        </button>
-        {photo.previewUrl && (
-          <img
-            src={photo.previewUrl}
-            alt={`${label} preview`}
-            className="h-11 w-11 rounded object-cover border border-slate-200"
-          />
-        )}
-        {photo.status === 'uploading' && (
-          <span className="text-xs text-slate-500">Uploading…</span>
-        )}
-        {photo.status === 'uploaded' && (
-          <span className="text-xs text-emerald-700 font-medium">Uploaded ✓</span>
-        )}
-        {photo.status === 'pending_upload' && (
-          <span className="text-xs text-amber-700 font-medium">
-            Saved — will upload when storage reconnects
-          </span>
-        )}
-      </div>
-      <input
-        ref={inputRef}
-        type="file"
-        accept="image/*"
-        capture="environment"
-        className="hidden"
-        onChange={(e) => {
-          const f = e.target.files?.[0]
-          if (f) void handleFile(f)
-          e.target.value = ''
-        }}
-      />
-    </div>
-  )
 }
 
 export function IntakeScreen({ intake, onOpenCalculator }: IntakeScreenProps) {

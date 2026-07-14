@@ -2,9 +2,9 @@ import { useEffect, useMemo, useRef, useState } from 'react'
 import { calculateBulk, HttpError, NetworkError } from '../api/client'
 import { cartLineToRequestItem } from '../api/types'
 import { dualPriceBag, dualPriceLine, valueLine } from '../lib/pricing'
-import { useCart } from '../state/useCart'
-import { useConfig } from '../state/useConfig'
-import { useSession } from '../state/useSession'
+import type { UseCartResult } from '../state/useCart'
+import type { UseConfigResult } from '../state/useConfig'
+import type { UseSessionResult } from '../state/useSession'
 import { AddCoinModal } from './AddCoinModal'
 import { KeypadField } from './KeypadField'
 
@@ -14,17 +14,22 @@ const usd = new Intl.NumberFormat('en-US', {
 })
 
 interface CalculatorScreenProps {
+  config: UseConfigResult
+  cart: UseCartResult
+  session: UseSessionResult
   customerName?: string
   onBackToIntake?: () => void
+  onReviewDeal?: () => void
 }
 
 export function CalculatorScreen({
+  config,
+  cart,
+  session,
   customerName,
   onBackToIntake,
-}: CalculatorScreenProps = {}) {
-  const config = useConfig()
-  const cart = useCart()
-  const session = useSession()
+  onReviewDeal,
+}: CalculatorScreenProps) {
 
   const [calcLoading, setCalcLoading] = useState(false)
   const [calcError, setCalcError] = useState<string | null>(null)
@@ -465,6 +470,16 @@ export function CalculatorScreen({
               : cart.lines.length === 0
                 ? 'Add a coin to calculate.'
                 : null}
+          </div>
+        )}
+        {onReviewDeal && cart.lines.length > 0 && (
+          <div className="px-4 pt-3">
+            <button
+              onClick={onReviewDeal}
+              className="w-full min-h-12 py-3 rounded-md bg-slate-900 text-white text-base font-semibold hover:bg-slate-800"
+            >
+              Review Deal →
+            </button>
           </div>
         )}
         <div className="px-4 pb-3 pt-3 flex gap-2">

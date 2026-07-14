@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { calculateBulk, HttpError, NetworkError } from '../api/client'
 import { cartLineToRequestItem } from '../api/types'
-import { valueBag, valueLine } from '../lib/pricing'
+import { dualPriceBag, dualPriceLine, valueLine } from '../lib/pricing'
 import { useCart } from '../state/useCart'
 import { useConfig } from '../state/useConfig'
 import { useSession } from '../state/useSession'
@@ -29,6 +29,8 @@ export function CalculatorScreen({
   const [calcLoading, setCalcLoading] = useState(false)
   const [calcError, setCalcError] = useState<string | null>(null)
   const [showAddCoin, setShowAddCoin] = useState(false)
+  // Lines where the rep tried to enter an Actual Offer above Max Payout
+  const [offerWarnIds, setOfferWarnIds] = useState<Set<string>>(new Set())
 
   const prevRepRef = useRef<string | null>(null)
   useEffect(() => {
@@ -83,7 +85,7 @@ export function CalculatorScreen({
   const effectiveMargins = config.margins
 
   const liveTotals = useMemo(
-    () => valueBag(cart.lines, effectiveSpot, effectiveMargins),
+    () => dualPriceBag(cart.lines, effectiveSpot, effectiveMargins),
     [cart.lines, effectiveSpot, effectiveMargins],
   )
 
@@ -176,12 +178,12 @@ export function CalculatorScreen({
         className="px-4 py-3 bg-white border-b border-slate-200"
         aria-label="Bag totals"
       >
-        <div className="grid grid-cols-2 gap-3">
+        <div className="grid grid-cols-2 gap-x-3 gap-y-2">
           <div>
             <div className="text-xs uppercase tracking-wide text-slate-500 font-semibold">
               Total Value
             </div>
-            <div className="text-2xl font-bold text-slate-900 tabular-nums">
+            <div className="text-xl font-bold text-slate-900 tabular-nums">
               {canShowLiveMelt ? usd.format(liveTotals.meltTotal) : '—'}
             </div>
             <div className="text-[11px] text-slate-500 leading-tight">
@@ -189,17 +191,45 @@ export function CalculatorScreen({
             </div>
           </div>
           <div>
-            <div className="text-xs uppercase tracking-wide text-emerald-700 font-semibold">
-              Max Offer
+            <div className="text-xs uppercase tracking-wide text-slate-500 font-semibold">
+              Max Payout
             </div>
-            <div className="text-2xl font-bold text-emerald-700 tabular-nums">
-              {canShowLiveOffer ? usd.format(liveTotals.offerTotal) : '—'}
+            <div className="text-xl font-bold text-slate-900 tabular-nums">
+              {canShowLiveOffer ? usd.format(liveTotals.totalMaxPayout) : '—'}
             </div>
             <div className="text-[11px] text-slate-500 leading-tight">
-              What we pay
+              Ceiling we can pay
+            </div>
+          </div>
+          <div>
+            <div className="text-xs uppercase tracking-wide text-emerald-700 font-semibold">
+              Actual Offer
+            </div>
+            <div className="text-2xl font-bold text-emerald-700 tabular-nums">
+              {canShowLiveOffer ? usd.format(liveTotals.totalActualOffer) : '—'}
+            </div>
+            <div className="text-[11px] text-slate-500 leading-tight">
+              What we're offering
+            </div>
+          </div>
+          <div>
+            <div className="text-xs uppercase tracking-wide text-sky-700 font-semibold">
+              Delta
+            </div>
+            <div className="text-2xl font-bold text-sky-700 tabular-nums">
+              {canShowLiveOffer ? usd.format(liveTotals.totalDelta) : '—'}
+            </div>
+            <div className="text-[11px] text-slate-500 leading-tight">
+              Negotiation room kept
             </div>
           </div>
         </div>
+        {canShowLiveOffer && liveTotals.offerPctOfMax !== null && (
+          <div className="mt-2 pt-2 border-t border-slate-100 text-[11px] text-slate-500 flex justify-between">
+            <span>Offer is {(liveTotals.offerPctOfMax * 100).toFixed(1)}% of Max Payout</span>
+            <span className="uppercase tracking-wide">Rep view only</span>
+          </div>
+        )}
         {cart.lines.length > 0 && (
           !canShowLiveMelt ? (
             <p className="mt-2 text-[11px] text-slate-500">
@@ -268,67 +298,155 @@ export function CalculatorScreen({
               const isDecimal = line.priced_by === 'weight_grams'
               const isUnpriceable = liveTotals.unpriceableIds.has(line.id)
               const lineVal = valueLine(line, effectiveSpot, effectiveMargins)
+              const dual = dualPriceLine(line, effectiveSpot, effectiveMargins)
+              const showOverWarn = offerWarnIds.has(line.id)
               return (
                 <li
                   key={line.id}
-                  className={`px-3 py-2 flex items-center gap-3 ${
+                  className={`px-3 py-2 ${
                     isUnpriceable ? 'bg-red-50 border-l-4 border-red-500' : ''
                   }`}
                 >
-                  <div className="flex-1 min-w-0">
-                    <div className="text-sm font-medium text-slate-900 truncate">
-                      {line.name}
-                    </div>
-                    <div className="text-xs text-slate-500">
-                      {value} {line.unit_label}
-                      {line.priced_by === 'times_face' && line.grade ? (
-                        <span className="ml-2 inline-block px-1.5 py-0.5 rounded bg-slate-100 text-slate-700 text-[10px] uppercase tracking-wide">
-                          {line.grade}
-                        </span>
-                      ) : null}
-                    </div>
-                    {lineVal && (
-                      <div className="text-xs mt-0.5 tabular-nums text-slate-500">
-                        {lineVal.meltValue > 0 ? (
-                          <>Value {usd.format(lineVal.meltValue)} · </>
+                  <div className="flex items-center gap-3">
+                    <div className="flex-1 min-w-0">
+                      <div className="text-sm font-medium text-slate-900 truncate">
+                        {line.name}
+                      </div>
+                      <div className="text-xs text-slate-500">
+                        {value} {line.unit_label}
+                        {line.priced_by === 'times_face' && line.grade ? (
+                          <span className="ml-2 inline-block px-1.5 py-0.5 rounded bg-slate-100 text-slate-700 text-[10px] uppercase tracking-wide">
+                            {line.grade}
+                          </span>
                         ) : null}
-                        <span className="font-semibold text-emerald-700">
-                          Max {usd.format(lineVal.offerValue)}
-                        </span>
                       </div>
-                    )}
-                    {isUnpriceable && (
-                      <div className="text-xs font-bold text-red-700 mt-0.5">
-                        Missing pricing data
+                      {lineVal && (
+                        <div className="text-xs mt-0.5 tabular-nums text-slate-500">
+                          {lineVal.meltValue > 0 ? (
+                            <>Value {usd.format(lineVal.meltValue)} · </>
+                          ) : null}
+                          <span className="font-semibold text-slate-700">
+                            Max {usd.format(lineVal.offerValue)}
+                          </span>
+                        </div>
+                      )}
+                      {isUnpriceable && (
+                        <div className="text-xs font-bold text-red-700 mt-0.5">
+                          Missing pricing data
+                        </div>
+                      )}
+                    </div>
+                    <div className="w-24">
+                      <KeypadField
+                        value={String(value)}
+                        onChange={(next) => {
+                          if (next === '' || next === '.') {
+                            cart.updateLine(line.id, 0)
+                            return
+                          }
+                          const v = parseFloat(next)
+                          if (!Number.isNaN(v) && v >= 0) {
+                            cart.updateLine(line.id, v)
+                          }
+                        }}
+                        allowDecimal={isDecimal}
+                        ariaLabel={`Edit ${line.name}`}
+                        keypadLabel={`${line.name} — ${line.unit_label}`}
+                        className="w-full min-h-11 px-2 text-sm rounded border border-slate-300 bg-white text-right"
+                      />
+                    </div>
+                    <button
+                      onClick={() => cart.removeLine(line.id)}
+                      className="text-slate-400 hover:text-red-500 min-h-11 min-w-11 text-2xl leading-none"
+                      aria-label={`Remove ${line.name}`}
+                    >
+                      ×
+                    </button>
+                  </div>
+                  {dual && (
+                    <div className="mt-1.5 flex items-center gap-2 pl-1">
+                      <span className="text-xs text-slate-500 shrink-0">Offer $</span>
+                      <div className="w-28">
+                        <KeypadField
+                          value={
+                            line.actual_offer != null
+                              ? String(line.actual_offer)
+                              : dual.actualOffer.toFixed(2)
+                          }
+                          onChange={(next) => {
+                            if (next === '' || next === '.') {
+                              cart.setActualOffer(line.id, null)
+                              setOfferWarnIds((prev) => {
+                                const s = new Set(prev)
+                                s.delete(line.id)
+                                return s
+                              })
+                              return
+                            }
+                            const v = parseFloat(next)
+                            if (Number.isNaN(v) || v < 0) return
+                            if (v > dual.maxPayout) {
+                              // Above Max Payout requires a manager override
+                              // code (2.13) — blocked until that lands in M3.
+                              setOfferWarnIds((prev) => new Set(prev).add(line.id))
+                              return
+                            }
+                            setOfferWarnIds((prev) => {
+                              const s = new Set(prev)
+                              s.delete(line.id)
+                              return s
+                            })
+                            cart.setActualOffer(line.id, v)
+                          }}
+                          allowDecimal
+                          ariaLabel={`Actual offer for ${line.name}`}
+                          keypadLabel={`${line.name} — Actual Offer ($)`}
+                          className={`w-full min-h-11 px-2 text-sm rounded border bg-white text-right font-semibold ${
+                            line.actual_offer != null
+                              ? 'border-emerald-400 text-emerald-800'
+                              : 'border-slate-300 text-slate-500'
+                          }`}
+                        />
                       </div>
-                    )}
-                  </div>
-                  <div className="w-24">
-                    <KeypadField
-                      value={String(value)}
-                      onChange={(next) => {
-                        if (next === '' || next === '.') {
-                          cart.updateLine(line.id, 0)
-                          return
-                        }
-                        const v = parseFloat(next)
-                        if (!Number.isNaN(v) && v >= 0) {
-                          cart.updateLine(line.id, v)
-                        }
-                      }}
-                      allowDecimal={isDecimal}
-                      ariaLabel={`Edit ${line.name}`}
-                      keypadLabel={`${line.name} — ${line.unit_label}`}
-                      className="w-full min-h-11 px-2 text-sm rounded border border-slate-300 bg-white text-right"
-                    />
-                  </div>
-                  <button
-                    onClick={() => cart.removeLine(line.id)}
-                    className="text-slate-400 hover:text-red-500 min-h-11 min-w-11 text-2xl leading-none"
-                    aria-label={`Remove ${line.name}`}
-                  >
-                    ×
-                  </button>
+                      <span className="text-xs tabular-nums text-sky-700 font-medium shrink-0">
+                        Delta {usd.format(dual.negotiationDelta)}
+                      </span>
+                      {line.actual_offer != null && (
+                        <button
+                          onClick={() => {
+                            cart.setActualOffer(line.id, null)
+                            setOfferWarnIds((prev) => {
+                              const s = new Set(prev)
+                              s.delete(line.id)
+                              return s
+                            })
+                          }}
+                          className="text-xs text-slate-400 underline shrink-0 min-h-11"
+                        >
+                          reset
+                        </button>
+                      )}
+                    </div>
+                  )}
+                  {showOverWarn && dual && (
+                    <div
+                      role="alert"
+                      className="mt-1 ml-1 text-xs font-semibold text-red-700"
+                    >
+                      Above Max Payout ({usd.format(dual.maxPayout)}) — requires a
+                      manager override code.
+                    </div>
+                  )}
+                  {!showOverWarn && dual?.capped && (
+                    <div
+                      role="alert"
+                      className="mt-1 ml-1 text-xs font-semibold text-amber-700"
+                    >
+                      Entered offer exceeds Max Payout — capped at{' '}
+                      {usd.format(dual.maxPayout)} (manager override required to
+                      exceed).
+                    </div>
+                  )}
                 </li>
               )
             })}

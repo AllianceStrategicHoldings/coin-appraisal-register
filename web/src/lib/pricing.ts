@@ -86,3 +86,80 @@ export function valueBag(
     unpriceableIds,
   }
 }
+
+// --- Dual Pricing Engine (SOW 2.4) ----------------------------------------
+// Each line carries a Max Payout (calculated ceiling = valueLine's offer) and
+// a rep-entered Actual Offer. Negotiation Delta = Max Payout - Actual Offer.
+// An untouched line's Actual Offer defaults to its Max Payout.
+
+export interface DualLine {
+  maxPayout: number
+  /** effective Actual Offer: rep-entered (capped at max) or = maxPayout */
+  actualOffer: number
+  negotiationDelta: number
+  /** true when the stored rep entry exceeded the current Max Payout and was capped */
+  capped: boolean
+}
+
+export interface DualTotals {
+  meltTotal: number
+  totalMaxPayout: number
+  totalActualOffer: number
+  totalDelta: number
+  /** Total Actual Offer relative to Total Max Payout (rep view only); null when max is 0 */
+  offerPctOfMax: number | null
+  hasUnpriceable: boolean
+  unpriceableIds: Set<string>
+}
+
+export function dualPriceLine(
+  line: CartLine,
+  spot: Spot | null,
+  margins: Margin[],
+): DualLine | null {
+  const v = valueLine(line, spot, margins)
+  if (v === null) return null
+  const maxPayout = v.offerValue
+  const entered = line.actual_offer
+  // Actual Offer must be <= Max Payout unless a manager override applies
+  // (2.13, M3). Until the override mechanism lands, entries are capped.
+  const actualOffer =
+    entered == null ? maxPayout : Math.min(entered, maxPayout)
+  return {
+    maxPayout,
+    actualOffer,
+    negotiationDelta: maxPayout - actualOffer,
+    capped: entered != null && entered > maxPayout,
+  }
+}
+
+export function dualPriceBag(
+  lines: CartLine[],
+  spot: Spot | null,
+  margins: Margin[],
+): DualTotals {
+  let melt = 0
+  let max = 0
+  let actual = 0
+  const unpriceableIds = new Set<string>()
+  for (const line of lines) {
+    const v = valueLine(line, spot, margins)
+    const d = dualPriceLine(line, spot, margins)
+    if (v === null || d === null) {
+      unpriceableIds.add(line.id)
+      continue
+    }
+    melt += v.meltValue
+    max += d.maxPayout
+    actual += d.actualOffer
+  }
+  return {
+    meltTotal: melt,
+    totalMaxPayout: max,
+    totalActualOffer: actual,
+    totalDelta: max - actual,
+    offerPctOfMax: max > 0 ? actual / max : null,
+    hasUnpriceable: unpriceableIds.size > 0,
+    unpriceableIds,
+  }
+}

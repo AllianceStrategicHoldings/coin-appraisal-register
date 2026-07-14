@@ -19,6 +19,8 @@ export interface UseCartResult {
   addLine: (line: CartLineInput) => void
   removeLine: (id: string) => void
   updateLine: (id: string, value: number) => void
+  /** Rep-entered Actual Offer for a line; null resets to "= Max Payout" (SOW 2.4) */
+  setActualOffer: (id: string, value: number | null) => void
   clear: () => void
 }
 
@@ -47,7 +49,13 @@ export function useCart(): UseCartResult {
     )
   }, [])
 
+  const setActualOffer = useCallback((id: string, value: number | null) => {
+    setLines((prev) =>
+      prev.map((l) => (l.id === id ? { ...l, actual_offer: value } : l)),
+    )
+  }, [])
+
   const clear = useCallback(() => setLines([]), [])
 
-  return { lines, addLine, removeLine, updateLine, clear }
+  return { lines, addLine, removeLine, updateLine, setActualOffer, clear }
 }

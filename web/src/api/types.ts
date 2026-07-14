@@ -93,6 +93,12 @@ interface CartLineBase {
   name: string
   metal_type: Metal
   unit_label: string
+  /**
+   * Rep-entered Actual Offer for the line (SOW 2.4). Null/undefined means
+   * "not negotiated" and defaults to the line's Max Payout. Must be
+   * <= Max Payout unless a manager override applies (2.13).
+   */
+  actual_offer?: number | null
   face_value?: number
   fixed_multiplier?: number
   mult_circulated?: number

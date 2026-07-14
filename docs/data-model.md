@@ -1,4 +1,9 @@
-# Data Model (Airtable)
+# Data Model (Airtable — M1)
+
+> **M2 note (2026-07-14):** the primary database moves to Supabase/Postgres for
+> M2 per the confirmed architecture decision. The M2 schema lives in
+> [`supabase/`](../supabase/README.md); this document remains the reference for
+> the M1 Airtable base until cutover.
 
 All tables live in a single Airtable base. Config tables are admin-editable; transactional tables are written to by Make.
 

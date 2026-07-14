@@ -40,6 +40,7 @@ export interface DealSubmission {
   payment_method?: string
   cash_over_9500_ack?: boolean
   price_lock_24hr?: boolean
+  price_lock_expires_at?: string
   object_keys: {
     intake_lot?: string | null
     dl_photo?: string | null

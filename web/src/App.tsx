@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { AcceptanceScreen } from './components/AcceptanceScreen'
 import { CalculatorScreen } from './components/CalculatorScreen'
 import { DealSummaryScreen } from './components/DealSummaryScreen'
+import { DeclineScreen } from './components/DeclineScreen'
 import { IntakeScreen } from './components/IntakeScreen'
 import { flushDealQueue, type SubmitResult } from './lib/dealSubmit'
 import { useCart } from './state/useCart'
@@ -15,7 +16,8 @@ type Phase =
   | 'summary'
   | 'acceptance'
   | 'accepted-done'
-  | 'declined'
+  | 'declining'
+  | 'declined-done'
 
 // Dev-only entry override (?screen=calculator|summary|acceptance) for local
 // testing and screenshots. import.meta.env.DEV is compiled to false in
@@ -35,6 +37,7 @@ function App() {
   const session = useSession()
   const [phase, setPhase] = useState<Phase>(devInitialPhase)
   const [submitResult, setSubmitResult] = useState<SubmitResult | null>(null)
+  const [priceLockExpiry, setPriceLockExpiry] = useState<Date | null>(null)
 
   // Offline degradation (2.14): retry any queued deal submissions on start.
   useEffect(() => {
@@ -65,7 +68,7 @@ function App() {
         spot={spot}
         margins={config.margins}
         onBack={() => setPhase('calculator')}
-        onDecision={(d) => setPhase(d === 'accept' ? 'acceptance' : 'declined')}
+        onDecision={(d) => setPhase(d === 'accept' ? 'acceptance' : 'declining')}
       />
     )
   }
@@ -112,31 +115,56 @@ function App() {
     )
   }
 
-  if (phase === 'declined') {
-    // Placeholder until the decline flow (2.7) lands: 24-hour price lock and
-    // the declined-deal webhook.
+  if (phase === 'declining') {
+    return (
+      <DeclineScreen
+        intake={intake}
+        lines={cart.lines}
+        spot={spot}
+        margins={config.margins}
+        onBack={() => setPhase('summary')}
+        onComplete={(result, _locked, expiresAt) => {
+          setSubmitResult(result)
+          setPriceLockExpiry(expiresAt)
+          setPhase('declined-done')
+        }}
+      />
+    )
+  }
+
+  if (phase === 'declined-done') {
     return (
       <main className="min-h-dvh flex flex-col items-center justify-center bg-slate-50 px-8 text-center">
-        <div className="text-5xl mb-4 grayscale" aria-hidden="true">🕐</div>
+        <div className="text-5xl mb-4" aria-hidden="true">🕐</div>
         <h1 className="text-2xl font-bold text-slate-900 mb-2">Deal Declined</h1>
-        <p className="text-slate-600 max-w-md mb-8">
-          Next in the build: 24-hour price lock and the declined-deal webhook
-          (decline flow, Section 2.7).
+        {priceLockExpiry ? (
+          <p className="text-slate-600 max-w-md mb-2">
+            The offer is locked for this customer until{' '}
+            <span className="font-semibold text-slate-900">
+              {priceLockExpiry.toLocaleString('en-US', {
+                dateStyle: 'medium',
+                timeStyle: 'short',
+              })}
+            </span>
+            . If they return before then, the price stands.
+          </p>
+        ) : (
+          <p className="text-slate-600 max-w-md mb-2">
+            Recorded with no price lock — a returning visit reprices at live spot.
+          </p>
+        )}
+        <p className="text-xs text-slate-500 mb-8">
+          Declined-deal record{' '}
+          {submitResult === 'delivered'
+            ? 'sent to the back office.'
+            : 'queued — will send automatically when connection returns.'}
         </p>
-        <div className="flex gap-2">
-          <button
-            onClick={() => setPhase('summary')}
-            className="min-h-12 px-6 rounded-md border border-slate-300 text-slate-700 hover:bg-slate-100"
-          >
-            ‹ Back to summary
-          </button>
-          <button
-            onClick={startNewCustomer}
-            className="min-h-12 px-6 rounded-md bg-slate-900 text-white hover:bg-slate-800"
-          >
-            New Customer
-          </button>
-        </div>
+        <button
+          onClick={startNewCustomer}
+          className="min-h-12 px-8 rounded-md bg-slate-900 text-white text-base font-semibold hover:bg-slate-800"
+        >
+          New Customer
+        </button>
       </main>
     )
   }

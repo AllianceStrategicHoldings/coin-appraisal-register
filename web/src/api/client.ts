@@ -2,6 +2,7 @@ import type {
   BulkCalcRequestItem,
   BulkCalcResponse,
   ConfigLoadResponse,
+  CustomerLookupResponse,
 } from './types'
 
 export class NetworkError extends Error {
@@ -45,6 +46,20 @@ export async function loadConfig(): Promise<ConfigLoadResponse> {
   const url = import.meta.env.VITE_CONFIG_LOAD_URL
   if (!url) throw new Error('VITE_CONFIG_LOAD_URL is not set')
   return postJSON<ConfigLoadResponse>(url, {})
+}
+
+/**
+ * Returning-customer lookup by phone + DOB (SOW 2.1) against Customer_Master.
+ * Returns null when the lookup backend is not yet configured — callers treat
+ * that as "no match" and proceed as a new customer.
+ */
+export async function lookupCustomer(
+  phone: string,
+  dob: string,
+): Promise<CustomerLookupResponse | null> {
+  const url = import.meta.env.VITE_CUSTOMER_LOOKUP_URL
+  if (!url) return null
+  return postJSON<CustomerLookupResponse>(url, { phone, dob })
 }
 
 export async function calculateBulk(

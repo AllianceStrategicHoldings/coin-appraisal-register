@@ -13,7 +13,15 @@ const usd = new Intl.NumberFormat('en-US', {
   currency: 'USD',
 })
 
-export function CalculatorScreen() {
+interface CalculatorScreenProps {
+  customerName?: string
+  onBackToIntake?: () => void
+}
+
+export function CalculatorScreen({
+  customerName,
+  onBackToIntake,
+}: CalculatorScreenProps = {}) {
   const config = useConfig()
   const cart = useCart()
   const session = useSession()
@@ -93,9 +101,27 @@ export function CalculatorScreen() {
       style={{ overscrollBehavior: 'contain' }}
     >
       <header className="px-4 py-3 bg-white border-b border-slate-200 flex items-center justify-between gap-3">
-        <h1 className="text-lg font-semibold text-slate-900 truncate">
-          Coin Appraisal Register
-        </h1>
+        <div className="min-w-0 flex items-center gap-2">
+          {onBackToIntake && (
+            <button
+              onClick={onBackToIntake}
+              className="min-h-11 px-2 text-sm text-slate-600 hover:text-slate-900 shrink-0"
+              aria-label="Back to customer intake"
+            >
+              ‹ Intake
+            </button>
+          )}
+          <div className="min-w-0">
+            <h1 className="text-lg font-semibold text-slate-900 truncate">
+              Coin Appraisal Register
+            </h1>
+            {customerName && (
+              <div className="text-xs text-slate-500 truncate">
+                Customer: {customerName}
+              </div>
+            )}
+          </div>
+        </div>
         <button
           onClick={() => void config.refresh()}
           disabled={config.loading}

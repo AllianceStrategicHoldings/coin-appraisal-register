@@ -60,6 +60,33 @@ export interface BulkCalcResponse {
   melt_total?: number
 }
 
+// --- Customer intake (SOW 2.1) -------------------------------------------
+
+export interface CustomerLookupRequest {
+  phone: string
+  /** ISO date, e.g. 1980-01-31 */
+  dob: string
+}
+
+export interface CustomerPriorDeal {
+  deal_number?: string
+  date?: string
+  total_offer?: number
+  status?: string
+}
+
+export interface CustomerLookupResponse {
+  matched: boolean
+  customer?: {
+    id: string
+    name: string
+    zip?: string
+    dl_number?: string
+    tcpa_opt_in?: boolean
+  }
+  prior_deals?: CustomerPriorDeal[]
+}
+
 interface CartLineBase {
   id: string
   coin_type_id: string

@@ -6,22 +6,23 @@ deal record; no platform-native attachment fields.
 
 ## Bucket
 
-- **Name:** `coin-appraisal-register`
+- **Name:** `coin-appraisal-register-production` (created by operator 2026-07-15)
 - **Owner:** operator's Cloudflare account (same account as DNS/Workers)
 - **Location:** automatic (R2 default)
 - **Public access:** OFF — objects are private; the app and Make.com access
   them via the S3 API / presigned URLs only.
 
-## API token (operator creates in dashboard)
+## API token (operator-issued, live)
 
-R2 → Manage R2 API Tokens → Create:
+Bucket-scoped **Object Read & Write** token, no expiry — verified working
+2026-07-15 (direct PUT/GET/DELETE round-trip and the full presigned-URL
+flow both pass).
 
-- **Permission:** Object Read & Write
-- **Scope:** apply to the `coin-appraisal-register` bucket only
-- **TTL:** no expiry
+The Access Key ID / Secret Access Key go into Vercel env vars (below) and
+Make.com — never into frontend code or the repo.
 
-The resulting Access Key ID / Secret Access Key go into Vercel env vars
-(below) and Make.com — never into frontend code or the repo.
+Note: the token is object-scoped (correctly), so it **cannot set bucket
+CORS** — that is applied once by the operator in the dashboard (below).
 
 ## Object key layout
 
@@ -39,17 +40,11 @@ audit artifact.
 
 ## CORS
 
-Applied from [`cors.json`](cors.json) — allows the PWA origin (and localhost
-dev) to PUT directly against presigned URLs:
-
-```sh
-aws s3api put-bucket-cors \
-  --bucket coin-appraisal-register \
-  --cors-configuration file://infra/r2/cors.json \
-  --endpoint-url "$R2_S3_ENDPOINT"
-```
-
-(Or paste the JSON into Cloudflare dashboard → bucket → Settings → CORS policy.)
+From [`cors.json`](cors.json) — allows the PWA origin (and localhost dev) to
+PUT directly against presigned URLs. Because the API token is object-scoped,
+this is applied by the operator in the dashboard:
+Cloudflare → R2 → `coin-appraisal-register-production` → **Settings** →
+**CORS policy** → paste the JSON from `cors.json`.
 
 ## Signing flow
 
@@ -67,7 +62,7 @@ aws s3api put-bucket-cors \
 | Var | Value |
 |---|---|
 | `R2_S3_ENDPOINT` | `https://<account-id>.r2.cloudflarestorage.com` |
-| `R2_BUCKET` | `coin-appraisal-register` |
+| `R2_BUCKET` | `coin-appraisal-register-production` |
 | `R2_ACCESS_KEY_ID` | from the bucket-scoped token |
 | `R2_SECRET_ACCESS_KEY` | from the bucket-scoped token |
 

@@ -8,6 +8,32 @@ const DRAFT_KEY = 'car.intake.v1'
 
 export type PhotoStatus = 'none' | 'uploading' | 'uploaded' | 'pending_upload'
 
+export type SellingReason =
+  | 'estate'
+  | 'divorce'
+  | 'debt'
+  | 'cleanup'
+  | 'investor'
+  | 'other'
+export type ReferralSource = 'google' | 'yelp' | 'friend' | 'drive_by' | 'other'
+
+export const SELLING_REASONS: Array<{ value: SellingReason; label: string }> = [
+  { value: 'estate', label: 'Estate' },
+  { value: 'divorce', label: 'Divorce' },
+  { value: 'debt', label: 'Debt' },
+  { value: 'cleanup', label: 'Cleanup' },
+  { value: 'investor', label: 'Investor' },
+  { value: 'other', label: 'Other' },
+]
+
+export const REFERRAL_SOURCES: Array<{ value: ReferralSource; label: string }> = [
+  { value: 'google', label: 'Google' },
+  { value: 'yelp', label: 'Yelp' },
+  { value: 'friend', label: 'Friend' },
+  { value: 'drive_by', label: 'Drive-by' },
+  { value: 'other', label: 'Other' },
+]
+
 export interface IntakeFields {
   name: string
   phone: string
@@ -16,6 +42,16 @@ export interface IntakeFields {
   zip: string
   tcpaOptIn: boolean
   dlNumber: string
+  /** operator analytics fields, asked at intake (2026-07-20 addition) */
+  sellingReason: SellingReason | ''
+  referralSource: ReferralSource | ''
+}
+
+/** Rep-entered deal-level observations (2026-07-20 addition) */
+export interface DealExtras {
+  estimatedCollectionAge: string
+  competitorOffersReceived: boolean | null
+  competitorOfferAmount: string
 }
 
 export interface PhotoState {
@@ -33,6 +69,14 @@ const EMPTY_FIELDS: IntakeFields = {
   zip: '',
   tcpaOptIn: false,
   dlNumber: '',
+  sellingReason: '',
+  referralSource: '',
+}
+
+const EMPTY_EXTRAS: DealExtras = {
+  estimatedCollectionAge: '',
+  competitorOffersReceived: null,
+  competitorOfferAmount: '',
 }
 
 const EMPTY_PHOTO: PhotoState = { status: 'none', objectKey: null, previewUrl: null }
@@ -58,7 +102,13 @@ function loadDraft(): { fields: IntakeFields; dealDraftId: string } {
     const raw = sessionStorage.getItem(DRAFT_KEY)
     if (raw) {
       const parsed = JSON.parse(raw) as { fields: IntakeFields; dealDraftId: string }
-      if (parsed?.fields && parsed?.dealDraftId) return parsed
+      if (parsed?.fields && parsed?.dealDraftId) {
+        // merge so drafts saved before new fields existed pick up defaults
+        return {
+          fields: { ...EMPTY_FIELDS, ...parsed.fields },
+          dealDraftId: parsed.dealDraftId,
+        }
+      }
     }
   } catch {
     // corrupted/unavailable draft — start fresh
@@ -77,6 +127,9 @@ export interface UseIntakeResult {
   setDlPhoto: (p: PhotoState) => void
   lookup: CustomerLookupResponse | null
   setLookup: (r: CustomerLookupResponse | null) => void
+  /** rep-entered deal-level observations (collection age, competitor offers) */
+  dealExtras: DealExtras
+  setDealExtra: <K extends keyof DealExtras>(key: K, value: DealExtras[K]) => void
   /** age in whole years, or null while DOB incomplete */
   age: number | null
   /** DOB entered and under 18 — hard stop, no override (2.1) */
@@ -92,6 +145,14 @@ export function useIntake(): UseIntakeResult {
   const [lotPhoto, setLotPhoto] = useState<PhotoState>(EMPTY_PHOTO)
   const [dlPhoto, setDlPhoto] = useState<PhotoState>(EMPTY_PHOTO)
   const [lookup, setLookup] = useState<CustomerLookupResponse | null>(null)
+  const [dealExtras, setDealExtras] = useState<DealExtras>({ ...EMPTY_EXTRAS })
+
+  const setDealExtra = useCallback(
+    <K extends keyof DealExtras>(key: K, value: DealExtras[K]) => {
+      setDealExtras((prev) => ({ ...prev, [key]: value }))
+    },
+    [],
+  )
 
   const setField = useCallback(
     <K extends keyof IntakeFields>(key: K, value: IntakeFields[K]) => {
@@ -118,6 +179,7 @@ export function useIntake(): UseIntakeResult {
     setLotPhoto(EMPTY_PHOTO)
     setDlPhoto(EMPTY_PHOTO)
     setLookup(null)
+    setDealExtras({ ...EMPTY_EXTRAS })
   }, [])
 
   const age = useMemo(() => ageFromDob(fields.dob), [fields.dob])
@@ -131,6 +193,8 @@ export function useIntake(): UseIntakeResult {
     if (!/^\d{5}$/.test(fields.zip.trim())) out.push('Zip (5 digits)')
     if (!fields.tcpaOptIn) out.push('TCPA consent')
     if (fields.dlNumber.trim().length < 4) out.push("Driver's license number")
+    if (!fields.sellingReason) out.push('Selling reason')
+    if (!fields.referralSource) out.push('Referral source')
     if (lotPhoto.status === 'none') out.push('Lot photo')
     if (dlPhoto.status === 'none') out.push("Driver's license photo")
     return out
@@ -148,6 +212,8 @@ export function useIntake(): UseIntakeResult {
     setDlPhoto,
     lookup,
     setLookup,
+    dealExtras,
+    setDealExtra,
     age,
     isUnder18,
     missing,

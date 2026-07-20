@@ -67,6 +67,8 @@ function App() {
         lines={cart.lines}
         spot={spot}
         margins={config.margins}
+        dealExtras={intake.dealExtras}
+        setDealExtra={intake.setDealExtra}
         onBack={() => setPhase('calculator')}
         onDecision={(d) => setPhase(d === 'accept' ? 'acceptance' : 'declining')}
       />

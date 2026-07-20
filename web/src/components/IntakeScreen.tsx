@@ -5,7 +5,14 @@
 
 import { useEffect, useRef, useState } from 'react'
 import { lookupCustomer } from '../api/client'
-import { normalizePhone, type UseIntakeResult } from '../state/useIntake'
+import {
+  normalizePhone,
+  REFERRAL_SOURCES,
+  SELLING_REASONS,
+  type ReferralSource,
+  type SellingReason,
+  type UseIntakeResult,
+} from '../state/useIntake'
 import { PhotoCapture } from './PhotoCapture'
 
 const usd = new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' })
@@ -181,6 +188,55 @@ export function IntakeScreen({ intake, onOpenCalculator }: IntakeScreenProps) {
               onChange={(e) => setField('dlNumber', e.target.value)}
               className="w-full min-h-11 px-3 rounded-md border border-slate-300 bg-white text-base"
             />
+          </div>
+        </div>
+
+        <div className="grid grid-cols-2 gap-3">
+          <div>
+            <label
+              htmlFor="intake-reason"
+              className="block text-sm font-medium text-slate-700 mb-1"
+            >
+              Reason for selling
+            </label>
+            <select
+              id="intake-reason"
+              value={fields.sellingReason}
+              onChange={(e) =>
+                setField('sellingReason', e.target.value as SellingReason | '')
+              }
+              className="w-full min-h-11 px-3 rounded-md border border-slate-300 bg-white text-base"
+            >
+              <option value="">Select…</option>
+              {SELLING_REASONS.map((r) => (
+                <option key={r.value} value={r.value}>
+                  {r.label}
+                </option>
+              ))}
+            </select>
+          </div>
+          <div>
+            <label
+              htmlFor="intake-referral"
+              className="block text-sm font-medium text-slate-700 mb-1"
+            >
+              How did they find us?
+            </label>
+            <select
+              id="intake-referral"
+              value={fields.referralSource}
+              onChange={(e) =>
+                setField('referralSource', e.target.value as ReferralSource | '')
+              }
+              className="w-full min-h-11 px-3 rounded-md border border-slate-300 bg-white text-base"
+            >
+              <option value="">Select…</option>
+              {REFERRAL_SOURCES.map((r) => (
+                <option key={r.value} value={r.value}>
+                  {r.label}
+                </option>
+              ))}
+            </select>
           </div>
         </div>
 

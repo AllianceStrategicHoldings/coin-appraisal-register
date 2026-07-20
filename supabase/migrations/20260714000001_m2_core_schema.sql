@@ -133,6 +133,16 @@ create table deal_log (
   collection_photo_url     text,             -- single lot photo at intake
   dl_photo_url             text,
 
+  -- operator-requested intake/deal analytics fields (added 2026-07-20)
+  customer_zip_radius_miles numeric(6,1),    -- distance from location; computed in Make
+  selling_reason           text check (selling_reason in
+                             ('estate', 'divorce', 'debt', 'cleanup', 'investor', 'other')),
+  referral_source          text check (referral_source in
+                             ('google', 'yelp', 'friend', 'drive_by', 'other')),
+  estimated_collection_age text,             -- rep-entered: when customer acquired items
+  competitor_offers_received boolean,        -- rep-entered
+  competitor_offer_amount  numeric(12,2),    -- optional dollar amount if known
+
   -- pricing roll-ups (2.4)
   total_max_payout         numeric(12,2),
   total_actual_offer       numeric(12,2),

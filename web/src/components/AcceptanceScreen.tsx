@@ -132,6 +132,16 @@ export function AcceptanceScreen({
           dl_number: intake.fields.dlNumber,
           tcpa_opt_in: intake.fields.tcpaOptIn,
         },
+        selling_reason: intake.fields.sellingReason || undefined,
+        referral_source: intake.fields.referralSource || undefined,
+        estimated_collection_age:
+          intake.dealExtras.estimatedCollectionAge.trim() || undefined,
+        competitor_offers_received:
+          intake.dealExtras.competitorOffersReceived ?? undefined,
+        competitor_offer_amount: intake.dealExtras.competitorOfferAmount
+          ? parseFloat(intake.dealExtras.competitorOfferAmount)
+          : undefined,
+        customer_zip_radius_miles: null,
         lines: lines.map((line) => {
           const dual = dualPriceLine(line, spot, margins)
           return {

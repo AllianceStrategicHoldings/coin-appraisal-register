@@ -20,6 +20,14 @@ export interface DealSubmission {
     dl_number: string
     tcpa_opt_in: boolean
   }
+  /** operator analytics fields (2026-07-20): intake dropdowns + rep-entered */
+  selling_reason?: string
+  referral_source?: string
+  estimated_collection_age?: string
+  competitor_offers_received?: boolean
+  competitor_offer_amount?: number
+  /** computed in Make from customer zip vs location; app sends null */
+  customer_zip_radius_miles?: number | null
   lines: Array<{
     coin_type_id: string
     name: string

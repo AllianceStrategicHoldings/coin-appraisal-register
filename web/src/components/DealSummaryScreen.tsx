@@ -9,6 +9,7 @@
 import { useMemo, useRef, useState } from 'react'
 import type { CartLine, Margin, Spot } from '../api/types'
 import { dualPriceBag, dualPriceLine } from '../lib/pricing'
+import type { DealExtras } from '../state/useIntake'
 
 const usd = new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' })
 
@@ -21,6 +22,8 @@ interface DealSummaryScreenProps {
   lines: CartLine[]
   spot: Spot | null
   margins: Margin[]
+  dealExtras: DealExtras
+  setDealExtra: <K extends keyof DealExtras>(key: K, value: DealExtras[K]) => void
   onBack: () => void
   onDecision: (decision: DealDecision) => void
 }
@@ -30,6 +33,8 @@ export function DealSummaryScreen({
   lines,
   spot,
   margins,
+  dealExtras,
+  setDealExtra,
   onBack,
   onDecision,
 }: DealSummaryScreenProps) {
@@ -260,6 +265,83 @@ export function DealSummaryScreen({
             )
           })}
         </ul>
+      </section>
+
+      <section
+        className="px-4 pb-3"
+        aria-label="Deal notes (rep-entered, optional)"
+      >
+        <h2 className="text-sm font-medium text-slate-700 mb-2">
+          Deal notes <span className="text-slate-400 font-normal">(optional)</span>
+        </h2>
+        <div className="bg-white rounded-md border border-slate-200 px-3 py-3 space-y-3">
+          <div>
+            <label
+              htmlFor="deal-age"
+              className="block text-xs font-medium text-slate-600 mb-1"
+            >
+              When did the customer acquire the items?
+            </label>
+            <input
+              id="deal-age"
+              type="text"
+              placeholder='e.g. "inherited, ~1970s" or "bought last year"'
+              value={dealExtras.estimatedCollectionAge}
+              onChange={(e) => setDealExtra('estimatedCollectionAge', e.target.value)}
+              className="w-full min-h-11 px-3 rounded-md border border-slate-300 bg-white text-sm"
+            />
+          </div>
+          <div>
+            <span className="block text-xs font-medium text-slate-600 mb-1">
+              Competitor offers received?
+            </span>
+            <div className="flex items-center gap-2">
+              <button
+                type="button"
+                onClick={() => setDealExtra('competitorOffersReceived', true)}
+                className={`min-h-11 px-4 rounded-md border text-sm font-medium ${
+                  dealExtras.competitorOffersReceived === true
+                    ? 'border-slate-900 bg-slate-100 text-slate-900'
+                    : 'border-slate-300 bg-white text-slate-600'
+                }`}
+              >
+                Yes
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  setDealExtra('competitorOffersReceived', false)
+                  setDealExtra('competitorOfferAmount', '')
+                }}
+                className={`min-h-11 px-4 rounded-md border text-sm font-medium ${
+                  dealExtras.competitorOffersReceived === false
+                    ? 'border-slate-900 bg-slate-100 text-slate-900'
+                    : 'border-slate-300 bg-white text-slate-600'
+                }`}
+              >
+                No
+              </button>
+              {dealExtras.competitorOffersReceived === true && (
+                <div className="flex items-center gap-1 flex-1">
+                  <span className="text-sm text-slate-500">$</span>
+                  <input
+                    type="text"
+                    inputMode="decimal"
+                    placeholder="amount if known"
+                    value={dealExtras.competitorOfferAmount}
+                    onChange={(e) =>
+                      setDealExtra(
+                        'competitorOfferAmount',
+                        e.target.value.replace(/[^0-9.]/g, ''),
+                      )
+                    }
+                    className="w-full min-h-11 px-3 rounded-md border border-slate-300 bg-white text-sm"
+                  />
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
       </section>
 
       <div

@@ -105,6 +105,35 @@ Payload shape: see `DealSubmission` in `web/src/lib/dealSubmit.ts`
    Note: `destination` enum is `primary_db | ghl | zoho | custom`; the
    primary_db "delivery" is steps 3–4 themselves — log it delivered.
 
+5b. **Zip radius** (operator decision 2026-07-21) — computed here, stored on
+   the deal as `customer_zip_radius_miles`. Reference point is dynamic:
+   - **Event mode** (deal carries an Event_ID): the event's `venue_zip`
+     from `config_events`
+   - **Store mode**: the active location's `zip` from `config_locations`
+
+   Steps (after the deal insert, PATCH the deal with the result):
+   1. GET `{base}/zip_centroids?zip=eq.{{customer.zip}}&select=lat,lng`
+   2. GET `{base}/zip_centroids?zip=eq.{{reference_zip}}&select=lat,lng`
+   3. If **either** lookup returns empty (PO-box-only zips like 30301 are
+      not ZCTAs), leave the field null — do not error the scenario.
+   4. Haversine (miles) as a Make formula, radians = deg × pi/180:
+      ```
+      3958.8 * 2 * asin(sqrt(
+        pow(sin((lat2-lat1)*pi/360), 2) +
+        cos(lat1*pi/180) * cos(lat2*pi/180) *
+        pow(sin((lng2-lng1)*pi/360), 2)
+      ))
+      ```
+      Round to 1 decimal.
+   5. PATCH `{base}/deal_log?id=eq.{{deal_id}}` body
+      `{"customer_zip_radius_miles": {{miles}}}`
+
+   Verified against the live `zip_centroids` table (33,791 rows loaded from
+   the 2024 Census ZCTA gazetteer): 75201→76102 = 30.8 mi,
+   75201→90210 = 1,247.2 mi. Loader: `infra/zips/load-zip-centroids.mjs`.
+   Prerequisite config: `config_locations.zip` and `config_events.venue_zip`
+   must be filled when the operator provides location/event data at kickoff.
+
 6. **Retry sweep** — separate small scheduled scenario (every 15 min):
    GET `{base}/webhook_deliveries?status=eq.failed&next_attempt_at=lte.now`
    → re-POST each, PATCH delivered/failed+backoff. This + the app-side

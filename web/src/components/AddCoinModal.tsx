@@ -1,6 +1,8 @@
 import { useEffect, useMemo, useState } from 'react'
 import type { CartLineInput, CoinType, Grade, Metal } from '../api/types'
+import { HallmarkAckModal } from './HallmarkAckModal'
 import { KeypadField } from './KeypadField'
+import { Pre1933GoldStop } from './Pre1933GoldStop'
 
 const GRADES: Array<{ value: Grade; label: string }> = [
   { value: 'circulated', label: 'Circulated' },
@@ -26,6 +28,8 @@ interface AddCoinModalProps {
   onClose: () => void
   coinTypes: CoinType[]
   onAdd: (line: CartLineInput) => void
+  /** records the timestamped Pre-1933 gold manager acknowledgment on the deal */
+  onPre1933Ack?: (at: string) => void
 }
 
 export function AddCoinModal({
@@ -33,22 +37,43 @@ export function AddCoinModal({
   onClose,
   coinTypes,
   onAdd,
+  onPre1933Ack,
 }: AddCoinModalProps) {
   const [selectedId, setSelectedId] = useState<string | null>(null)
   const [value, setValue] = useState<string>('')
   const [grade, setGrade] = useState<Grade | null>(null)
 
+  // 2.2 gates and overrides
+  const [hallmarkAck, setHallmarkAck] = useState(false)
+  const [showHallmark, setShowHallmark] = useState(false)
+  const [pre1933Ack, setPre1933Ack] = useState(false)
+  const [showPre1933, setShowPre1933] = useState(false)
+  const [purityOverride, setPurityOverride] = useState<string>('')
+
+  // manual entry (paper money)
+  const [denomination, setDenomination] = useState('')
+  const [year, setYear] = useState('')
+  const [condition, setCondition] = useState('')
+
+  function resetEntry() {
+    setValue('')
+    setGrade(null)
+    setHallmarkAck(false)
+    setShowHallmark(false)
+    setPre1933Ack(false)
+    setShowPre1933(false)
+    setPurityOverride('')
+    setDenomination('')
+    setYear('')
+    setCondition('')
+  }
+
   useEffect(() => {
     if (isOpen) {
       setSelectedId(null)
-      setValue('')
-      setGrade(null)
+      resetEntry()
     }
   }, [isOpen])
-
-  useEffect(() => {
-    setGrade(null)
-  }, [selectedId])
 
   const grouped = useMemo(() => {
     const groups: Record<Metal, CoinType[]> = {
@@ -69,14 +94,38 @@ export function AddCoinModal({
     [coinTypes, selectedId],
   )
 
+  function handleSelect(c: CoinType) {
+    setSelectedId(c.id)
+    resetEntry()
+    // Gates fire on selection so the rep can't enter values first (2.2).
+    if (c.is_pre1933_gold) setShowPre1933(true)
+    else if (c.requires_hallmark_ack) setShowHallmark(true)
+    if (c.allow_purity_override && c.purity_factor != null) {
+      setPurityOverride(String(c.purity_factor))
+    }
+  }
+
   const numValue = parseFloat(value)
-  const isNumismatic = selected?.metal_type === 'numismatic'
-  const needsGrade = isNumismatic
+  const isManual = selected?.priced_by === 'manual'
+  const needsGrade = selected?.metal_type === 'numismatic' && !isManual
+  const overrideNum = parseFloat(purityOverride)
+  const purityValid =
+    !selected?.allow_purity_override ||
+    (!Number.isNaN(overrideNum) && overrideNum > 0 && overrideNum <= 1)
+
+  // Weight entry stays blocked until the hallmark popup is acknowledged (2.2)
+  const entryBlocked =
+    (selected?.requires_hallmark_ack === true && !hallmarkAck) ||
+    (selected?.is_pre1933_gold === true && !pre1933Ack)
+
   const canAdd =
     selected !== null &&
+    !entryBlocked &&
+    purityValid &&
     !Number.isNaN(numValue) &&
     numValue > 0 &&
-    (!needsGrade || grade !== null)
+    (!needsGrade || grade !== null) &&
+    (!isManual || denomination.trim().length > 0)
 
   function handleAdd() {
     if (!selected || !canAdd) return
@@ -92,8 +141,30 @@ export function AddCoinModal({
       mult_slabbed: selected.mult_slabbed,
       oz_metal_per_unit: selected.oz_metal_per_unit,
       category: selected.category,
+      premium_per_unit: selected.premium_per_unit,
+      purity_factor: selected.purity_factor,
+      ...(selected.allow_purity_override && !Number.isNaN(overrideNum)
+        ? { purity_factor_used: overrideNum }
+        : {}),
+      ...(selected.requires_hallmark_ack ? { hallmark_acknowledged: true } : {}),
+      ...(selected.is_pre1933_gold ? { pre1933_ack: true } : {}),
     }
-    if (selected.priced_by === 'weight_grams') {
+
+    if (isManual) {
+      // Paper money: quantity is 1 unless the rep entered more; the value
+      // field IS the offer (2.2).
+      onAdd({
+        ...base,
+        priced_by: 'manual',
+        quantity: 1,
+        manual_offer: numValue,
+        details: {
+          denomination: denomination.trim(),
+          year: year.trim(),
+          condition: condition.trim(),
+        },
+      })
+    } else if (selected.priced_by === 'weight_grams') {
       onAdd({ ...base, priced_by: 'weight_grams', weight_grams: numValue })
     } else if (selected.priced_by === 'times_face') {
       onAdd({
@@ -110,11 +181,46 @@ export function AddCoinModal({
 
   if (!isOpen) return null
 
-  const inputLabel =
-    selected?.priced_by === 'weight_grams'
+  // --- blocking gates render over everything (2.2) ---
+  if (showPre1933 && selected) {
+    return (
+      <Pre1933GoldStop
+        itemName={selected.name}
+        onAcknowledged={(at) => {
+          setPre1933Ack(true)
+          setShowPre1933(false)
+          onPre1933Ack?.(at)
+        }}
+        onCancel={() => {
+          setShowPre1933(false)
+          setSelectedId(null)
+        }}
+      />
+    )
+  }
+
+  if (showHallmark && selected) {
+    return (
+      <HallmarkAckModal
+        itemName={selected.name}
+        onAcknowledge={() => {
+          setHallmarkAck(true)
+          setShowHallmark(false)
+        }}
+        onCancel={() => {
+          setShowHallmark(false)
+          setSelectedId(null)
+        }}
+      />
+    )
+  }
+
+  const inputLabel = isManual
+    ? 'Offer ($)'
+    : selected?.priced_by === 'weight_grams'
       ? `Weight (${selected.unit_label ?? 'grams'})`
       : 'Quantity'
-  const inputIsDecimal = selected?.priced_by === 'weight_grams'
+  const inputIsDecimal = isManual || selected?.priced_by === 'weight_grams'
 
   return (
     <div className="fixed inset-0 z-50 flex flex-col">
@@ -127,7 +233,7 @@ export function AddCoinModal({
 
       <div className="bg-white rounded-t-2xl shadow-2xl flex flex-col max-h-[90dvh]">
         <header className="px-4 py-3 border-b border-slate-200 flex items-center justify-between">
-          <h2 className="text-lg font-semibold text-slate-900">Add a coin</h2>
+          <h2 className="text-lg font-semibold text-slate-900">Add an item</h2>
           <button
             onClick={onClose}
             aria-label="Close"
@@ -156,7 +262,7 @@ export function AddCoinModal({
                       <li key={c.id}>
                         <button
                           type="button"
-                          onClick={() => setSelectedId(c.id)}
+                          onClick={() => handleSelect(c)}
                           className={`w-full px-3 py-3 text-left flex items-center justify-between gap-3 min-h-12 ${
                             isSelected
                               ? 'bg-emerald-50 ring-1 ring-emerald-500'
@@ -165,8 +271,17 @@ export function AddCoinModal({
                         >
                           <span className="text-sm font-medium text-slate-900">
                             {c.name}
+                            {c.is_pre1933_gold && (
+                              <span className="ml-2 inline-block px-1.5 py-0.5 rounded bg-red-100 text-red-700 text-[10px] font-bold uppercase tracking-wide">
+                                Manager
+                              </span>
+                            )}
                           </span>
-                          {c.face_value ? (
+                          {c.premium_per_unit != null ? (
+                            <span className="text-xs text-slate-500 shrink-0">
+                              +{usd.format(c.premium_per_unit)} premium
+                            </span>
+                          ) : c.face_value ? (
                             <span className="text-xs text-slate-500 shrink-0">
                               {usd.format(c.face_value)} face
                             </span>
@@ -183,6 +298,23 @@ export function AddCoinModal({
 
         {selected && (
           <div className="px-4 py-3 border-t border-slate-200 bg-slate-50 space-y-3">
+            {selected.entry_note && (
+              <div className="px-3 py-2 rounded-md bg-amber-50 border border-amber-300 text-xs text-amber-900">
+                {selected.entry_note}
+              </div>
+            )}
+
+            {selected.requires_hallmark_ack && hallmarkAck && (
+              <div className="text-xs text-emerald-700 font-medium">
+                Hallmark confirmed ✓
+              </div>
+            )}
+            {selected.is_pre1933_gold && pre1933Ack && (
+              <div className="text-xs text-emerald-700 font-medium">
+                Manager approved Pre-1933 US Gold ✓
+              </div>
+            )}
+
             {needsGrade && (
               <div>
                 <span className="block text-sm font-medium text-slate-700 mb-1">
@@ -210,6 +342,91 @@ export function AddCoinModal({
                 </div>
               </div>
             )}
+
+            {selected.allow_purity_override && (
+              <div>
+                <label
+                  htmlFor="purity-override"
+                  className="block text-sm font-medium text-slate-700 mb-1"
+                >
+                  Purity factor{' '}
+                  <span className="font-normal text-slate-500">
+                    (stored {selected.purity_factor ?? '—'}; edit if the piece
+                    differs)
+                  </span>
+                </label>
+                <input
+                  id="purity-override"
+                  type="text"
+                  inputMode="decimal"
+                  value={purityOverride}
+                  onChange={(e) =>
+                    setPurityOverride(e.target.value.replace(/[^0-9.]/g, ''))
+                  }
+                  className="w-full min-h-11 px-3 rounded-md border border-slate-300 bg-white text-base"
+                />
+                {!purityValid && (
+                  <div className="mt-1 text-xs text-red-700">
+                    Purity must be between 0 and 1 (e.g. 0.900 for 90% silver).
+                  </div>
+                )}
+              </div>
+            )}
+
+            {isManual && (
+              <div className="grid grid-cols-3 gap-2">
+                <div>
+                  <label
+                    htmlFor="pm-denom"
+                    className="block text-xs font-medium text-slate-600 mb-1"
+                  >
+                    Denomination
+                  </label>
+                  <input
+                    id="pm-denom"
+                    type="text"
+                    value={denomination}
+                    onChange={(e) => setDenomination(e.target.value)}
+                    placeholder="$20"
+                    className="w-full min-h-11 px-2 rounded-md border border-slate-300 bg-white text-sm"
+                  />
+                </div>
+                <div>
+                  <label
+                    htmlFor="pm-year"
+                    className="block text-xs font-medium text-slate-600 mb-1"
+                  >
+                    Year
+                  </label>
+                  <input
+                    id="pm-year"
+                    type="text"
+                    inputMode="numeric"
+                    value={year}
+                    onChange={(e) => setYear(e.target.value.replace(/\D/g, ''))}
+                    placeholder="1934"
+                    className="w-full min-h-11 px-2 rounded-md border border-slate-300 bg-white text-sm"
+                  />
+                </div>
+                <div>
+                  <label
+                    htmlFor="pm-cond"
+                    className="block text-xs font-medium text-slate-600 mb-1"
+                  >
+                    Condition
+                  </label>
+                  <input
+                    id="pm-cond"
+                    type="text"
+                    value={condition}
+                    onChange={(e) => setCondition(e.target.value)}
+                    placeholder="VF"
+                    className="w-full min-h-11 px-2 rounded-md border border-slate-300 bg-white text-sm"
+                  />
+                </div>
+              </div>
+            )}
+
             <div>
               <label
                 htmlFor="add-coin-value"
@@ -218,6 +435,7 @@ export function AddCoinModal({
                 {inputLabel}
               </label>
               <KeypadField
+                id="add-coin-value"
                 value={value}
                 onChange={setValue}
                 allowDecimal={inputIsDecimal}
@@ -225,6 +443,13 @@ export function AddCoinModal({
                 keypadLabel={inputLabel}
                 placeholder={inputIsDecimal ? 'e.g. 23.4' : 'e.g. 10'}
               />
+              {entryBlocked && (
+                <div className="mt-1 text-xs text-amber-700 font-medium">
+                  {selected.is_pre1933_gold
+                    ? 'Manager approval required before this item can be added.'
+                    : 'Acknowledge the hallmark check before entering weight.'}
+                </div>
+              )}
             </div>
           </div>
         )}

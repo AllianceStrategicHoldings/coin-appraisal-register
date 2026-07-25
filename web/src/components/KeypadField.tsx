@@ -2,6 +2,8 @@ import { useState } from 'react'
 import { NumericKeypad } from './NumericKeypad'
 
 interface KeypadFieldProps {
+  /** associates a visible <label htmlFor> with the field trigger */
+  id?: string
   value: string
   onChange: (next: string) => void
   allowDecimal: boolean
@@ -13,6 +15,7 @@ interface KeypadFieldProps {
 }
 
 export function KeypadField({
+  id,
   value,
   onChange,
   allowDecimal,
@@ -30,6 +33,7 @@ export function KeypadField({
   return (
     <>
       <button
+        id={id}
         type="button"
         onClick={() => setOpen(true)}
         aria-label={ariaLabel}

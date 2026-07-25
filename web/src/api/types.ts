@@ -1,5 +1,5 @@
 export type Metal = 'silver' | 'gold' | 'platinum' | 'numismatic'
-export type PricedBy = 'each_metal' | 'weight_grams' | 'times_face'
+export type PricedBy = 'each_metal' | 'weight_grams' | 'times_face' | 'manual'
 export type MarginCategory = 'silver' | 'gold' | 'platinum' | 'numismatic'
 export type Grade = 'circulated' | 'uncirculated' | 'slabbed'
 
@@ -16,6 +16,18 @@ export interface CoinType {
   mult_slabbed?: number
   oz_metal_per_unit?: number
   category?: MarginCategory
+  /** bullion: unit x spot + this premium per unit (2.2) */
+  premium_per_unit?: number
+  /** sterling / foreign silver purity (2.2) */
+  purity_factor?: number
+  /** sterling: hallmark popup must be acknowledged before weight entry (2.2) */
+  requires_hallmark_ack?: boolean
+  /** full-screen red stop + manager PIN before this item can be added (2.2) */
+  is_pre1933_gold?: boolean
+  /** foreign silver: rep may override the stored purity factor (2.2) */
+  allow_purity_override?: boolean
+  /** static note shown on the entry screen (e.g. paper-money review note) */
+  entry_note?: string
 }
 
 export interface Rep {
@@ -106,12 +118,35 @@ interface CartLineBase {
   mult_slabbed?: number
   oz_metal_per_unit?: number
   category?: MarginCategory
+  /** bullion premium per unit, from Config_CoinTypes (2.2) */
+  premium_per_unit?: number
+  /** stored purity factor for sterling / foreign silver (2.2) */
+  purity_factor?: number
+  /** rep's manual purity override; wins over purity_factor when set (2.2) */
+  purity_factor_used?: number
+  /** true once the rep acknowledged the sterling hallmark popup (2.2) */
+  hallmark_acknowledged?: boolean
+  /** true once a manager PIN cleared the Pre-1933 US Gold stop (2.2 / 3.2) */
+  pre1933_ack?: boolean
+}
+
+/** Paper money manual entry (2.2) */
+export interface ManualEntryDetails {
+  denomination: string
+  year: string
+  condition: string
 }
 
 export type CartLine =
   | (CartLineBase & { priced_by: 'each_metal'; quantity: number })
   | (CartLineBase & { priced_by: 'weight_grams'; weight_grams: number })
   | (CartLineBase & { priced_by: 'times_face'; quantity: number; grade?: Grade })
+  | (CartLineBase & {
+      priced_by: 'manual'
+      quantity: number
+      manual_offer: number
+      details: ManualEntryDetails
+    })
 
 type DistributiveOmit<T, K extends keyof CartLineBase | keyof CartLine> =
   T extends unknown ? Omit<T, K> : never

@@ -48,6 +48,12 @@ export function valueLine(
     return { meltValue: 0, offerValue: offer }
   }
 
+  // Manual entry (paper money, spec 2.2): the rep enters the offer directly.
+  // No spot, no margin — what they type is the ceiling.
+  if (line.priced_by === 'manual') {
+    return { meltValue: 0, offerValue: line.manual_offer }
+  }
+
   if (!spot) return null
   if (line.metal_type === 'numismatic') return null
   if (line.oz_metal_per_unit == null) return null
@@ -58,7 +64,19 @@ export function valueLine(
 
   const units =
     line.priced_by === 'each_metal' ? line.quantity : line.weight_grams
-  const melt = units * line.oz_metal_per_unit * spotForMetal(spot, line.metal_type)
+  // Sterling / foreign silver carry a purity factor; a rep override wins over
+  // the stored value (spec 2.2). Metals without one price at full purity.
+  const purity = line.purity_factor_used ?? line.purity_factor ?? 1
+  const melt =
+    units * line.oz_metal_per_unit * purity * spotForMetal(spot, line.metal_type)
+
+  // Bullion is priced at spot + a configurable per-unit premium rather than a
+  // margin discount (spec 2.2). Premium applies per coin, so only for
+  // each_metal lines.
+  if (line.premium_per_unit != null && line.priced_by === 'each_metal') {
+    return { meltValue: melt, offerValue: melt + line.quantity * line.premium_per_unit }
+  }
+
   return { meltValue: melt, offerValue: melt * marginPct }
 }
 

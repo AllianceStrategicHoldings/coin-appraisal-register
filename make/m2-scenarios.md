@@ -30,7 +30,13 @@ App env vars to set in Vercel once webhooks exist:
 
 **Trigger:** Custom webhook (POST, no body needed) → app's `VITE_CONFIG_LOAD_URL`
 
-1. **HTTP GET** `{base}/config_coin_types?active=is.true&select=*&order=name`
+1. **HTTP GET** `{base}/config_coin_types?active=is.true&order=name&select=...`
+   — use the explicit select list from
+   [`config-load.v2.blueprint.json`](config-load.v2.blueprint.json) (module 3).
+   It aliases `category:margin_category` for the app and includes the 2.2
+   entry fields (`premium_per_unit`, `purity_factor`,
+   `requires_hallmark_ack`, `is_pre1933_gold`, `allow_purity_override`,
+   `entry_note`).
 2. **HTTP GET** `{base}/config_margins?select=category,margin_pct`
 3. **HTTP GET** `{base}/reps_master?active=is.true&select=id,name&order=name`
 4. **HTTP GET** metals-api latest (existing module from M1 bulk-calc; also

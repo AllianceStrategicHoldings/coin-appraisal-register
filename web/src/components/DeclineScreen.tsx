@@ -71,6 +71,8 @@ export function DeclineScreen({
         ? parseFloat(intake.dealExtras.competitorOfferAmount)
         : undefined,
       customer_zip_radius_miles: null,
+      pre1933_gold_ack: intake.dealExtras.pre1933AckAt ? true : undefined,
+      pre1933_ack_at: intake.dealExtras.pre1933AckAt ?? undefined,
       lines: lines.map((line) => {
         const dual = dualPriceLine(line, spot, margins)
         return {
@@ -83,6 +85,16 @@ export function DeclineScreen({
           grade: line.priced_by === 'times_face' ? line.grade : undefined,
           max_payout: dual?.maxPayout ?? null,
           actual_offer: dual?.actualOffer ?? null,
+          manual_offer: line.priced_by === 'manual' ? line.manual_offer : undefined,
+          description:
+            line.priced_by === 'manual'
+              ? [line.details.denomination, line.details.year, line.details.condition]
+                  .filter(Boolean)
+                  .join(' · ')
+              : undefined,
+          purity_factor_used: line.purity_factor_used,
+          hallmark_acknowledged: line.hallmark_acknowledged,
+          pre1933_ack: line.pre1933_ack,
         }
       }),
       totals: {

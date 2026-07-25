@@ -84,7 +84,7 @@
       "mapper": {
         "ca": "",
         "qs": [],
-        "url": "https://jsklabrbirsidlnxpgmw.supabase.co/rest/v1/config_coin_types?active=is.true&order=name&select=id,name,metal_type,priced_by,unit_label,face_value,oz_metal_per_unit,mult_circulated,mult_uncirculated,mult_slabbed,category:margin_category",
+        "url": "https://jsklabrbirsidlnxpgmw.supabase.co/rest/v1/config_coin_types?active=is.true&order=name&select=id,name,metal_type,priced_by,unit_label,face_value,oz_metal_per_unit,mult_circulated,mult_uncirculated,mult_slabbed,category:margin_category,premium_per_unit,purity_factor,requires_hallmark_ack,is_pre1933_gold,allow_purity_override,entry_note",
         "gzip": true,
         "method": "get",
         "headers": [

@@ -52,6 +52,8 @@ export interface DealExtras {
   estimatedCollectionAge: string
   competitorOffersReceived: boolean | null
   competitorOfferAmount: string
+  /** ISO timestamp of the manager PIN ack on the Pre-1933 gold stop (2.2) */
+  pre1933AckAt: string | null
 }
 
 export interface PhotoState {
@@ -77,6 +79,7 @@ const EMPTY_EXTRAS: DealExtras = {
   estimatedCollectionAge: '',
   competitorOffersReceived: null,
   competitorOfferAmount: '',
+  pre1933AckAt: null,
 }
 
 const EMPTY_PHOTO: PhotoState = { status: 'none', objectKey: null, previewUrl: null }

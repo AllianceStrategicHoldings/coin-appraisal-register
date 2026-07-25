@@ -37,7 +37,16 @@ export interface DealSubmission {
     grade?: string
     max_payout: number | null
     actual_offer: number | null
+    /** 2.2 entry details */
+    manual_offer?: number
+    description?: string
+    purity_factor_used?: number
+    hallmark_acknowledged?: boolean
+    pre1933_ack?: boolean
   }>
+  /** deal-level Pre-1933 gold manager acknowledgment (2.2 / 3.2) */
+  pre1933_gold_ack?: boolean
+  pre1933_ack_at?: string
   totals: {
     total_value: number
     total_max_payout: number

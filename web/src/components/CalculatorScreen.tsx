@@ -20,6 +20,7 @@ interface CalculatorScreenProps {
   customerName?: string
   onBackToIntake?: () => void
   onReviewDeal?: () => void
+  onPre1933Ack?: (at: string) => void
 }
 
 export function CalculatorScreen({
@@ -29,6 +30,7 @@ export function CalculatorScreen({
   customerName,
   onBackToIntake,
   onReviewDeal,
+  onPre1933Ack,
 }: CalculatorScreenProps) {
 
   const [calcLoading, setCalcLoading] = useState(false)
@@ -56,7 +58,15 @@ export function CalculatorScreen({
     setCalcLoading(true)
     setCalcError(null)
     try {
-      const items = cart.lines.map(cartLineToRequestItem)
+      // Manual-entry lines (paper money) carry a rep-entered offer and have
+      // nothing for the pricing engine to compute (2.2).
+      const items = cart.lines
+        .filter((l) => l.priced_by !== 'manual')
+        .map(cartLineToRequestItem)
+      if (items.length === 0) {
+        setCalcLoading(false)
+        return
+      }
       const result = await calculateBulk(items)
       session.setLastCalc(result)
     } catch (err) {
@@ -510,6 +520,7 @@ export function CalculatorScreen({
         onClose={() => setShowAddCoin(false)}
         coinTypes={config.coinTypes}
         onAdd={cart.addLine}
+        onPre1933Ack={onPre1933Ack}
       />
     </main>
   )

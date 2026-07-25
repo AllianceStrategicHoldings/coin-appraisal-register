@@ -179,6 +179,7 @@ function App() {
       customerName={intake.fields.name}
       onBackToIntake={() => setPhase('intake')}
       onReviewDeal={() => setPhase('summary')}
+      onPre1933Ack={(at) => intake.setDealExtra('pre1933AckAt', at)}
     />
   )
 }

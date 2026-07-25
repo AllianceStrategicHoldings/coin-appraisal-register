@@ -50,7 +50,7 @@
         "variables": [
           {
             "name": "supabase_service_key",
-            "value": "PASTE_SERVICE_ROLE_KEY_HERE"
+            "value": "REPLACE_WITH_SUPABASE_SERVICE_ROLE_KEY"
           }
         ]
       },
@@ -267,7 +267,7 @@
       "mapper": {
         "ca": "",
         "qs": [],
-        "url": "https://metals-api.com/api/latest?access_key=q706j4x2c53qrihpmt8tdp877htli4do250oc9if94k0ieccuaqlfj9h35nf&base=USD&symbols=XAU,XAG,XPT",
+        "url": "https://metals-api.com/api/latest?access_key=REPLACE_WITH_METALS_API_KEY&base=USD&symbols=XAU,XAG,XPT",
         "gzip": true,
         "method": "get",
         "headers": [],

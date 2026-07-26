@@ -49,6 +49,59 @@ export async function loadConfig(): Promise<ConfigLoadResponse> {
 }
 
 /**
+ * Raw customer-lookup response. All fields are strings and prior deals come
+ * back as four parallel comma-joined lists, so the Make webhook body stays a
+ * flat template with no conditionals or string concatenation.
+ */
+export interface RawCustomerLookup {
+  found?: string
+  id?: string
+  name?: string
+  zip?: string
+  dl_number?: string
+  tcpa_opt_in?: string
+  deal_numbers?: string
+  deal_dates?: string
+  deal_totals?: string
+  deal_statuses?: string
+}
+
+const split = (v: string | undefined): string[] =>
+  (v ?? '').split(',').map((s) => s.trim()).filter((s) => s !== '')
+
+export function normalizeCustomerLookup(
+  raw: RawCustomerLookup,
+): CustomerLookupResponse {
+  const matched = (raw.found ?? '0') !== '0' && (raw.name ?? '').trim() !== ''
+  if (!matched) return { matched: false }
+
+  const numbers = split(raw.deal_numbers)
+  const dates = split(raw.deal_dates)
+  const totals = split(raw.deal_totals)
+  const statuses = split(raw.deal_statuses)
+
+  return {
+    matched: true,
+    customer: {
+      id: (raw.id ?? '').trim(),
+      name: (raw.name ?? '').trim(),
+      zip: (raw.zip ?? '').trim() || undefined,
+      dl_number: (raw.dl_number ?? '').trim() || undefined,
+      tcpa_opt_in: (raw.tcpa_opt_in ?? '').toLowerCase() === 'true',
+    },
+    prior_deals: numbers.map((deal_number, i) => {
+      const total = parseFloat(totals[i] ?? '')
+      return {
+        deal_number,
+        date: dates[i] ? dates[i].slice(0, 10) : undefined,
+        total_offer: Number.isFinite(total) ? total : undefined,
+        status: statuses[i],
+      }
+    }),
+  }
+}
+
+/**
  * Returning-customer lookup by phone + DOB (SOW 2.1) against Customer_Master.
  * Returns null when the lookup backend is not yet configured — callers treat
  * that as "no match" and proceed as a new customer.
@@ -59,7 +112,7 @@ export async function lookupCustomer(
 ): Promise<CustomerLookupResponse | null> {
   const url = import.meta.env.VITE_CUSTOMER_LOOKUP_URL
   if (!url) return null
-  return postJSON<CustomerLookupResponse>(url, { phone, dob })
+  return normalizeCustomerLookup(await postJSON<RawCustomerLookup>(url, { phone, dob }))
 }
 
 export async function calculateBulk(

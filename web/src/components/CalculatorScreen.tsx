@@ -1,6 +1,4 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
-import { calculateBulk, HttpError, NetworkError } from '../api/client'
-import { cartLineToRequestItem } from '../api/types'
 import { dualPriceBag, dualPriceLine, valueLine } from '../lib/pricing'
 import type { UseCartResult } from '../state/useCart'
 import type { UseConfigResult } from '../state/useConfig'
@@ -42,8 +40,6 @@ export function CalculatorScreen({
   onOpenDeployment,
 }: CalculatorScreenProps) {
 
-  const [calcLoading, setCalcLoading] = useState(false)
-  const [calcError, setCalcError] = useState<string | null>(null)
   const [showAddCoin, setShowAddCoin] = useState(false)
   // Lines where the rep tried to enter an Actual Offer above Max Payout
   const [offerWarnIds, setOfferWarnIds] = useState<Set<string>>(new Set())
@@ -62,50 +58,14 @@ export function CalculatorScreen({
     prevRepRef.current = session.selectedRepId
   }, [session.selectedRepId, cart, session])
 
-  async function handleCalculate() {
-    if (cart.lines.length === 0) return
-    setCalcLoading(true)
-    setCalcError(null)
-    try {
-      // Manual-entry lines (paper money) carry a rep-entered offer and have
-      // nothing for the pricing engine to compute (2.2).
-      const items = cart.lines
-        .filter((l) => l.priced_by !== 'manual')
-        .map(cartLineToRequestItem)
-      if (items.length === 0) {
-        setCalcLoading(false)
-        return
-      }
-      const result = await calculateBulk(items)
-      session.setLastCalc(result)
-    } catch (err) {
-      if (err instanceof NetworkError) {
-        setCalcError(
-          'No internet connection. Check Wi-Fi and try again — your bag is saved.',
-        )
-      } else if (err instanceof HttpError) {
-        setCalcError(
-          `The pricing service returned an error (HTTP ${err.status}). Try again, or contact admin if it keeps happening.`,
-        )
-      } else {
-        setCalcError(
-          err instanceof Error ? err.message : String(err),
-        )
-      }
-    } finally {
-      setCalcLoading(false)
-    }
-  }
-
   function handleNewBag() {
-    if (cart.lines.length === 0 && !session.lastCalc) return
+    if (cart.lines.length === 0) return
     if (window.confirm('Start a new bag? This clears the cart.')) {
       cart.clear()
-      session.setLastCalc(null)
     }
   }
 
-  const effectiveSpot = config.spot ?? session.lastCalc?.spot ?? null
+  const effectiveSpot = config.spot
   const effectiveMargins = config.margins
 
   const liveTotals = useMemo(
@@ -113,13 +73,11 @@ export function CalculatorScreen({
     [cart.lines, effectiveSpot, effectiveMargins],
   )
 
-  const canCalculate =
-    session.selectedRepId !== null && cart.lines.length > 0 && !calcLoading
 
   const hasMargins = effectiveMargins.length > 0
   const canShowLiveOffer = effectiveSpot !== null && hasMargins
   const canShowLiveMelt = effectiveSpot !== null
-  const spot = session.lastCalc?.spot ?? config.spot ?? null
+  const spot = config.spot
 
   return (
     <main
@@ -178,18 +136,6 @@ export function CalculatorScreen({
       {config.error && (
         <div className="px-4 py-2 bg-red-50 border-b border-red-200 text-sm text-red-800">
           Could not load config: {config.error.message}
-        </div>
-      )}
-
-      {calcError && (
-        <div className="px-4 py-2 bg-amber-50 border-b border-amber-200 text-sm text-amber-900 flex items-center justify-between gap-3">
-          <span>Calculate failed: {calcError}</span>
-          <button
-            onClick={() => setCalcError(null)}
-            className="text-amber-700 underline shrink-0"
-          >
-            Dismiss
-          </button>
         </div>
       )}
 
@@ -274,11 +220,11 @@ export function CalculatorScreen({
         {cart.lines.length > 0 && (
           !canShowLiveMelt ? (
             <p className="mt-2 text-[11px] text-slate-500">
-              Tap Calculate Total to refresh spot prices.
+              Waiting for live metal prices — tap Refresh Config.
             </p>
           ) : !canShowLiveOffer ? (
             <p className="mt-2 text-[11px] text-slate-500">
-              Tap Calculate Total — margins not yet loaded for live offer.
+              Margins not loaded yet — tap Refresh Config.
             </p>
           ) : liveTotals.hasUnpriceable ? (
             <div
@@ -290,20 +236,6 @@ export function CalculatorScreen({
           ) : null
         )}
       </section>
-
-      {session.lastCalc && (
-        <section
-          className="px-4 py-2 bg-emerald-50 border-b border-emerald-200 flex items-baseline justify-between gap-3"
-          aria-label="Last calculated total"
-        >
-          <span className="text-xs uppercase tracking-wide text-emerald-800 font-semibold">
-            Last calculated total
-          </span>
-          <span className="text-xl font-bold text-emerald-900 tabular-nums">
-            {usd.format(session.lastCalc.total)}
-          </span>
-        </section>
-      )}
 
       {spot && (
         <section className="px-4 py-2 bg-slate-100 text-xs text-slate-600 border-b border-slate-200 flex flex-wrap gap-x-4 gap-y-1">
@@ -499,39 +431,17 @@ export function CalculatorScreen({
         className="fixed bottom-0 inset-x-0 bg-white border-t border-slate-200 shadow-lg"
         style={{ paddingBottom: 'env(safe-area-inset-bottom, 0px)' }}
       >
-        {!canCalculate && !calcLoading && (
-          <div className="px-4 pt-2 pb-1 text-xs text-slate-500 text-right">
-            {session.selectedRepId === null
-              ? 'Select a rep to calculate.'
-              : cart.lines.length === 0
-                ? 'Add a coin to calculate.'
-                : null}
-          </div>
-        )}
         {onReviewDeal && cart.lines.length > 0 && (
           <div className="px-4 pt-3">
             <button
               onClick={onReviewDeal}
-              className="w-full min-h-12 py-3 rounded-md bg-slate-900 text-white text-base font-semibold hover:bg-slate-800"
+              className="w-full min-h-12 py-3 rounded-md bg-emerald-600 text-white text-base font-semibold hover:bg-emerald-700"
             >
               Review Deal →
             </button>
           </div>
         )}
-        <div className="px-4 pb-3 pt-3 flex gap-2">
-          <button
-            onClick={() => void handleCalculate()}
-            disabled={!canCalculate}
-            className="flex-1 min-h-12 py-3 rounded-md bg-emerald-600 text-white text-base font-semibold disabled:bg-slate-300 disabled:text-slate-500 hover:bg-emerald-700 inline-flex items-center justify-center gap-2"
-          >
-            {calcLoading && (
-              <span
-                className="inline-block w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"
-                aria-hidden="true"
-              />
-            )}
-            {calcLoading ? 'Calculating…' : 'Calculate Total'}
-          </button>
+        <div className="px-4 pb-3 pt-3 flex justify-end">
           <button
             onClick={handleNewBag}
             className="min-h-12 px-4 rounded-md border border-slate-300 text-slate-700 text-sm hover:bg-slate-100"

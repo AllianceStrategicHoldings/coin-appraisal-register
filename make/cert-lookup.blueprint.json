@@ -1,0 +1,327 @@
+{
+  "name": "cert-lookup (PCGS + Greysheet + eBay comps)",
+  "flow": [
+    {
+      "id": 1,
+      "module": "gateway:CustomWebHook",
+      "version": 1,
+      "parameters": {
+        "hook": null,
+        "maxResults": 1
+      },
+      "mapper": {},
+      "metadata": {
+        "designer": {
+          "x": 0,
+          "y": 0
+        },
+        "restore": {
+          "parameters": {
+            "hook": {
+              "data": {
+                "editable": "true"
+              },
+              "label": "cert_lookup"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "hook",
+            "type": "hook:gateway-webhook",
+            "label": "Webhook",
+            "required": true
+          },
+          {
+            "name": "maxResults",
+            "type": "number",
+            "label": "Maximum number of results"
+          }
+        ]
+      }
+    },
+    {
+      "id": 2,
+      "module": "util:SetVariables",
+      "version": 1,
+      "parameters": {},
+      "mapper": {
+        "scope": "roundtrip",
+        "variables": [
+          {
+            "name": "pcgs_token",
+            "value": "REPLACE_WITH_PCGS_ACCESS_TOKEN"
+          },
+          {
+            "name": "greysheet_key",
+            "value": "REPLACE_WITH_GREYSHEET_API_KEY"
+          },
+          {
+            "name": "greysheet_token",
+            "value": "REPLACE_WITH_GREYSHEET_API_TOKEN"
+          },
+          {
+            "name": "apify_token",
+            "value": "REPLACE_WITH_APIFY_API_TOKEN"
+          }
+        ]
+      },
+      "metadata": {
+        "designer": {
+          "x": 300,
+          "y": 0
+        },
+        "restore": {
+          "expect": {
+            "scope": {
+              "label": "One cycle"
+            },
+            "variables": {
+              "items": [
+                null,
+                null,
+                null,
+                null
+              ]
+            }
+          }
+        }
+      }
+    },
+    {
+      "id": 3,
+      "module": "http:ActionSendData",
+      "version": 3,
+      "parameters": {
+        "handleErrors": false,
+        "useNewZLibDeCompress": true
+      },
+      "mapper": {
+        "ca": "",
+        "qs": [],
+        "url": "https://api.pcgs.com/publicapi/coindetail/GetCoinFactsByCertNo/{{1.cert_number}}",
+        "gzip": true,
+        "method": "get",
+        "headers": [
+          {
+            "name": "authorization",
+            "value": "bearer {{2.pcgs_token}}"
+          }
+        ],
+        "timeout": "40",
+        "useMtls": false,
+        "authPass": "",
+        "authUser": "",
+        "bodyType": "",
+        "serializeUrl": false,
+        "shareCookies": false,
+        "parseResponse": true,
+        "followRedirect": true,
+        "useQuerystring": false,
+        "followAllRedirects": false,
+        "rejectUnauthorized": true
+      },
+      "metadata": {
+        "designer": {
+          "x": 600,
+          "y": 0
+        },
+        "restore": {
+          "expect": {
+            "qs": {
+              "mode": "chose"
+            },
+            "method": {
+              "mode": "chose",
+              "label": "GET"
+            },
+            "headers": {
+              "mode": "chose"
+            },
+            "bodyType": {
+              "label": "Empty"
+            }
+          }
+        }
+      }
+    },
+    {
+      "id": 4,
+      "module": "http:ActionSendData",
+      "version": 3,
+      "parameters": {
+        "handleErrors": false,
+        "useNewZLibDeCompress": true
+      },
+      "mapper": {
+        "ca": "",
+        "qs": [],
+        "url": "https://cpgpublicapiv2.greysheet.com/GetPricingRequest?PcgsNumber={{3.data.PCGSNo}}&Grade={{replace(3.data.Grade; \"/[^0-9]/g\"; \"\")}}",
+        "gzip": true,
+        "method": "get",
+        "headers": [
+          {
+            "name": "x-api-key",
+            "value": "{{2.greysheet_key}}"
+          },
+          {
+            "name": "x-api-token",
+            "value": "{{2.greysheet_token}}"
+          },
+          {
+            "name": "Accept",
+            "value": "application/json"
+          }
+        ],
+        "timeout": "40",
+        "useMtls": false,
+        "authPass": "",
+        "authUser": "",
+        "bodyType": "",
+        "serializeUrl": false,
+        "shareCookies": false,
+        "parseResponse": true,
+        "followRedirect": true,
+        "useQuerystring": false,
+        "followAllRedirects": false,
+        "rejectUnauthorized": true
+      },
+      "metadata": {
+        "designer": {
+          "x": 900,
+          "y": 0
+        },
+        "restore": {
+          "expect": {
+            "qs": {
+              "mode": "chose"
+            },
+            "method": {
+              "mode": "chose",
+              "label": "GET"
+            },
+            "headers": {
+              "mode": "chose"
+            },
+            "bodyType": {
+              "label": "Empty"
+            }
+          }
+        }
+      }
+    },
+    {
+      "id": 5,
+      "module": "http:ActionSendData",
+      "version": 3,
+      "parameters": {
+        "handleErrors": false,
+        "useNewZLibDeCompress": true
+      },
+      "mapper": {
+        "ca": "",
+        "qs": [],
+        "url": "https://api.apify.com/v2/acts/caffein.dev~ebay-sold-listings/run-sync-get-dataset-items?token={{2.apify_token}}&limit=50",
+        "gzip": true,
+        "method": "post",
+        "headers": [
+          {
+            "name": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "timeout": "180",
+        "useMtls": false,
+        "authPass": "",
+        "authUser": "",
+        "bodyType": "raw",
+        "serializeUrl": false,
+        "shareCookies": false,
+        "parseResponse": true,
+        "followRedirect": true,
+        "useQuerystring": false,
+        "followAllRedirects": false,
+        "rejectUnauthorized": true,
+        "contentType": "application/json",
+        "data": "{\"keywords\":[\"{{3.data.Name}}\"],\"daysToScrape\":90,\"count\":50,\"includeCompletedListings\":true}"
+      },
+      "metadata": {
+        "designer": {
+          "x": 1200,
+          "y": 0
+        },
+        "restore": {
+          "expect": {
+            "qs": {
+              "mode": "chose"
+            },
+            "method": {
+              "mode": "chose",
+              "label": "POST"
+            },
+            "headers": {
+              "mode": "chose"
+            },
+            "bodyType": {
+              "label": "Raw"
+            },
+            "contentType": {
+              "label": "JSON (application/json)"
+            }
+          }
+        }
+      }
+    },
+    {
+      "id": 6,
+      "module": "gateway:WebhookRespond",
+      "version": 1,
+      "parameters": {},
+      "mapper": {
+        "body": "{\"cert\":{\"found\":{{if(3.data.ServerMessage = \"No data found\"; false; true)}},\"pcgs_no\":\"{{3.data.PCGSNo}}\",\"name\":\"{{3.data.Name}}\",\"grade\":\"{{3.data.Grade}}\"},{{if(length(4.data.Data) = 0; \"\"; \"\"\"cdn_price\"\":\" + replace(get(map(4.data.Data[].PricingData[]; \"CpgVal\"); 1); \"/,/g\"; \"\") + ,\"\"cdn_label\"\":\"\"\" + get(map(4.data.Data; \"Name\"); 1) + \"\"\",\")}}\"comps\":{\"ran\":true,\"count\":{{length(5.data)}}{{if(length(5.data) = 0; \"\"; \",\"\"low\"\":\" + min(map(5.data; \"soldPrice\")) + \",\"\"median\"\":\" + average(map(5.data; \"soldPrice\")) + \",\"\"high\"\":\" + max(map(5.data; \"soldPrice\")))}}}}",
+        "status": "200",
+        "headers": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ]
+      },
+      "metadata": {
+        "designer": {
+          "x": 1500,
+          "y": 0
+        },
+        "restore": {
+          "expect": {
+            "headers": {
+              "mode": "chose",
+              "items": [
+                null
+              ]
+            }
+          }
+        }
+      }
+    }
+  ],
+  "metadata": {
+    "instant": true,
+    "version": 1,
+    "scenario": {
+      "roundtrips": 1,
+      "maxErrors": 3,
+      "autoCommit": true,
+      "autoCommitTriggerLast": true,
+      "sequential": false,
+      "slots": null,
+      "confidential": false,
+      "dataloss": false,
+      "dlq": false,
+      "freshVariables": false
+    },
+    "designer": {
+      "orphans": []
+    }
+  }
+}

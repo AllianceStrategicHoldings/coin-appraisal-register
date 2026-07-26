@@ -40,6 +40,15 @@ export function valueLine(
   spot: Spot | null,
   margins: Margin[],
 ): LineValuation | null {
+  // A CDN/manual lookup value is a real wholesale price for THIS coin, so it
+  // beats the generic grade multiplier (spec 2.3 fallback chain).
+  if (line.lookup_value != null) {
+    const cat: MarginCategory = line.category ?? line.metal_type
+    const pct = marginForCategory(margins, cat)
+    if (pct == null) return null
+    return { meltValue: line.lookup_value, offerValue: line.lookup_value * pct }
+  }
+
   if (line.priced_by === 'times_face') {
     if (line.face_value == null) return null
     const mult = multiplierForLine(line)

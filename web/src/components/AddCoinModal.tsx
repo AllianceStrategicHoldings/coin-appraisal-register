@@ -1,5 +1,7 @@
 import { useEffect, useMemo, useState } from 'react'
 import type { CartLineInput, CoinType, Grade, Metal } from '../api/types'
+import type { Margin } from '../api/types'
+import { CertLookupPanel, type CertLookupValue } from './CertLookupPanel'
 import { HallmarkAckModal } from './HallmarkAckModal'
 import { KeypadField } from './KeypadField'
 import { Pre1933GoldStop } from './Pre1933GoldStop'
@@ -30,6 +32,10 @@ interface AddCoinModalProps {
   onAdd: (line: CartLineInput) => void
   /** records the timestamped Pre-1933 gold manager acknowledgment on the deal */
   onPre1933Ack?: (at: string) => void
+  /** margins, for showing CDN price beside our offer at margin (2.3) */
+  margins?: Margin[]
+  /** escalate to a manager when the fallback chain runs out (2.3) */
+  onAskManager?: () => void
 }
 
 export function AddCoinModal({
@@ -38,6 +44,8 @@ export function AddCoinModal({
   coinTypes,
   onAdd,
   onPre1933Ack,
+  margins,
+  onAskManager,
 }: AddCoinModalProps) {
   const [selectedId, setSelectedId] = useState<string | null>(null)
   const [value, setValue] = useState<string>('')
@@ -49,6 +57,9 @@ export function AddCoinModal({
   const [pre1933Ack, setPre1933Ack] = useState(false)
   const [showPre1933, setShowPre1933] = useState(false)
   const [purityOverride, setPurityOverride] = useState<string>('')
+
+  // cert lookup (2.3)
+  const [lookup, setLookup] = useState<CertLookupValue | null>(null)
 
   // manual entry (paper money)
   const [denomination, setDenomination] = useState('')
@@ -63,6 +74,7 @@ export function AddCoinModal({
     setPre1933Ack(false)
     setShowPre1933(false)
     setPurityOverride('')
+    setLookup(null)
     setDenomination('')
     setYear('')
     setCondition('')
@@ -118,13 +130,17 @@ export function AddCoinModal({
     (selected?.requires_hallmark_ack === true && !hallmarkAck) ||
     (selected?.is_pre1933_gold === true && !pre1933Ack)
 
+  // Graded/numismatic items may be priced by cert lookup instead of the
+  // grade multiplier (2.3). A lookup that resolved to a price stands in for
+  // the grade selection.
+  const usingLookup = lookup?.price != null
   const canAdd =
     selected !== null &&
     !entryBlocked &&
     purityValid &&
     !Number.isNaN(numValue) &&
     numValue > 0 &&
-    (!needsGrade || grade !== null) &&
+    (!needsGrade || grade !== null || usingLookup) &&
     (!isManual || denomination.trim().length > 0)
 
   function handleAdd() {
@@ -148,6 +164,18 @@ export function AddCoinModal({
         : {}),
       ...(selected.requires_hallmark_ack ? { hallmark_acknowledged: true } : {}),
       ...(selected.is_pre1933_gold ? { pre1933_ack: true } : {}),
+      ...(lookup
+        ? {
+            cert_number: lookup.certNumber || undefined,
+            price_source: lookup.priceSource,
+            cdn_price: lookup.result?.cdn_price,
+            manual_price_override: lookup.manualOverride ?? undefined,
+            lookup_value: lookup.price ?? undefined,
+            ebay_low: lookup.result?.comps.low,
+            ebay_median: lookup.result?.comps.median,
+            ebay_high: lookup.result?.comps.high,
+          }
+        : {}),
     }
 
     if (isManual) {
@@ -312,6 +340,22 @@ export function AddCoinModal({
             {selected.is_pre1933_gold && pre1933Ack && (
               <div className="text-xs text-emerald-700 font-medium">
                 Manager approved Pre-1933 US Gold ✓
+              </div>
+            )}
+
+            {needsGrade && margins && (
+              <div className="pb-1 border-b border-slate-200">
+                <CertLookupPanel
+                  marginPct={
+                    margins.find((m) => m.category === (selected.category ?? 'numismatic'))
+                      ?.margin_pct ?? 0.3
+                  }
+                  onChange={setLookup}
+                  onAskManager={() => {
+                    onClose()
+                    onAskManager?.()
+                  }}
+                />
               </div>
             )}
 

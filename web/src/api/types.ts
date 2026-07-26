@@ -151,6 +151,19 @@ interface CartLineBase {
   hallmark_acknowledged?: boolean
   /** true once a manager PIN cleared the Pre-1933 US Gold stop (2.2 / 3.2) */
   pre1933_ack?: boolean
+
+  // --- lookup integrations (2.3) ---
+  /** manually entered PCGS certification number */
+  cert_number?: string
+  /** which link of the CDN -> manual -> ask-manager chain priced this line */
+  price_source?: 'calculated' | 'cdn' | 'manual_override' | 'ask_manager'
+  cdn_price?: number
+  manual_price_override?: number
+  /** wholesale value the lookup resolved to; overrides multiplier pricing */
+  lookup_value?: number
+  ebay_low?: number
+  ebay_median?: number
+  ebay_high?: number
 }
 
 /** Paper money manual entry (2.2) */

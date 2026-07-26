@@ -547,6 +547,8 @@ export function CalculatorScreen({
         coinTypes={config.coinTypes}
         onAdd={cart.addLine}
         onPre1933Ack={onPre1933Ack}
+        margins={effectiveMargins}
+        onAskManager={() => onManagerRequest?.('ask_manager')}
       />
     </main>
   )

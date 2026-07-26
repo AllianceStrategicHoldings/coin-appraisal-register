@@ -251,7 +251,7 @@
       "module": "http:ActionSendData",
       "version": 3,
       "parameters": {
-        "handleErrors": false,
+        "handleErrors": true,
         "useNewZLibDeCompress": true
       },
       "mapper": {
@@ -287,7 +287,7 @@
         "followAllRedirects": false,
         "rejectUnauthorized": true,
         "contentType": "application/json",
-        "data": "{\"deal_id\":\"{{4.data[1].id}}\",\"source_engine\":\"{{if(5.priced_by = \"\"manual\"\"; \"\"paper\"\"; \"\"bulk\"\")}}\",\"description\":\"{{ifempty(5.description; 5.name)}}\",\"quantity\":{{5.quantity}},\"max_payout\":{{ifempty(5.max_payout; 0)}},\"actual_offer\":{{ifempty(5.actual_offer; 0)}},\"negotiation_delta\":{{ifempty(5.max_payout; 0) - ifempty(5.actual_offer; 0)}}{{if(5.grade = null; \"\"; \",\"\"grade\"\":\"\"\" + 5.grade + \"\"\"\")}}{{if(5.manual_offer = null; \"\"; \",\"\"manual_offer\"\":\" + 5.manual_offer)}}{{if(5.purity_factor_used = null; \"\"; \",\"\"purity_factor_used\"\":\" + 5.purity_factor_used)}}{{if(5.hallmark_acknowledged = null; \"\"; \",\"\"hallmark_acknowledged\"\":\" + 5.hallmark_acknowledged)}}{{if(5.pre1933_ack = null; \"\"; \",\"\"pre1933_ack\"\":\" + 5.pre1933_ack)}}}"
+        "data": "{\"deal_id\":\"{{4.data[1].id}}\",\"source_engine\":\"{{if(5.priced_by = \"manual\"; \"paper\"; \"bulk\")}}\",\"description\":\"{{ifempty(5.description; 5.name)}}\",\"quantity\":{{5.quantity}},\"max_payout\":{{ifempty(5.max_payout; 0)}},\"actual_offer\":{{ifempty(5.actual_offer; 0)}},\"negotiation_delta\":{{ifempty(5.max_payout; 0) - ifempty(5.actual_offer; 0)}}{{if(5.grade = null; \"\"; \",\"\"grade\"\":\"\"\" + 5.grade + \"\"\"\")}}{{if(5.manual_offer = null; \"\"; \",\"\"manual_offer\"\":\" + 5.manual_offer)}}{{if(5.purity_factor_used = null; \"\"; \",\"\"purity_factor_used\"\":\" + 5.purity_factor_used)}}{{if(5.hallmark_acknowledged = null; \"\"; \",\"\"hallmark_acknowledged\"\":\" + 5.hallmark_acknowledged)}}{{if(5.pre1933_ack = null; \"\"; \",\"\"pre1933_ack\"\":\" + 5.pre1933_ack)}}}"
       },
       "metadata": {
         "designer": {

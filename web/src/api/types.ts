@@ -30,6 +30,27 @@ export interface CoinType {
   entry_note?: string
 }
 
+/** Roadshow event on a location (spec 2.11) */
+export interface LocationEvent {
+  id: string
+  name: string
+  start_date?: string
+  end_date?: string
+  /** reference zip for customer_zip_radius_miles while in event mode */
+  venue_zip?: string
+  active?: boolean
+}
+
+/** Per-deployment location record (spec 2.11 / 2.15) */
+export interface Location {
+  id: string
+  name: string
+  zip?: string
+  branding_app_name?: string
+  /** events fetched nested via PostgREST embedding */
+  config_events?: LocationEvent[]
+}
+
 export interface Rep {
   id: string
   name: string
@@ -51,6 +72,8 @@ export interface ConfigLoadResponse {
   reps: Rep[]
   spot?: Spot
   margins?: Margin[]
+  /** absent until the config-load scenario adds the locations module (2.11) */
+  locations?: Location[]
 }
 
 export type BulkCalcRequestItem =

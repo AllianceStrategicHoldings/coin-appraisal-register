@@ -47,6 +47,11 @@ export interface DealSubmission {
   /** deal-level Pre-1933 gold manager acknowledgment (2.2 / 3.2) */
   pre1933_gold_ack?: boolean
   pre1933_ack_at?: string
+  /** multi-location & roadshow scoping (2.11) */
+  location_id?: string | null
+  event_id?: string | null
+  /** reference zip Make measures customer travel distance from */
+  reference_zip?: string | null
   totals: {
     total_value: number
     total_max_payout: number

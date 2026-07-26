@@ -1,9 +1,10 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { loadConfig } from '../api/client'
-import type { CoinType, Margin, Rep, Spot } from '../api/types'
+import type { CoinType, Location, Margin, Rep, Spot } from '../api/types'
 
 interface ConfigState {
   coinTypes: CoinType[]
+  locations: Location[]
   reps: Rep[]
   spot: Spot | null
   margins: Margin[]
@@ -18,6 +19,7 @@ export interface UseConfigResult extends ConfigState {
 export function useConfig(): UseConfigResult {
   const [state, setState] = useState<ConfigState>({
     coinTypes: [],
+    locations: [],
     reps: [],
     spot: null,
     margins: [],
@@ -35,6 +37,7 @@ export function useConfig(): UseConfigResult {
       if (callId !== callIdRef.current) return
       setState({
         coinTypes: res.coin_types,
+        locations: res.locations ?? [],
         reps: res.reps,
         spot: res.spot ?? null,
         margins: res.margins ?? [],

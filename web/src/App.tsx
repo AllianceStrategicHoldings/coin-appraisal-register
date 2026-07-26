@@ -15,7 +15,9 @@ import {
   PendingApprovalOverlay,
   type PendingRequest,
 } from './components/PendingApprovalOverlay'
+import { DeploymentModal } from './components/DeploymentModal'
 import { useCart } from './state/useCart'
+import { useDeployment } from './state/useDeployment'
 import { useConfig } from './state/useConfig'
 import { useIntake } from './state/useIntake'
 import { useSession } from './state/useSession'
@@ -45,6 +47,8 @@ function App() {
   const config = useConfig()
   const cart = useCart()
   const session = useSession()
+  const deployment = useDeployment(config.locations)
+  const [showDeployment, setShowDeployment] = useState(false)
   const [phase, setPhase] = useState<Phase>(devInitialPhase)
   const [submitResult, setSubmitResult] = useState<SubmitResult | null>(null)
   const [priceLockExpiry, setPriceLockExpiry] = useState<Date | null>(null)
@@ -68,6 +72,16 @@ function App() {
     setRequestTrigger(null)
     setPendingRequest(null)
     setPhase('intake')
+  }
+
+  if (showDeployment) {
+    return (
+      <DeploymentModal
+        locations={config.locations}
+        deployment={deployment}
+        onClose={() => setShowDeployment(false)}
+      />
+    )
   }
 
   // Freeze the deal until a manager releases it (2.8).
@@ -140,6 +154,7 @@ function App() {
         lines={cart.lines}
         spot={spot}
         margins={config.margins}
+        deployment={deployment}
         onBack={() => setPhase('summary')}
         onComplete={(result) => {
           setSubmitResult(result)
@@ -182,6 +197,7 @@ function App() {
         lines={cart.lines}
         spot={spot}
         margins={config.margins}
+        deployment={deployment}
         onBack={() => setPhase('summary')}
         onComplete={(result, _locked, expiresAt) => {
           setSubmitResult(result)
@@ -239,6 +255,8 @@ function App() {
       onReviewDeal={() => setPhase('summary')}
       onPre1933Ack={(at) => intake.setDealExtra('pre1933AckAt', at)}
       onManagerRequest={setRequestTrigger}
+      deployment={deployment}
+      onOpenDeployment={() => setShowDeployment(true)}
     />
   )
 }

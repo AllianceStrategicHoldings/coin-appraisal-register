@@ -4,6 +4,7 @@ import { cartLineToRequestItem } from '../api/types'
 import { dualPriceBag, dualPriceLine, valueLine } from '../lib/pricing'
 import type { UseCartResult } from '../state/useCart'
 import type { UseConfigResult } from '../state/useConfig'
+import type { UseDeploymentResult } from '../state/useDeployment'
 import type { UseSessionResult } from '../state/useSession'
 import type { ApprovalTrigger } from '../lib/approvalRequest'
 import { AddCoinModal } from './AddCoinModal'
@@ -24,6 +25,8 @@ interface CalculatorScreenProps {
   onReviewDeal?: () => void
   onPre1933Ack?: (at: string) => void
   onManagerRequest?: (trigger: ApprovalTrigger) => void
+  deployment?: UseDeploymentResult
+  onOpenDeployment?: () => void
 }
 
 export function CalculatorScreen({
@@ -35,6 +38,8 @@ export function CalculatorScreen({
   onReviewDeal,
   onPre1933Ack,
   onManagerRequest,
+  deployment,
+  onOpenDeployment,
 }: CalculatorScreenProps) {
 
   const [calcLoading, setCalcLoading] = useState(false)
@@ -143,6 +148,21 @@ export function CalculatorScreen({
             )}
           </div>
         </div>
+        {onOpenDeployment && (
+          <button
+            onClick={onOpenDeployment}
+            className={`min-h-11 px-3 text-xs rounded-md shrink-0 max-w-[9rem] truncate ${
+              deployment?.eventMode
+                ? 'bg-indigo-100 text-indigo-900 font-semibold'
+                : 'bg-slate-100 text-slate-600'
+            }`}
+            title="Deployment settings"
+          >
+            {deployment?.eventMode
+              ? `Event: ${deployment.activeEvent?.name}`
+              : (deployment?.activeLocation?.name ?? 'Set location')}
+          </button>
+        )}
         <button
           onClick={() => void config.refresh()}
           disabled={config.loading}

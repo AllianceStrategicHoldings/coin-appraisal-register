@@ -6,6 +6,7 @@
 
 import { useMemo, useState } from 'react'
 import type { CartLine, Margin, Spot } from '../api/types'
+import type { UseDeploymentResult } from '../state/useDeployment'
 import { submitDeal, type DealSubmission, type SubmitResult } from '../lib/dealSubmit'
 import { buildOfferLetterPdf } from '../lib/offerLetter'
 import { dualPriceBag, dualPriceLine } from '../lib/pricing'
@@ -26,6 +27,7 @@ interface AcceptanceScreenProps {
   lines: CartLine[]
   spot: Spot | null
   margins: Margin[]
+  deployment: UseDeploymentResult
   onBack: () => void
   onComplete: (result: SubmitResult) => void
 }
@@ -35,6 +37,7 @@ export function AcceptanceScreen({
   lines,
   spot,
   margins,
+  deployment,
   onBack,
   onComplete,
 }: AcceptanceScreenProps) {
@@ -142,6 +145,9 @@ export function AcceptanceScreen({
           ? parseFloat(intake.dealExtras.competitorOfferAmount)
           : undefined,
         customer_zip_radius_miles: null,
+        location_id: deployment.activeLocation?.id ?? null,
+        event_id: deployment.activeEvent?.id ?? null,
+        reference_zip: deployment.referenceZip,
         pre1933_gold_ack: intake.dealExtras.pre1933AckAt ? true : undefined,
         pre1933_ack_at: intake.dealExtras.pre1933AckAt ?? undefined,
         lines: lines.map((line) => {

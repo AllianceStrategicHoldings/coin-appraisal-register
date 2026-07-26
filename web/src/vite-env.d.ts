@@ -12,6 +12,8 @@ interface ImportMetaEnv {
   readonly VITE_MANAGER_PIN_CHECK_URL?: string
   readonly VITE_APPROVAL_REQUEST_URL?: string
   readonly VITE_LOOKUP_URL?: string
+  readonly VITE_SUPABASE_URL?: string
+  readonly VITE_SUPABASE_ANON_KEY?: string
 }
 
 interface ImportMeta {

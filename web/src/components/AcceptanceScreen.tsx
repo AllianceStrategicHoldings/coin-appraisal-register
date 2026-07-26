@@ -10,6 +10,7 @@ import type { UseDeploymentResult } from '../state/useDeployment'
 import { submitDeal, type DealSubmission, type SubmitResult } from '../lib/dealSubmit'
 import { buildOfferLetterPdf } from '../lib/offerLetter'
 import { dualPriceBag, dualPriceLine } from '../lib/pricing'
+import { zipRadiusMiles } from '../lib/zipDistance'
 import { uploadDealFile } from '../lib/storage'
 import type { PhotoState, UseIntakeResult } from '../state/useIntake'
 import { ManagerPinModal } from './ManagerPinModal'
@@ -122,7 +123,13 @@ export function AcceptanceScreen({
         offerLetterKey = null
       }
 
-      // 3. Accepted-deal webhook (Make.com owns the 2.10 fan-out).
+      // 3. Customer travel distance (2.11) — never blocks the deal.
+      const zipRadius = await zipRadiusMiles(
+        intake.fields.zip,
+        deployment.referenceZip,
+      )
+
+      // 4. Accepted-deal webhook (Make.com owns the 2.10 fan-out).
       const payload: DealSubmission = {
         event_type: 'deal_accepted',
         deal_draft_id: intake.dealDraftId,
@@ -144,7 +151,7 @@ export function AcceptanceScreen({
         competitor_offer_amount: intake.dealExtras.competitorOfferAmount
           ? parseFloat(intake.dealExtras.competitorOfferAmount)
           : undefined,
-        customer_zip_radius_miles: null,
+        customer_zip_radius_miles: zipRadius,
         location_id: deployment.activeLocation?.id ?? null,
         event_id: deployment.activeEvent?.id ?? null,
         reference_zip: deployment.referenceZip,

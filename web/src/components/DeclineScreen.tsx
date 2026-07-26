@@ -8,6 +8,7 @@ import type { CartLine, Margin, Spot } from '../api/types'
 import type { UseDeploymentResult } from '../state/useDeployment'
 import { submitDeal, type DealSubmission, type SubmitResult } from '../lib/dealSubmit'
 import { dualPriceBag, dualPriceLine } from '../lib/pricing'
+import { zipRadiusMiles } from '../lib/zipDistance'
 import { normalizePhone, type UseIntakeResult } from '../state/useIntake'
 
 const usd = new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' })
@@ -52,6 +53,11 @@ export function DeclineScreen({
       ? new Date(Date.now() + LOCK_HOURS * 60 * 60 * 1000)
       : null
 
+    const zipRadius = await zipRadiusMiles(
+      intake.fields.zip,
+      deployment.referenceZip,
+    )
+
     const payload: DealSubmission = {
       event_type: 'deal_declined',
       deal_draft_id: intake.dealDraftId,
@@ -73,7 +79,7 @@ export function DeclineScreen({
       competitor_offer_amount: intake.dealExtras.competitorOfferAmount
         ? parseFloat(intake.dealExtras.competitorOfferAmount)
         : undefined,
-      customer_zip_radius_miles: null,
+      customer_zip_radius_miles: zipRadius,
       location_id: deployment.activeLocation?.id ?? null,
       event_id: deployment.activeEvent?.id ?? null,
       reference_zip: deployment.referenceZip,

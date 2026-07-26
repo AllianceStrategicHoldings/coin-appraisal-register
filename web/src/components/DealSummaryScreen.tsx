@@ -9,7 +9,9 @@
 import { useMemo, useRef, useState } from 'react'
 import type { CartLine, Margin, Spot } from '../api/types'
 import { dualPriceBag, dualPriceLine } from '../lib/pricing'
+import type { ApprovalTrigger } from '../lib/approvalRequest'
 import type { DealExtras } from '../state/useIntake'
+import { ManagerRequestBar } from './ManagerRequestBar'
 
 const usd = new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' })
 
@@ -26,6 +28,7 @@ interface DealSummaryScreenProps {
   setDealExtra: <K extends keyof DealExtras>(key: K, value: DealExtras[K]) => void
   onBack: () => void
   onDecision: (decision: DealDecision) => void
+  onManagerRequest?: (trigger: ApprovalTrigger) => void
 }
 
 export function DealSummaryScreen({
@@ -37,6 +40,7 @@ export function DealSummaryScreen({
   setDealExtra,
   onBack,
   onDecision,
+  onManagerRequest,
 }: DealSummaryScreenProps) {
   // Dev-only initial view override for local testing/screenshots; compiled
   // out of production builds.
@@ -170,6 +174,8 @@ export function DealSummaryScreen({
           Customer View →
         </button>
       </header>
+
+      {onManagerRequest && <ManagerRequestBar onRequest={onManagerRequest} />}
 
       <div className="px-4 py-1.5 bg-slate-100 border-b border-slate-200 text-[11px] text-slate-500 text-center">
         Swipe left for the customer-facing view — margin data is hidden there.

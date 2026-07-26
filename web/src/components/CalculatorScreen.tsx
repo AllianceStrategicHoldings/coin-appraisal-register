@@ -5,8 +5,10 @@ import { dualPriceBag, dualPriceLine, valueLine } from '../lib/pricing'
 import type { UseCartResult } from '../state/useCart'
 import type { UseConfigResult } from '../state/useConfig'
 import type { UseSessionResult } from '../state/useSession'
+import type { ApprovalTrigger } from '../lib/approvalRequest'
 import { AddCoinModal } from './AddCoinModal'
 import { KeypadField } from './KeypadField'
+import { ManagerRequestBar } from './ManagerRequestBar'
 
 const usd = new Intl.NumberFormat('en-US', {
   style: 'currency',
@@ -21,6 +23,7 @@ interface CalculatorScreenProps {
   onBackToIntake?: () => void
   onReviewDeal?: () => void
   onPre1933Ack?: (at: string) => void
+  onManagerRequest?: (trigger: ApprovalTrigger) => void
 }
 
 export function CalculatorScreen({
@@ -31,6 +34,7 @@ export function CalculatorScreen({
   onBackToIntake,
   onReviewDeal,
   onPre1933Ack,
+  onManagerRequest,
 }: CalculatorScreenProps) {
 
   const [calcLoading, setCalcLoading] = useState(false)
@@ -148,6 +152,8 @@ export function CalculatorScreen({
           {config.loading ? 'Refreshing…' : 'Refresh Config'}
         </button>
       </header>
+
+      {onManagerRequest && <ManagerRequestBar onRequest={onManagerRequest} />}
 
       {config.error && (
         <div className="px-4 py-2 bg-red-50 border-b border-red-200 text-sm text-red-800">

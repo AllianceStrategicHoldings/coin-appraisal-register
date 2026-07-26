@@ -4,7 +4,17 @@ import { CalculatorScreen } from './components/CalculatorScreen'
 import { DealSummaryScreen } from './components/DealSummaryScreen'
 import { DeclineScreen } from './components/DeclineScreen'
 import { IntakeScreen } from './components/IntakeScreen'
+import {
+  flushApprovalQueue,
+  submitApprovalRequest,
+  type ApprovalTrigger,
+} from './lib/approvalRequest'
 import { flushDealQueue, type SubmitResult } from './lib/dealSubmit'
+import { ManagerRequestModal } from './components/ManagerRequestModal'
+import {
+  PendingApprovalOverlay,
+  type PendingRequest,
+} from './components/PendingApprovalOverlay'
 import { useCart } from './state/useCart'
 import { useConfig } from './state/useConfig'
 import { useIntake } from './state/useIntake'
@@ -38,10 +48,14 @@ function App() {
   const [phase, setPhase] = useState<Phase>(devInitialPhase)
   const [submitResult, setSubmitResult] = useState<SubmitResult | null>(null)
   const [priceLockExpiry, setPriceLockExpiry] = useState<Date | null>(null)
+  // Manager-required workflows (2.8)
+  const [requestTrigger, setRequestTrigger] = useState<ApprovalTrigger | null>(null)
+  const [pendingRequest, setPendingRequest] = useState<PendingRequest | null>(null)
 
   // Offline degradation (2.14): retry any queued deal submissions on start.
   useEffect(() => {
     void flushDealQueue()
+    void flushApprovalQueue()
   }, [])
 
   const spot = config.spot ?? session.lastCalc?.spot ?? null
@@ -51,7 +65,50 @@ function App() {
     cart.clear()
     session.setLastCalc(null)
     setSubmitResult(null)
+    setRequestTrigger(null)
+    setPendingRequest(null)
     setPhase('intake')
+  }
+
+  // Freeze the deal until a manager releases it (2.8).
+  if (pendingRequest) {
+    return (
+      <PendingApprovalOverlay
+        request={pendingRequest}
+        onResumed={() => setPendingRequest(null)}
+      />
+    )
+  }
+
+  if (requestTrigger) {
+    return (
+      <ManagerRequestModal
+        trigger={requestTrigger}
+        dealDraftId={intake.dealDraftId}
+        coinTypes={config.coinTypes}
+        onCancel={() => setRequestTrigger(null)}
+        onSubmit={async ({ note, itemDescription, itemPhotoKey }) => {
+          const requestedAt = new Date().toISOString()
+          const delivery = await submitApprovalRequest({
+            deal_draft_id: intake.dealDraftId,
+            trigger_reason: requestTrigger,
+            requested_at: requestedAt,
+            note: note || undefined,
+            item_description: itemDescription || undefined,
+            item_photo_key: itemPhotoKey,
+            customer_name: intake.fields.name || undefined,
+          })
+          setPendingRequest({
+            trigger: requestTrigger,
+            note,
+            itemDescription,
+            requestedAt,
+            delivery,
+          })
+          setRequestTrigger(null)
+        }}
+      />
+    )
   }
 
   if (phase === 'intake') {
@@ -71,6 +128,7 @@ function App() {
         setDealExtra={intake.setDealExtra}
         onBack={() => setPhase('calculator')}
         onDecision={(d) => setPhase(d === 'accept' ? 'acceptance' : 'declining')}
+        onManagerRequest={setRequestTrigger}
       />
     )
   }
@@ -180,6 +238,7 @@ function App() {
       onBackToIntake={() => setPhase('intake')}
       onReviewDeal={() => setPhase('summary')}
       onPre1933Ack={(at) => intake.setDealExtra('pre1933AckAt', at)}
+      onManagerRequest={setRequestTrigger}
     />
   )
 }

@@ -278,7 +278,7 @@
       "version": 1,
       "parameters": {},
       "mapper": {
-        "body": "{\"cert\":{\"found\":{{if(3.data.ServerMessage = \"No data found\"; false; true)}},\"pcgs_no\":\"{{3.data.PCGSNo}}\",\"name\":\"{{3.data.Name}}\",\"grade\":\"{{3.data.Grade}}\"},{{if(length(4.data.Data) = 0; \"\"; \"\"\"cdn_price\"\":\" + replace(get(map(4.data.Data[].PricingData[]; \"CpgVal\"); 1); \"/,/g\"; \"\") + ,\"\"cdn_label\"\":\"\"\" + get(map(4.data.Data; \"Name\"); 1) + \"\"\",\")}}\"comps\":{\"ran\":true,\"count\":{{length(5.data)}}{{if(length(5.data) = 0; \"\"; \",\"\"low\"\":\" + min(map(5.data; \"soldPrice\")) + \",\"\"median\"\":\" + average(map(5.data; \"soldPrice\")) + \",\"\"high\"\":\" + max(map(5.data; \"soldPrice\")))}}}}",
+        "body": "{\"pcgs_message\":\"{{3.data.ServerMessage}}\",\"pcgs_no\":\"{{3.data.PCGSNo}}\",\"name\":\"{{3.data.Name}}\",\"grade\":\"{{3.data.Grade}}\",\"cdn_price\":\"{{get(map(4.data.Data[1].PricingData; \"CpgVal\"); 1)}}\",\"cdn_label\":\"{{get(map(4.data.Data; \"Name\"); 1)}}\",\"comps_prices\":\"{{join(map(5.data; \"soldPrice\"); \",\")}}\"}",
         "status": "200",
         "headers": [
           {

@@ -58,6 +58,68 @@ export function offerAtMargin(price: number, marginPct: number): number {
   return price * marginPct
 }
 
+/**
+ * Raw scenario response. Every field is a STRING so the Make webhook body can
+ * be a flat template with no conditionals or string concatenation — the
+ * fragile part of hand-written IML. Missing values arrive as "".
+ */
+export interface RawLookupResponse {
+  pcgs_message?: string
+  pcgs_no?: string
+  name?: string
+  grade?: string
+  cdn_price?: string
+  cdn_label?: string
+  /** comma-joined sold prices, e.g. "35,77,79,80" */
+  comps_prices?: string
+}
+
+function num(v: string | undefined): number | undefined {
+  if (v == null) return undefined
+  const cleaned = v.replace(/[^0-9.]/g, '') // strips thousands separators
+  if (cleaned === '') return undefined
+  const n = parseFloat(cleaned)
+  return Number.isFinite(n) ? n : undefined
+}
+
+function median(sorted: number[]): number {
+  const mid = Math.floor(sorted.length / 2)
+  return sorted.length % 2 === 0
+    ? (sorted[mid - 1] + sorted[mid]) / 2
+    : sorted[mid]
+}
+
+export function normalizeLookup(raw: RawLookupResponse): LookupResult {
+  const name = (raw.name ?? '').trim()
+  const found = name !== '' && (raw.pcgs_message ?? '').trim() !== 'No data found'
+
+  const prices = (raw.comps_prices ?? '')
+    .split(',')
+    .map((p) => num(p))
+    .filter((n): n is number => n !== undefined)
+    .sort((a, b) => a - b)
+
+  return {
+    cert: found
+      ? {
+          found: true,
+          pcgs_no: (raw.pcgs_no ?? '').trim() || undefined,
+          name,
+          grade: (raw.grade ?? '').trim() || undefined,
+        }
+      : { found: false },
+    cdn_price: num(raw.cdn_price),
+    cdn_label: (raw.cdn_label ?? '').trim() || undefined,
+    comps: {
+      ran: prices.length > 0 || found,
+      count: prices.length,
+      low: prices.length ? prices[0] : undefined,
+      median: prices.length ? median(prices) : undefined,
+      high: prices.length ? prices[prices.length - 1] : undefined,
+    },
+  }
+}
+
 export async function lookupCert(certNumber: string): Promise<LookupResult> {
   const url = import.meta.env.VITE_LOOKUP_URL
   if (!url) throw new HttpError(503, 'Lookup service is not configured yet')
@@ -72,5 +134,5 @@ export async function lookupCert(certNumber: string): Promise<LookupResult> {
     throw new NetworkError()
   }
   if (!res.ok) throw new HttpError(res.status, `Lookup failed (${res.status})`)
-  return (await res.json()) as LookupResult
+  return normalizeLookup((await res.json()) as RawLookupResponse)
 }

@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Coin Appraisal Register — Pre-Kickoff Action Items</title>
+<style>
+  @page { size: A4; margin: 13mm 16mm; }
+  * { box-sizing: border-box; }
+  body {
+    font-family: 'Segoe UI', 'Helvetica Neue', Arial, sans-serif;
+    font-size: 10.5pt;
+    line-height: 1.5;
+    color: #1a1a1a;
+    margin: 0;
+    padding: 0;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+  .header {
+    border-top: 4px solid #c9a227;
+    padding-top: 4mm;
+    margin-bottom: 4mm;
+  }
+  .eyebrow {
+    font-size: 9pt;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    color: #c9a227;
+    margin-bottom: 3mm;
+    font-weight: 600;
+  }
+  h1 {
+    font-size: 21pt;
+    line-height: 1.15;
+    margin: 0 0 3mm 0;
+    font-weight: 700;
+    letter-spacing: -0.5px;
+  }
+  .subtitle {
+    font-size: 11pt;
+    color: #555;
+    font-weight: 300;
+    margin: 0;
+  }
+  .meta {
+    font-size: 9pt;
+    color: #666;
+    margin-top: 3mm;
+    padding-top: 2.5mm;
+    border-top: 1px solid #ddd;
+  }
+  p { margin: 0 0 3mm 0; }
+  .intro { color: #444; margin-bottom: 4mm; }
+  .item {
+    border: 1px solid #e2ddd0;
+    border-left: 4px solid #c9a227;
+    border-radius: 3px;
+    padding: 4mm 5mm;
+    margin-bottom: 4mm;
+    page-break-inside: avoid;
+  }
+  .item h2 {
+    font-size: 12.5pt;
+    margin: 0 0 1mm 0;
+    font-weight: 600;
+  }
+  .item .status {
+    display: inline-block;
+    font-size: 8pt;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    font-weight: 700;
+    padding: 0.8mm 2.5mm;
+    border-radius: 2px;
+    margin-bottom: 2.5mm;
+  }
+  .status.blocked { background: #fdecea; color: #b3261e; }
+  .status.partial { background: #fef3dc; color: #8a6a00; }
+  .status.missing { background: #ececec; color: #555; }
+  .item h3 {
+    font-size: 9pt;
+    text-transform: uppercase;
+    letter-spacing: 1.2px;
+    color: #8a6a00;
+    margin: 3mm 0 1mm 0;
+    font-weight: 700;
+  }
+  .item ol, .item ul { margin: 0 0 2mm 0; padding-left: 5.5mm; }
+  .item li { margin-bottom: 1mm; }
+  code {
+    font-family: 'SF Mono', Menlo, Consolas, monospace;
+    font-size: 9pt;
+    background: #f5f1e6;
+    padding: 0.3mm 1.5mm;
+    border-radius: 2px;
+  }
+  .summary-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 2mm 0 5mm 0;
+    font-size: 9.5pt;
+  }
+  .summary-table th {
+    background: #f5f1e6;
+    text-align: left;
+    padding: 2.5mm 3mm;
+    border-bottom: 2px solid #c9a227;
+    font-weight: 600;
+  }
+  .summary-table td {
+    padding: 2.2mm 3mm;
+    border-bottom: 1px solid #e6e6e6;
+    vertical-align: top;
+  }
+  .footer {
+    margin-top: 5mm;
+    padding-top: 3mm;
+    border-top: 1px solid #ddd;
+    font-size: 8.5pt;
+    color: #888;
+    text-align: center;
+  }
+</style>
+</head>
+<body>
+  <div class="header">
+    <div class="eyebrow">Coin Appraisal Register — M2 Build</div>
+    <h1>Pre-Kickoff Action Items</h1>
+    <p class="subtitle">Three items on your side, each verified against its live API — what each one needs and which feature it unlocks.</p>
+    <div class="meta">Prepared by Flowtive · kristof@getflowtive.com · July 2026</div>
+  </div>
+
+  <p class="intro">Every credential has been tested against its live service. Two are verified and working with nothing needed: <strong>PCGS</strong> (cert authentication) and <strong>Metals-API</strong> (live gold/silver/platinum spot — already feeding the calculator through Make.com). Of the three items below, the first two (Cloudflare R2 and Greysheet) are the ones worth doing now — they switch on photo/PDF storage and live wholesale lookups. The third (Apify) needs nothing today: it's a plan upgrade we'll do just before go-live, listed here so it's on the radar. (Supabase setup steps were sent separately.)</p>
+
+  <table class="summary-table">
+    <thead>
+      <tr><th>Service</th><th>Test result</th><th>Action needed</th></tr>
+    </thead>
+    <tbody>
+      <tr><td><strong>Cloudflare R2</strong></td><td>Keys genuine, but no bucket access</td><td>Create bucket + issue bucket-scoped token</td></tr>
+      <tr><td><strong>CDN Greysheet</strong></td><td>Rejected — API needs two credentials</td><td>Send both the API key and API token</td></tr>
+      <tr><td><strong>Apify</strong></td><td>Working — free plan covers the build</td><td>Upgrade to paid before go-live (not urgent)</td></tr>
+    </tbody>
+  </table>
+
+  <div class="item">
+    <h2>1 · Cloudflare R2 — create the bucket and a bucket-scoped token</h2>
+    <span class="status partial">Keys valid — permissions pending</span>
+    <h3>What we found</h3>
+    <p>The Access Key / Secret you sent are genuine — Cloudflare accepts their signature. But the token has no access to any bucket: it can't list, create, or write. It was most likely created before any bucket existed, or scoped to one we don't know about.</p>
+    <h3>What to do (≈2 minutes, Cloudflare dashboard)</h3>
+    <ol>
+      <li>Go to <strong>R2</strong> → <strong>Create bucket</strong> → name it <code>coin-appraisal-register</code>.</li>
+      <li>Go to <strong>R2</strong> → <strong>Manage R2 API Tokens</strong> → <strong>Create API Token</strong> → permission <strong>Object Read &amp; Write</strong>, scoped to that bucket only, no expiry.</li>
+      <li>Send me the new <strong>Access Key ID</strong> and <strong>Secret Access Key</strong>.</li>
+    </ol>
+    <p>If you already created a bucket under a different name, just tell me the name — the existing token may simply be scoped to it.</p>
+    <h3>Why it matters</h3>
+    <p>Every photo (lot, driver's license, items, acceptance) plus the signed offer-letter PDF and the customer signature stores here (spec 2.12). The upload flow is already built and tested in the app — this token is the only thing between "saved locally, pending" and files landing in your storage for real.</p>
+  </div>
+
+  <div class="item">
+    <h2>2 · CDN Greysheet — send both halves of the credential pair</h2>
+    <span class="status blocked">Rejected by the API</span>
+    <h3>What we found</h3>
+    <p>Greysheet's API requires <strong>two credentials sent together</strong> on every request: an <code>x-api-key</code> and an <code>x-api-token</code>, issued as a pair under your account. You sent a single value; the API rejects it alone (tested in every combination against both of their API hosts — consistent "Forbidden").</p>
+    <h3>What to do</h3>
+    <ol>
+      <li>Log in at greysheet.com → account area → <strong>API Credentials</strong>.</li>
+      <li>Copy <strong>both</strong> values shown there — the API key <em>and</em> the API token — and send them to me together.</li>
+      <li>While there, confirm the subscription shows the <strong>Dealer+</strong> tier with API access active — the wholesale-pricing endpoint requires that level.</li>
+    </ol>
+    <h3>Why it matters</h3>
+    <p>This powers the wholesale price lookup on graded/collectible coins (spec 2.3) — the CDN price displayed side-by-side with your configured-margin offer, and the first link in the fallback chain (CDN → Manual Override → Ask Manager).</p>
+  </div>
+
+  <div class="item">
+    <h2>3 · Apify — plan upgrade needed before go-live (not urgent)</h2>
+    <span class="status partial">Working — fine for the build phase</span>
+    <h3>What we found</h3>
+    <p>Your Apify key is valid and connected (account verified), and the <strong>free plan is perfectly adequate for the entire build and testing phase</strong> — nothing to do right now. The spec (Sections 2.3 and 6) calls for a paid plan supporting a <strong>minimum of 50 runs per day</strong>, but that volume only matters once reps are doing real deals.</p>
+    <h3>What to do (when we approach go-live — I'll flag it)</h3>
+    <ol>
+      <li>Log in at apify.com → <strong>Billing</strong> → choose the Starter (or higher) plan.</li>
+      <li>No new key needed — the one you sent keeps working after the upgrade.</li>
+    </ol>
+    <h3>Why it matters</h3>
+    <p>Apify runs the eBay sold-listings scraper: every lookup logs the low / median / high range of actual recent sales (spec 2.3), giving your reps real market comps next to the calculated offer. At production roadshow volume the free tier's limits would stall lookups mid-day — so we flip to paid just before launch, not before.</p>
+  </div>
+
+  <p class="intro" style="margin-top:2mm">Once these three land — plus the Supabase invite from the steps already sent — every Section 6 pre-kickoff requirement on the integration side is met, and I'll confirm each one back to you in writing the same day it arrives. One housekeeping note on Metals-API: since spot is fetched on every calculation, it's worth a quick glance that the plan tier covers production request volume — the app falls back to cached prices if the feed ever throttles.</p>
+
+  <div class="footer">Flowtive · Coin Appraisal Register · M2 Pre-Kickoff Action Items</div>
+</body>
+</html>

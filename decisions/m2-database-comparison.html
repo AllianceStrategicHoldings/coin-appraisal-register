@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Coin Appraisal Register — Primary Database Comparison</title>
+<style>
+  @page { size: A4; margin: 13mm 16mm; }
+  * { box-sizing: border-box; }
+  body {
+    font-family: 'Segoe UI', 'Helvetica Neue', Arial, sans-serif;
+    font-size: 10.5pt;
+    line-height: 1.5;
+    color: #1a1a1a;
+    margin: 0;
+    padding: 0;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+  .header {
+    border-top: 4px solid #c9a227;
+    padding-top: 4mm;
+    margin-bottom: 4mm;
+  }
+  .eyebrow {
+    font-size: 9pt;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    color: #c9a227;
+    margin-bottom: 4mm;
+    font-weight: 600;
+  }
+  h1 {
+    font-size: 22pt;
+    line-height: 1.15;
+    margin: 0 0 3mm 0;
+    font-weight: 700;
+    letter-spacing: -0.5px;
+  }
+  .subtitle {
+    font-size: 11pt;
+    color: #555;
+    font-weight: 300;
+    margin: 0;
+  }
+  .meta {
+    font-size: 9pt;
+    color: #666;
+    margin-top: 3.5mm;
+    padding-top: 3mm;
+    border-top: 1px solid #ddd;
+  }
+  p { margin: 0 0 3mm 0; }
+  .intro { color: #444; margin-bottom: 3mm; }
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 2mm 0 4mm 0;
+    font-size: 9.5pt;
+  }
+  th {
+    background: #f5f1e6;
+    text-align: left;
+    padding: 3mm 3.5mm;
+    border-bottom: 2px solid #c9a227;
+    font-weight: 600;
+    vertical-align: top;
+  }
+  th.criterion { width: 26%; }
+  th.opt { width: 37%; }
+  td {
+    padding: 1.9mm 3.5mm;
+    border-bottom: 1px solid #e6e6e6;
+    vertical-align: top;
+  }
+  td.criterion { font-weight: 600; color: #1a1a1a; }
+  td.criterion small { display: block; font-weight: 400; color: #777; font-size: 8.5pt; margin-top: 0.5mm; }
+  tr:nth-child(even) td { background: #fafafa; }
+  tr { page-break-inside: avoid; }
+  .rec {
+    background: #fffbef;
+    border: 1.5px solid #c9a227;
+    padding: 5mm 6mm;
+    margin: 4mm 0 4mm 0;
+    border-radius: 3px;
+    page-break-inside: avoid;
+  }
+  .rec .label {
+    font-size: 8.5pt;
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+    color: #8a6a00;
+    margin-bottom: 2mm;
+    font-weight: 600;
+  }
+  .rec p { margin: 0; font-size: 10.5pt; }
+  .rec strong { color: #1a1a1a; }
+  .footer {
+    margin-top: 4mm;
+    padding-top: 3mm;
+    border-top: 1px solid #ddd;
+    font-size: 8.5pt;
+    color: #888;
+    text-align: center;
+  }
+</style>
+</head>
+<body>
+  <div class="header">
+    <div class="eyebrow">Coin Appraisal Register — M2 Architecture</div>
+    <h1>Primary Database: Options Comparison</h1>
+    <p class="subtitle">System of record for deal data, customer records, and configuration — Airtable versus a dedicated Postgres database.</p>
+    <div class="meta">Prepared by Flowtive · kristof@getflowtive.com · July 2026</div>
+  </div>
+
+  <p class="intro">The build specification (Section 2.14) calls for standard data types, no business logic in database formulas, and all workflow running in Make.com. The comparison below weighs keeping Airtable as the system of record against moving deal and customer data to a dedicated Postgres database (Supabase). Make.com continues to orchestrate all workflow in either case.</p>
+
+  <table>
+    <thead>
+      <tr>
+        <th class="criterion">Criterion</th>
+        <th class="opt">Airtable stays</th>
+        <th class="opt">Supabase / Postgres</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td class="criterion">System of record</td>
+        <td>Airtable holds everything</td>
+        <td>Postgres holds deals + customers</td>
+      </tr>
+      <tr>
+        <td class="criterion">Returning-customer lookup<small>Phone + DOB, real-time at intake</small></td>
+        <td>API call, rate-limited (5/sec), slower</td>
+        <td>Indexed SQL query, instant, no limit</td>
+      </tr>
+      <tr>
+        <td class="criterion">Manager Dashboard<small>Quarterly per-rep aggregations</small></td>
+        <td>Painful — compute in Make or client-side</td>
+        <td>Trivial SQL <code>GROUP BY</code></td>
+      </tr>
+      <tr>
+        <td class="criterion">Approval gate<small>5-second polling</small></td>
+        <td>Polling only</td>
+        <td>Realtime can push instead of poll</td>
+      </tr>
+      <tr>
+        <td class="criterion">Admin edits config<small>Non-technical operator</small></td>
+        <td>Spreadsheet UI — its real strength</td>
+        <td>Table editor (decent, not as friendly)</td>
+      </tr>
+      <tr>
+        <td class="criterion">Scales to 10k+ deals / multi-location</td>
+        <td>Degrades, record caps</td>
+        <td>Effortless</td>
+      </tr>
+      <tr>
+        <td class="criterion">Ongoing cost</td>
+        <td>~$20–45 / seat / mo</td>
+        <td>$25 / mo flat (free tier covers early)</td>
+      </tr>
+      <tr>
+        <td class="criterion">Build effort</td>
+        <td>Lowest</td>
+        <td>Moderate</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <div class="rec">
+    <div class="label">Recommendation</div>
+    <p><strong>Supabase (Postgres).</strong> It makes the two hardest M2 features — the manager dashboard reporting and the returning-customer lookup — fast and clean rather than hacky, scales with the multi-location and roadshow plan, and matches how the specification is written. Make.com still runs all the workflow, so nothing in the agreed architecture changes. Airtable remains the better choice only if direct spreadsheet-style access to live deal data is a firm requirement and deal volume is expected to stay low.</p>
+  </div>
+
+  <div class="footer">Flowtive · Coin Appraisal Register · M2 Architecture Decision Brief</div>
+</body>
+</html>

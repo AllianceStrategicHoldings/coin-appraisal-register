@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Coin Appraisal Register — Cloud Storage Comparison</title>
+<style>
+  @page { size: A4; margin: 13mm 16mm; }
+  * { box-sizing: border-box; }
+  body {
+    font-family: 'Segoe UI', 'Helvetica Neue', Arial, sans-serif;
+    font-size: 10.5pt;
+    line-height: 1.5;
+    color: #1a1a1a;
+    margin: 0;
+    padding: 0;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+  .header {
+    border-top: 4px solid #c9a227;
+    padding-top: 4mm;
+    margin-bottom: 4mm;
+  }
+  .eyebrow {
+    font-size: 9pt;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    color: #c9a227;
+    margin-bottom: 4mm;
+    font-weight: 600;
+  }
+  h1 {
+    font-size: 22pt;
+    line-height: 1.15;
+    margin: 0 0 3mm 0;
+    font-weight: 700;
+    letter-spacing: -0.5px;
+  }
+  .subtitle {
+    font-size: 11pt;
+    color: #555;
+    font-weight: 300;
+    margin: 0;
+  }
+  .meta {
+    font-size: 9pt;
+    color: #666;
+    margin-top: 3.5mm;
+    padding-top: 3mm;
+    border-top: 1px solid #ddd;
+  }
+  p { margin: 0 0 3mm 0; }
+  .intro { color: #444; margin-bottom: 3mm; }
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 2mm 0 4mm 0;
+    font-size: 9.5pt;
+  }
+  th {
+    background: #f5f1e6;
+    text-align: left;
+    padding: 3mm 3.5mm;
+    border-bottom: 2px solid #c9a227;
+    font-weight: 600;
+    vertical-align: top;
+  }
+  th.criterion { width: 26%; }
+  th.opt { width: 37%; }
+  td {
+    padding: 1.9mm 3.5mm;
+    border-bottom: 1px solid #e6e6e6;
+    vertical-align: top;
+  }
+  td.criterion { font-weight: 600; color: #1a1a1a; }
+  td.criterion small { display: block; font-weight: 400; color: #777; font-size: 8.5pt; margin-top: 0.5mm; }
+  tr:nth-child(even) td { background: #fafafa; }
+  tr { page-break-inside: avoid; }
+  .highlight td { background: #fffbef !important; }
+  .rec {
+    background: #fffbef;
+    border: 1.5px solid #c9a227;
+    padding: 5mm 6mm;
+    margin: 4mm 0 4mm 0;
+    border-radius: 3px;
+    page-break-inside: avoid;
+  }
+  .rec .label {
+    font-size: 8.5pt;
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+    color: #8a6a00;
+    margin-bottom: 2mm;
+    font-weight: 600;
+  }
+  .rec p { margin: 0; font-size: 10.5pt; }
+  .rec strong { color: #1a1a1a; }
+  .footer {
+    margin-top: 4mm;
+    padding-top: 3mm;
+    border-top: 1px solid #ddd;
+    font-size: 8.5pt;
+    color: #888;
+    text-align: center;
+  }
+</style>
+</head>
+<body>
+  <div class="header">
+    <div class="eyebrow">Coin Appraisal Register — M2 Architecture</div>
+    <h1>Cloud Storage: Options Comparison</h1>
+    <p class="subtitle">Where photos and generated offer-letter PDFs are stored and served — AWS S3 versus Cloudflare R2.</p>
+    <div class="meta">Prepared by Flowtive · kristof@getflowtive.com · July 2026</div>
+  </div>
+
+  <p class="intro">Section 2.12 requires all photos (intake lot, driver's licence, acceptance lot, item photos) and all generated PDFs (signed offer letters) stored in the cloud with the URL written to the deal record, via a presigned-URL upload flow from the PWA. Both options below use the same S3-compatible API, so the build effort is identical — the decision comes down to cost and operational fit, not engineering.</p>
+
+  <table>
+    <thead>
+      <tr>
+        <th class="criterion">Criterion</th>
+        <th class="opt">AWS S3</th>
+        <th class="opt">Cloudflare R2</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td class="criterion">API &amp; build effort</td>
+        <td>S3 SDK</td>
+        <td>Same S3 SDK — identical code</td>
+      </tr>
+      <tr class="highlight">
+        <td class="criterion">Egress (data out)<small>Photos + PDFs served back to app, dashboard, GHL, customers</small></td>
+        <td>$0.09 / GB — every view is billed</td>
+        <td>Free — no egress charges</td>
+      </tr>
+      <tr>
+        <td class="criterion">Storage cost</td>
+        <td>~$0.023 / GB / mo</td>
+        <td>~$0.015 / GB / mo</td>
+      </tr>
+      <tr>
+        <td class="criterion">Billing model</td>
+        <td>Metered — grows with usage</td>
+        <td>Flat, predictable</td>
+      </tr>
+      <tr>
+        <td class="criterion">Free tier</td>
+        <td>5 GB (first 12 months only)</td>
+        <td>10 GB ongoing</td>
+      </tr>
+      <tr>
+        <td class="criterion">Maturity / ecosystem</td>
+        <td>The industry standard; everything supports it</td>
+        <td>Younger, but mature for object storage</td>
+      </tr>
+      <tr>
+        <td class="criterion">Presigned-URL upload flow</td>
+        <td>Fully supported</td>
+        <td>Fully supported — same flow</td>
+      </tr>
+      <tr>
+        <td class="criterion">Best fit when</td>
+        <td>Already standardised on AWS</td>
+        <td>App serves images / PDFs back out constantly</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <div class="rec">
+    <div class="label">Recommendation</div>
+    <p><strong>Cloudflare R2.</strong> Because it speaks the same S3 API, the build is identical either way — so the deciding factor is cost. This app doesn't just store files; it serves them back out repeatedly (offer-letter PDFs pulled by GHL, photos shown in the manager dashboard, customer-facing views). On S3 every one of those is billed egress; on R2 that's free, giving a predictable flat bill instead of one that grows with usage. The only reason to choose S3 instead is if the operator is already standardised on AWS and wants everything under one roof.</p>
+  </div>
+
+  <div class="footer">Flowtive · Coin Appraisal Register · M2 Architecture Decision Brief</div>
+</body>
+</html>

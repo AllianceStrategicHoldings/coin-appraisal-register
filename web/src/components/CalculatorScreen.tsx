@@ -41,8 +41,8 @@ export function CalculatorScreen({
 }: CalculatorScreenProps) {
 
   const [showAddCoin, setShowAddCoin] = useState(false)
-  // Lines where the rep tried to enter an Actual Offer above Max Payout
-  const [offerWarnIds, setOfferWarnIds] = useState<Set<string>>(new Set())
+  // lineId -> the over-ceiling amount the rep attempted (2.13)
+  const [offerWarn, setOfferWarn] = useState<Map<string, number>>(new Map())
 
   const prevRepRef = useRef<string | null>(null)
   useEffect(() => {
@@ -272,7 +272,7 @@ export function CalculatorScreen({
               const isUnpriceable = liveTotals.unpriceableIds.has(line.id)
               const lineVal = valueLine(line, effectiveSpot, effectiveMargins)
               const dual = dualPriceLine(line, effectiveSpot, effectiveMargins)
-              const showOverWarn = offerWarnIds.has(line.id)
+              const attemptedOver = offerWarn.get(line.id)
               return (
                 <li
                   key={line.id}
@@ -341,34 +341,41 @@ export function CalculatorScreen({
                       <span className="text-xs text-slate-500 shrink-0">Offer $</span>
                       <div className="w-28">
                         <KeypadField
+                          // Empty when untouched so the keypad starts fresh —
+                          // pre-filling the ceiling made every keystroke append
+                          // to it and get rejected for exceeding Max Payout.
                           value={
+                            // currency field: settle at 2dp once committed
                             line.actual_offer != null
-                              ? String(line.actual_offer)
-                              : dual.actualOffer.toFixed(2)
+                              ? line.actual_offer.toFixed(2)
+                              : ''
                           }
+                          placeholder={dual.actualOffer.toFixed(2)}
                           onChange={(next) => {
+                            const clearWarn = () =>
+                              setOfferWarn((prev) => {
+                                if (!prev.has(line.id)) return prev
+                                const m = new Map(prev)
+                                m.delete(line.id)
+                                return m
+                              })
+                            // Empty or a bare decimal point: back to the default
+                            // (offer = Max Payout), shown as the placeholder.
                             if (next === '' || next === '.') {
                               cart.setActualOffer(line.id, null)
-                              setOfferWarnIds((prev) => {
-                                const s = new Set(prev)
-                                s.delete(line.id)
-                                return s
-                              })
+                              clearWarn()
                               return
                             }
                             const v = parseFloat(next)
                             if (Number.isNaN(v) || v < 0) return
                             if (v > dual.maxPayout) {
-                              // Above Max Payout requires a manager override
-                              // code (2.13) — blocked until that lands in M3.
-                              setOfferWarnIds((prev) => new Set(prev).add(line.id))
+                              // Above Max Payout needs a manager override code
+                              // (2.13). Not stored, but named in the warning so
+                              // the keypad doesn't feel dead.
+                              setOfferWarn((prev) => new Map(prev).set(line.id, v))
                               return
                             }
-                            setOfferWarnIds((prev) => {
-                              const s = new Set(prev)
-                              s.delete(line.id)
-                              return s
-                            })
+                            clearWarn()
                             cart.setActualOffer(line.id, v)
                           }}
                           allowDecimal
@@ -388,10 +395,10 @@ export function CalculatorScreen({
                         <button
                           onClick={() => {
                             cart.setActualOffer(line.id, null)
-                            setOfferWarnIds((prev) => {
-                              const s = new Set(prev)
-                              s.delete(line.id)
-                              return s
+                            setOfferWarn((prev) => {
+                              const m = new Map(prev)
+                              m.delete(line.id)
+                              return m
                             })
                           }}
                           className="text-xs text-slate-400 underline shrink-0 min-h-11"
@@ -401,16 +408,17 @@ export function CalculatorScreen({
                       )}
                     </div>
                   )}
-                  {showOverWarn && dual && (
+                  {attemptedOver != null && dual && (
                     <div
                       role="alert"
                       className="mt-1 ml-1 text-xs font-semibold text-red-700"
                     >
-                      Above Max Payout ({usd.format(dual.maxPayout)}) — requires a
-                      manager override code.
+                      Can't offer {usd.format(attemptedOver)} — the ceiling is{' '}
+                      {usd.format(dual.maxPayout)}. Above it needs a manager
+                      override code.
                     </div>
                   )}
-                  {!showOverWarn && dual?.capped && (
+                  {attemptedOver == null && dual?.capped && (
                     <div
                       role="alert"
                       className="mt-1 ml-1 text-xs font-semibold text-amber-700"

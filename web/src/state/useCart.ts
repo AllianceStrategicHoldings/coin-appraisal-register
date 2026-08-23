@@ -3,12 +3,22 @@ import type { CartLine, CartLineInput } from '../api/types'
 
 const STORAGE_KEY = 'car.cart.v1'
 
+// One cert = one coin: a lookup-priced line is a single certified slab, and
+// pricing ignores quantity for it (valueLine). Pin quantity to 1 so the bag
+// never displays a count the math doesn't use.
+function normalize(line: CartLine): CartLine {
+  if (line.lookup_value != null && line.priced_by !== 'weight_grams' && line.quantity !== 1) {
+    return { ...line, quantity: 1 }
+  }
+  return line
+}
+
 function readInitial(): CartLine[] {
   try {
     const raw = localStorage.getItem(STORAGE_KEY)
     if (!raw) return []
     const parsed = JSON.parse(raw) as unknown
-    return Array.isArray(parsed) ? (parsed as CartLine[]) : []
+    return Array.isArray(parsed) ? (parsed as CartLine[]).map(normalize) : []
   } catch {
     return []
   }
@@ -32,7 +42,10 @@ export function useCart(): UseCartResult {
   }, [lines])
 
   const addLine = useCallback((line: CartLineInput) => {
-    setLines((prev) => [...prev, { ...line, id: crypto.randomUUID() } as CartLine])
+    setLines((prev) => [
+      ...prev,
+      normalize({ ...line, id: crypto.randomUUID() } as CartLine),
+    ])
   }, [])
 
   const removeLine = useCallback((id: string) => {
@@ -44,6 +57,7 @@ export function useCart(): UseCartResult {
       prev.map((l) => {
         if (l.id !== id) return l
         if (l.priced_by === 'weight_grams') return { ...l, weight_grams: value }
+        if (l.lookup_value != null) return l // qty pinned to 1 (one cert = one coin)
         return { ...l, quantity: value }
       }),
     )

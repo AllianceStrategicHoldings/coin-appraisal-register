@@ -134,12 +134,14 @@ export function AddCoinModal({
   // grade multiplier (2.3). A lookup that resolved to a price stands in for
   // the grade selection.
   const usingLookup = lookup?.price != null
+  // A cert number identifies one specific slab, so a lookup-priced line is
+  // always quantity 1 — ten identical graded coins are ten certs, ten lines.
+  const qtyLocked = usingLookup && !isManual && selected?.priced_by !== 'weight_grams'
   const canAdd =
     selected !== null &&
     !entryBlocked &&
     purityValid &&
-    !Number.isNaN(numValue) &&
-    numValue > 0 &&
+    (qtyLocked || (!Number.isNaN(numValue) && numValue > 0)) &&
     (!needsGrade || grade !== null || usingLookup) &&
     (!isManual || denomination.trim().length > 0)
 
@@ -198,11 +200,11 @@ export function AddCoinModal({
       onAdd({
         ...base,
         priced_by: 'times_face',
-        quantity: numValue,
+        quantity: qtyLocked ? 1 : numValue,
         ...(grade ? { grade } : {}),
       })
     } else {
-      onAdd({ ...base, priced_by: 'each_metal', quantity: numValue })
+      onAdd({ ...base, priced_by: 'each_metal', quantity: qtyLocked ? 1 : numValue })
     }
     onClose()
   }
@@ -478,15 +480,24 @@ export function AddCoinModal({
               >
                 {inputLabel}
               </label>
-              <KeypadField
-                id="add-coin-value"
-                value={value}
-                onChange={setValue}
-                allowDecimal={inputIsDecimal}
-                ariaLabel={inputLabel}
-                keypadLabel={inputLabel}
-                placeholder={inputIsDecimal ? 'e.g. 23.4' : 'e.g. 10'}
-              />
+              {qtyLocked ? (
+                <div className="w-full min-h-11 px-3 py-2.5 rounded-md border border-slate-200 bg-slate-100 text-base text-slate-700">
+                  1{' '}
+                  <span className="text-xs text-slate-500">
+                    — priced per certified coin; add each slab as its own line
+                  </span>
+                </div>
+              ) : (
+                <KeypadField
+                  id="add-coin-value"
+                  value={value}
+                  onChange={setValue}
+                  allowDecimal={inputIsDecimal}
+                  ariaLabel={inputLabel}
+                  keypadLabel={inputLabel}
+                  placeholder={inputIsDecimal ? 'e.g. 23.4' : 'e.g. 10'}
+                />
+              )}
               {entryBlocked && (
                 <div className="mt-1 text-xs text-amber-700 font-medium">
                   {selected.is_pre1933_gold

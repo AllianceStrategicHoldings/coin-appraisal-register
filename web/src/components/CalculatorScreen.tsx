@@ -269,6 +269,9 @@ export function CalculatorScreen({
               const value =
                 line.priced_by === 'weight_grams' ? line.weight_grams : line.quantity
               const isDecimal = line.priced_by === 'weight_grams'
+              // One cert = one coin: lookup-priced lines are fixed at qty 1
+              // (pricing ignores quantity for them — see valueLine).
+              const qtyLocked = line.lookup_value != null
               const isUnpriceable = liveTotals.unpriceableIds.has(line.id)
               const lineVal = valueLine(line, effectiveSpot, effectiveMargins)
               const dual = dualPriceLine(line, effectiveSpot, effectiveMargins)
@@ -310,23 +313,32 @@ export function CalculatorScreen({
                       )}
                     </div>
                     <div className="w-24">
-                      <KeypadField
-                        value={String(value)}
-                        onChange={(next) => {
-                          if (next === '' || next === '.') {
-                            cart.updateLine(line.id, 0)
-                            return
-                          }
-                          const v = parseFloat(next)
-                          if (!Number.isNaN(v) && v >= 0) {
-                            cart.updateLine(line.id, v)
-                          }
-                        }}
-                        allowDecimal={isDecimal}
-                        ariaLabel={`Edit ${line.name}`}
-                        keypadLabel={`${line.name} — ${line.unit_label}`}
-                        className="w-full min-h-11 px-2 text-sm rounded border border-slate-300 bg-white text-right"
-                      />
+                      {qtyLocked ? (
+                        <div
+                          className="w-full min-h-11 px-2 py-2.5 text-sm rounded border border-slate-200 bg-slate-100 text-right text-slate-500"
+                          title="Priced from a cert lookup — one cert, one coin"
+                        >
+                          1
+                        </div>
+                      ) : (
+                        <KeypadField
+                          value={String(value)}
+                          onChange={(next) => {
+                            if (next === '' || next === '.') {
+                              cart.updateLine(line.id, 0)
+                              return
+                            }
+                            const v = parseFloat(next)
+                            if (!Number.isNaN(v) && v >= 0) {
+                              cart.updateLine(line.id, v)
+                            }
+                          }}
+                          allowDecimal={isDecimal}
+                          ariaLabel={`Edit ${line.name}`}
+                          keypadLabel={`${line.name} — ${line.unit_label}`}
+                          className="w-full min-h-11 px-2 text-sm rounded border border-slate-300 bg-white text-right"
+                        />
+                      )}
                     </div>
                     <button
                       onClick={() => cart.removeLine(line.id)}

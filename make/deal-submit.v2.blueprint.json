@@ -1,0 +1,912 @@
+{
+  "name": "deal-submit.v2 (Supabase + GHL fan-out)",
+  "flow": [
+    {
+      "id": 1,
+      "module": "gateway:CustomWebHook",
+      "version": 1,
+      "parameters": {
+        "hook": null,
+        "maxResults": 1
+      },
+      "mapper": {},
+      "metadata": {
+        "designer": {
+          "x": 0,
+          "y": 0
+        },
+        "restore": {
+          "parameters": {
+            "hook": {
+              "data": {
+                "editable": "true"
+              },
+              "label": "deal_submit"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "hook",
+            "type": "hook:gateway-webhook",
+            "label": "Webhook",
+            "required": true
+          },
+          {
+            "name": "maxResults",
+            "type": "number",
+            "label": "Maximum number of results"
+          }
+        ]
+      }
+    },
+    {
+      "id": 2,
+      "module": "util:SetVariables",
+      "version": 1,
+      "parameters": {},
+      "mapper": {
+        "scope": "roundtrip",
+        "variables": [
+          {
+            "name": "supabase_service_key",
+            "value": "REPLACE_WITH_SUPABASE_SERVICE_ROLE_KEY"
+          },
+          {
+            "name": "is_accepted",
+            "value": "{{if(1.event_type = \"deal_accepted\"; true; false)}}"
+          },
+          {
+            "name": "deal_number",
+            "value": "CAR-{{formatDate(now; \"YYYYMMDD-HHmmss\")}}"
+          }
+        ]
+      },
+      "metadata": {
+        "designer": {
+          "x": 300,
+          "y": 0
+        },
+        "restore": {
+          "expect": {
+            "scope": {
+              "label": "One cycle"
+            },
+            "variables": {
+              "items": [
+                null,
+                null,
+                null
+              ]
+            }
+          }
+        }
+      }
+    },
+    {
+      "id": 3,
+      "module": "http:ActionSendData",
+      "version": 3,
+      "parameters": {
+        "handleErrors": false,
+        "useNewZLibDeCompress": true
+      },
+      "mapper": {
+        "ca": "",
+        "qs": [],
+        "url": "https://jsklabrbirsidlnxpgmw.supabase.co/rest/v1/customer_master?on_conflict=phone,dob",
+        "gzip": true,
+        "method": "post",
+        "headers": [
+          {
+            "name": "apikey",
+            "value": "{{2.supabase_service_key}}"
+          },
+          {
+            "name": "Authorization",
+            "value": "Bearer {{2.supabase_service_key}}"
+          },
+          {
+            "name": "Content-Type",
+            "value": "application/json"
+          },
+          {
+            "name": "Prefer",
+            "value": "resolution=merge-duplicates,return=representation"
+          }
+        ],
+        "timeout": "",
+        "useMtls": false,
+        "authPass": "",
+        "authUser": "",
+        "bodyType": "raw",
+        "serializeUrl": false,
+        "shareCookies": false,
+        "parseResponse": true,
+        "followRedirect": true,
+        "useQuerystring": false,
+        "followAllRedirects": false,
+        "rejectUnauthorized": true,
+        "contentType": "application/json",
+        "data": "{\"phone\":\"{{1.customer.phone}}\",\"name\":\"{{1.customer.name}}\",\"tcpa_opt_in\":{{ifempty(1.customer.tcpa_opt_in; false)}}{{if(1.customer.dob = null; \"\"; \",\"\"dob\"\":\"\"\" + 1.customer.dob + \"\"\"\")}}{{if(1.customer.email = null; \"\"; \",\"\"email\"\":\"\"\" + 1.customer.email + \"\"\"\")}}{{if(1.customer.zip = null; \"\"; \",\"\"zip\"\":\"\"\" + 1.customer.zip + \"\"\"\")}}{{if(1.customer.dl_number = null; \"\"; \",\"\"dl_number\"\":\"\"\" + 1.customer.dl_number + \"\"\"\")}}}"
+      },
+      "metadata": {
+        "designer": {
+          "x": 600,
+          "y": 0
+        },
+        "restore": {
+          "expect": {
+            "qs": {
+              "mode": "chose"
+            },
+            "method": {
+              "mode": "chose",
+              "label": "POST"
+            },
+            "headers": {
+              "mode": "chose"
+            },
+            "bodyType": {
+              "label": "Raw"
+            },
+            "contentType": {
+              "label": "JSON (application/json)"
+            }
+          }
+        }
+      }
+    },
+    {
+      "id": 4,
+      "module": "http:ActionSendData",
+      "version": 3,
+      "parameters": {
+        "handleErrors": false,
+        "useNewZLibDeCompress": true
+      },
+      "mapper": {
+        "ca": "",
+        "qs": [],
+        "url": "https://jsklabrbirsidlnxpgmw.supabase.co/rest/v1/deal_log",
+        "gzip": true,
+        "method": "post",
+        "headers": [
+          {
+            "name": "apikey",
+            "value": "{{2.supabase_service_key}}"
+          },
+          {
+            "name": "Authorization",
+            "value": "Bearer {{2.supabase_service_key}}"
+          },
+          {
+            "name": "Content-Type",
+            "value": "application/json"
+          },
+          {
+            "name": "Prefer",
+            "value": "return=representation"
+          }
+        ],
+        "timeout": "",
+        "useMtls": false,
+        "authPass": "",
+        "authUser": "",
+        "bodyType": "raw",
+        "serializeUrl": false,
+        "shareCookies": false,
+        "parseResponse": true,
+        "followRedirect": true,
+        "useQuerystring": false,
+        "followAllRedirects": false,
+        "rejectUnauthorized": true,
+        "contentType": "application/json",
+        "data": "{\"deal_number\":\"{{2.deal_number}}\",\"customer_id\":\"{{3.data[1].id}}\",\"status\":\"Pending\",\"operator_id\":1,\"accepted\":{{2.is_accepted}},\"tcpa_opt_in\":{{1.customer.tcpa_opt_in}},\"total_max_payout\":{{1.totals.total_max_payout}},\"total_actual_offer\":{{1.totals.total_actual_offer}},\"total_negotiation_delta\":{{1.totals.total_delta}}{{if(1.spot.gold = null; \"\"; \",\"\"spot_gold\"\":\" + 1.spot.gold)}}{{if(1.spot.silver = null; \"\"; \",\"\"spot_silver\"\":\" + 1.spot.silver)}}{{if(1.spot.platinum = null; \"\"; \",\"\"spot_platinum\"\":\" + 1.spot.platinum)}}{{if(1.location_id = null; \"\"; \",\"\"location_id\"\":\"\"\" + 1.location_id + \"\"\"\")}}{{if(1.event_id = null; \"\"; \",\"\"event_id\"\":\"\"\" + 1.event_id + \"\"\"\")}}{{if(1.payment_method = null; \"\"; \",\"\"payment_method\"\":\"\"\" + 1.payment_method + \"\"\"\")}}{{if(1.selling_reason = null; \"\"; \",\"\"selling_reason\"\":\"\"\" + 1.selling_reason + \"\"\"\")}}{{if(1.referral_source = null; \"\"; \",\"\"referral_source\"\":\"\"\" + 1.referral_source + \"\"\"\")}}{{if(1.estimated_collection_age = null; \"\"; \",\"\"estimated_collection_age\"\":\"\"\" + 1.estimated_collection_age + \"\"\"\")}}{{if(1.competitor_offers_received = null; \"\"; \",\"\"competitor_offers_received\"\":\" + 1.competitor_offers_received)}}{{if(1.competitor_offer_amount = null; \"\"; \",\"\"competitor_offer_amount\"\":\" + 1.competitor_offer_amount)}}{{if(1.price_lock_24hr = null; \"\"; \",\"\"price_lock_24hr\"\":\" + 1.price_lock_24hr)}}{{if(1.price_lock_expires_at = null; \"\"; \",\"\"price_lock_expires_at\"\":\"\"\" + 1.price_lock_expires_at + \"\"\"\")}}{{if(1.pre1933_gold_ack = null; \"\"; \",\"\"pre1933_gold_ack\"\":\" + 1.pre1933_gold_ack)}}{{if(1.pre1933_ack_at = null; \"\"; \",\"\"pre1933_ack_at\"\":\"\"\" + 1.pre1933_ack_at + \"\"\"\")}}{{if(1.cash_over_9500_ack = null; \"\"; \",\"\"cash_over_9500_ack\"\":\" + 1.cash_over_9500_ack)}}{{if(2.is_accepted; \",\"\"accepted_at\"\":\"\"\" + 1.submitted_at + \"\"\"\"; \",\"\"declined_at\"\":\"\"\" + 1.submitted_at + \"\"\"\")}}{{if(1.object_keys.intake_lot = null; \"\"; \",\"\"collection_photo_url\"\":\"\"\" + 1.object_keys.intake_lot + \"\"\"\")}}{{if(1.object_keys.dl_photo = null; \"\"; \",\"\"dl_photo_url\"\":\"\"\" + 1.object_keys.dl_photo + \"\"\"\")}}{{if(1.object_keys.acceptance_lot = null; \"\"; \",\"\"acceptance_photo_url\"\":\"\"\" + 1.object_keys.acceptance_lot + \"\"\"\")}}{{if(1.object_keys.signature = null; \"\"; \",\"\"signature_image_url\"\":\"\"\" + 1.object_keys.signature + \"\"\"\")}}{{if(1.object_keys.offer_letter = null; \"\"; \",\"\"offer_letter_url\"\":\"\"\" + 1.object_keys.offer_letter + \"\"\"\")}}{{if(1.customer_zip_radius_miles = null; \"\"; \",\"\"customer_zip_radius_miles\"\":\" + 1.customer_zip_radius_miles)}}}"
+      },
+      "metadata": {
+        "designer": {
+          "x": 900,
+          "y": 0
+        },
+        "restore": {
+          "expect": {
+            "qs": {
+              "mode": "chose"
+            },
+            "method": {
+              "mode": "chose",
+              "label": "POST"
+            },
+            "headers": {
+              "mode": "chose"
+            },
+            "bodyType": {
+              "label": "Raw"
+            },
+            "contentType": {
+              "label": "JSON (application/json)"
+            }
+          }
+        }
+      }
+    },
+    {
+      "id": 5,
+      "module": "http:ActionSendData",
+      "version": 3,
+      "parameters": {
+        "handleErrors": false,
+        "useNewZLibDeCompress": true
+      },
+      "mapper": {
+        "ca": "",
+        "qs": [],
+        "url": "https://jsklabrbirsidlnxpgmw.supabase.co/rest/v1/config_operator?id=eq.1&select=ghl_accepted_webhook_url,ghl_declined_webhook_url,zoho_webhook_url,fourth_webhook_url",
+        "gzip": true,
+        "method": "get",
+        "headers": [
+          {
+            "name": "apikey",
+            "value": "{{2.supabase_service_key}}"
+          },
+          {
+            "name": "Authorization",
+            "value": "Bearer {{2.supabase_service_key}}"
+          }
+        ],
+        "timeout": "",
+        "useMtls": false,
+        "authPass": "",
+        "authUser": "",
+        "bodyType": "raw",
+        "serializeUrl": false,
+        "shareCookies": false,
+        "parseResponse": true,
+        "followRedirect": true,
+        "useQuerystring": false,
+        "followAllRedirects": false,
+        "rejectUnauthorized": true,
+        "contentType": "application/json",
+        "data": ""
+      },
+      "metadata": {
+        "designer": {
+          "x": 1200,
+          "y": 0
+        },
+        "restore": {
+          "expect": {
+            "qs": {
+              "mode": "chose"
+            },
+            "method": {
+              "mode": "chose",
+              "label": "GET"
+            },
+            "headers": {
+              "mode": "chose"
+            },
+            "bodyType": {
+              "label": "Raw"
+            },
+            "contentType": {
+              "label": "JSON (application/json)"
+            }
+          }
+        }
+      }
+    },
+    {
+      "id": 6,
+      "module": "util:SetVariables",
+      "version": 1,
+      "parameters": {},
+      "mapper": {
+        "scope": "roundtrip",
+        "variables": [
+          {
+            "name": "ghl_url",
+            "value": "{{if(2.is_accepted; 5.data[1].ghl_accepted_webhook_url; 5.data[1].ghl_declined_webhook_url)}}"
+          },
+          {
+            "name": "fanout_payload",
+            "value": "{\"event_type\":\"{{1.event_type}}\",\"deal_number\":\"{{2.deal_number}}\",\"deal_id\":\"{{4.data[1].id}}\",\"submitted_at\":\"{{1.submitted_at}}\",\"customer\":{\"name\":\"{{1.customer.name}}\",\"phone\":\"{{1.customer.phone}}\",\"email\":\"{{1.customer.email}}\",\"dob\":\"{{1.customer.dob}}\",\"zip\":\"{{1.customer.zip}}\",\"dl_number\":\"{{1.customer.dl_number}}\",\"tcpa_opt_in\":{{ifempty(1.customer.tcpa_opt_in; false)}}},\"selling_reason\":\"{{1.selling_reason}}\",\"referral_source\":\"{{1.referral_source}}\",\"estimated_collection_age\":\"{{1.estimated_collection_age}}\",\"competitor_offers_received\":{{ifempty(1.competitor_offers_received; false)}},\"competitor_offer_amount\":{{ifempty(1.competitor_offer_amount; 0)}},\"customer_zip_radius_miles\":{{ifempty(1.customer_zip_radius_miles; 0)}},\"payment_method\":\"{{1.payment_method}}\",\"location_id\":\"{{1.location_id}}\",\"event_id\":\"{{1.event_id}}\",\"totals\":{\"total_value\":{{ifempty(1.totals.total_value; 0)}},\"total_max_payout\":{{ifempty(1.totals.total_max_payout; 0)}},\"total_actual_offer\":{{ifempty(1.totals.total_actual_offer; 0)}},\"total_delta\":{{ifempty(1.totals.total_delta; 0)}}},\"spot\":{\"gold\":{{ifempty(1.spot.gold; 0)}},\"silver\":{{ifempty(1.spot.silver; 0)}},\"platinum\":{{ifempty(1.spot.platinum; 0)}}},\"line_count\":{{length(1.lines)}},\"items_summary\":\"{{join(map(1.lines; \"name\"); \"; \")}}\"}"
+          }
+        ]
+      },
+      "metadata": {
+        "designer": {
+          "x": 1500,
+          "y": 0
+        },
+        "restore": {
+          "expect": {
+            "scope": {
+              "label": "One cycle"
+            },
+            "variables": {
+              "items": [
+                null,
+                null
+              ]
+            }
+          }
+        }
+      }
+    },
+    {
+      "id": 7,
+      "module": "builtin:BasicRouter",
+      "version": 1,
+      "parameters": {},
+      "mapper": null,
+      "metadata": {
+        "designer": {
+          "x": 1800,
+          "y": 0
+        }
+      },
+      "routes": [
+        {
+          "flow": [
+            {
+              "id": 8,
+              "module": "builtin:BasicFeeder",
+              "version": 1,
+              "parameters": {},
+              "mapper": {
+                "array": "{{1.lines}}"
+              },
+              "metadata": {
+                "designer": {
+                  "x": 2100,
+                  "y": -200
+                }
+              }
+            },
+            {
+              "id": 9,
+              "module": "http:ActionSendData",
+              "version": 3,
+              "parameters": {
+                "handleErrors": true,
+                "useNewZLibDeCompress": true
+              },
+              "mapper": {
+                "ca": "",
+                "qs": [],
+                "url": "https://jsklabrbirsidlnxpgmw.supabase.co/rest/v1/deal_line_items",
+                "gzip": true,
+                "method": "post",
+                "headers": [
+                  {
+                    "name": "apikey",
+                    "value": "{{2.supabase_service_key}}"
+                  },
+                  {
+                    "name": "Authorization",
+                    "value": "Bearer {{2.supabase_service_key}}"
+                  },
+                  {
+                    "name": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "timeout": "",
+                "useMtls": false,
+                "authPass": "",
+                "authUser": "",
+                "bodyType": "raw",
+                "serializeUrl": false,
+                "shareCookies": false,
+                "parseResponse": false,
+                "followRedirect": true,
+                "useQuerystring": false,
+                "followAllRedirects": false,
+                "rejectUnauthorized": true,
+                "contentType": "application/json",
+                "data": "{\"deal_id\":\"{{4.data[1].id}}\",\"source_engine\":\"{{if(8.priced_by = \"manual\"; \"paper\"; \"bulk\")}}\",\"description\":\"{{ifempty(8.description; 8.name)}}\",\"quantity\":{{8.quantity}},\"max_payout\":{{ifempty(8.max_payout; 0)}},\"actual_offer\":{{ifempty(8.actual_offer; 0)}},\"negotiation_delta\":{{ifempty(8.max_payout; 0) - ifempty(8.actual_offer; 0)}}{{if(8.grade = null; \"\"; \",\"\"grade\"\":\"\"\" + 8.grade + \"\"\"\")}}{{if(8.manual_offer = null; \"\"; \",\"\"manual_offer\"\":\" + 8.manual_offer)}}{{if(8.purity_factor_used = null; \"\"; \",\"\"purity_factor_used\"\":\" + 8.purity_factor_used)}}{{if(8.hallmark_acknowledged = null; \"\"; \",\"\"hallmark_acknowledged\"\":\" + 8.hallmark_acknowledged)}}{{if(8.pre1933_ack = null; \"\"; \",\"\"pre1933_ack\"\":\" + 8.pre1933_ack)}}}"
+              },
+              "metadata": {
+                "designer": {
+                  "x": 2400,
+                  "y": -200
+                },
+                "restore": {
+                  "expect": {
+                    "qs": {
+                      "mode": "chose"
+                    },
+                    "method": {
+                      "mode": "chose",
+                      "label": "POST"
+                    },
+                    "headers": {
+                      "mode": "chose"
+                    },
+                    "bodyType": {
+                      "label": "Raw"
+                    },
+                    "contentType": {
+                      "label": "JSON (application/json)"
+                    }
+                  }
+                }
+              }
+            },
+            {
+              "id": 10,
+              "module": "gateway:WebhookRespond",
+              "version": 1,
+              "parameters": {},
+              "mapper": {
+                "body": "{\"ok\":true,\"deal_number\":\"{{2.deal_number}}\",\"deal_id\":\"{{4.data[1].id}}\"}",
+                "status": "200",
+                "headers": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ]
+              },
+              "metadata": {
+                "designer": {
+                  "x": 2700,
+                  "y": -200
+                },
+                "restore": {
+                  "expect": {
+                    "headers": {
+                      "mode": "chose",
+                      "items": [
+                        null
+                      ]
+                    }
+                  }
+                }
+              }
+            }
+          ]
+        },
+        {
+          "flow": [
+            {
+              "id": 11,
+              "module": "http:ActionSendData",
+              "version": 3,
+              "parameters": {
+                "handleErrors": true,
+                "useNewZLibDeCompress": true
+              },
+              "mapper": {
+                "ca": "",
+                "qs": [],
+                "url": "https://jsklabrbirsidlnxpgmw.supabase.co/rest/v1/webhook_deliveries",
+                "gzip": true,
+                "method": "post",
+                "headers": [
+                  {
+                    "name": "apikey",
+                    "value": "{{2.supabase_service_key}}"
+                  },
+                  {
+                    "name": "Authorization",
+                    "value": "Bearer {{2.supabase_service_key}}"
+                  },
+                  {
+                    "name": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "timeout": "",
+                "useMtls": false,
+                "authPass": "",
+                "authUser": "",
+                "bodyType": "raw",
+                "serializeUrl": false,
+                "shareCookies": false,
+                "parseResponse": false,
+                "followRedirect": true,
+                "useQuerystring": false,
+                "followAllRedirects": false,
+                "rejectUnauthorized": true,
+                "contentType": "application/json",
+                "data": "{\"deal_id\":\"{{4.data[1].id}}\",\"destination\":\"primary_db\",\"event_type\":\"{{1.event_type}}\",\"payload\":{{6.fanout_payload}},\"status\":\"delivered\",\"attempts\":1,\"delivered_at\":\"{{formatDate(now; \"YYYY-MM-DD HH:mm:ss\"; \"UTC\")}}\"}"
+              },
+              "metadata": {
+                "designer": {
+                  "x": 2100,
+                  "y": 0
+                },
+                "restore": {
+                  "expect": {
+                    "qs": {
+                      "mode": "chose"
+                    },
+                    "method": {
+                      "mode": "chose",
+                      "label": "POST"
+                    },
+                    "headers": {
+                      "mode": "chose"
+                    },
+                    "bodyType": {
+                      "label": "Raw"
+                    },
+                    "contentType": {
+                      "label": "JSON (application/json)"
+                    }
+                  }
+                }
+              }
+            }
+          ]
+        },
+        {
+          "flow": [
+            {
+              "id": 12,
+              "module": "http:ActionSendData",
+              "version": 3,
+              "parameters": {
+                "handleErrors": true,
+                "useNewZLibDeCompress": true
+              },
+              "mapper": {
+                "ca": "",
+                "qs": [],
+                "url": "https://jsklabrbirsidlnxpgmw.supabase.co/rest/v1/webhook_deliveries",
+                "gzip": true,
+                "method": "post",
+                "headers": [
+                  {
+                    "name": "apikey",
+                    "value": "{{2.supabase_service_key}}"
+                  },
+                  {
+                    "name": "Authorization",
+                    "value": "Bearer {{2.supabase_service_key}}"
+                  },
+                  {
+                    "name": "Content-Type",
+                    "value": "application/json"
+                  },
+                  {
+                    "name": "Prefer",
+                    "value": "return=representation"
+                  }
+                ],
+                "timeout": "",
+                "useMtls": false,
+                "authPass": "",
+                "authUser": "",
+                "bodyType": "raw",
+                "serializeUrl": false,
+                "shareCookies": false,
+                "parseResponse": true,
+                "followRedirect": true,
+                "useQuerystring": false,
+                "followAllRedirects": false,
+                "rejectUnauthorized": true,
+                "contentType": "application/json",
+                "data": "{\"deal_id\":\"{{4.data[1].id}}\",\"destination\":\"ghl\",\"event_type\":\"{{1.event_type}}\",\"payload\":{{6.fanout_payload}},\"status\":\"pending\",\"attempts\":0}"
+              },
+              "metadata": {
+                "designer": {
+                  "x": 2100,
+                  "y": 200
+                },
+                "restore": {
+                  "expect": {
+                    "qs": {
+                      "mode": "chose"
+                    },
+                    "method": {
+                      "mode": "chose",
+                      "label": "POST"
+                    },
+                    "headers": {
+                      "mode": "chose"
+                    },
+                    "bodyType": {
+                      "label": "Raw"
+                    },
+                    "contentType": {
+                      "label": "JSON (application/json)"
+                    }
+                  }
+                }
+              },
+              "filter": {
+                "name": "GHL URL configured",
+                "conditions": [
+                  [
+                    {
+                      "a": "{{6.ghl_url}}",
+                      "o": "text:notequal",
+                      "b": ""
+                    }
+                  ]
+                ]
+              }
+            },
+            {
+              "id": 13,
+              "module": "http:ActionSendData",
+              "version": 3,
+              "parameters": {
+                "handleErrors": false,
+                "useNewZLibDeCompress": true
+              },
+              "mapper": {
+                "ca": "",
+                "qs": [],
+                "url": "{{6.ghl_url}}",
+                "gzip": true,
+                "method": "post",
+                "headers": [
+                  {
+                    "name": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "timeout": "",
+                "useMtls": false,
+                "authPass": "",
+                "authUser": "",
+                "bodyType": "raw",
+                "serializeUrl": false,
+                "shareCookies": false,
+                "parseResponse": false,
+                "followRedirect": true,
+                "useQuerystring": false,
+                "followAllRedirects": false,
+                "rejectUnauthorized": true,
+                "contentType": "application/json",
+                "data": "{{6.fanout_payload}}"
+              },
+              "metadata": {
+                "designer": {
+                  "x": 2400,
+                  "y": 200
+                },
+                "restore": {
+                  "expect": {
+                    "qs": {
+                      "mode": "chose"
+                    },
+                    "method": {
+                      "mode": "chose",
+                      "label": "POST"
+                    },
+                    "headers": {
+                      "mode": "chose"
+                    },
+                    "bodyType": {
+                      "label": "Raw"
+                    },
+                    "contentType": {
+                      "label": "JSON (application/json)"
+                    }
+                  }
+                }
+              }
+            },
+            {
+              "id": 14,
+              "module": "builtin:BasicRouter",
+              "version": 1,
+              "parameters": {},
+              "mapper": null,
+              "metadata": {
+                "designer": {
+                  "x": 2700,
+                  "y": 200
+                }
+              },
+              "routes": [
+                {
+                  "flow": [
+                    {
+                      "id": 15,
+                      "module": "http:ActionSendData",
+                      "version": 3,
+                      "parameters": {
+                        "handleErrors": true,
+                        "useNewZLibDeCompress": true
+                      },
+                      "mapper": {
+                        "ca": "",
+                        "qs": [],
+                        "url": "https://jsklabrbirsidlnxpgmw.supabase.co/rest/v1/webhook_deliveries?id=eq.{{12.data[1].id}}",
+                        "gzip": true,
+                        "method": "patch",
+                        "headers": [
+                          {
+                            "name": "apikey",
+                            "value": "{{2.supabase_service_key}}"
+                          },
+                          {
+                            "name": "Authorization",
+                            "value": "Bearer {{2.supabase_service_key}}"
+                          },
+                          {
+                            "name": "Content-Type",
+                            "value": "application/json"
+                          }
+                        ],
+                        "timeout": "",
+                        "useMtls": false,
+                        "authPass": "",
+                        "authUser": "",
+                        "bodyType": "raw",
+                        "serializeUrl": false,
+                        "shareCookies": false,
+                        "parseResponse": false,
+                        "followRedirect": true,
+                        "useQuerystring": false,
+                        "followAllRedirects": false,
+                        "rejectUnauthorized": true,
+                        "contentType": "application/json",
+                        "data": "{\"status\":\"delivered\",\"attempts\":1,\"delivered_at\":\"{{formatDate(now; \"YYYY-MM-DD HH:mm:ss\"; \"UTC\")}}\"}"
+                      },
+                      "metadata": {
+                        "designer": {
+                          "x": 3000,
+                          "y": 100
+                        },
+                        "restore": {
+                          "expect": {
+                            "qs": {
+                              "mode": "chose"
+                            },
+                            "method": {
+                              "mode": "chose",
+                              "label": "PATCH"
+                            },
+                            "headers": {
+                              "mode": "chose"
+                            },
+                            "bodyType": {
+                              "label": "Raw"
+                            },
+                            "contentType": {
+                              "label": "JSON (application/json)"
+                            }
+                          }
+                        }
+                      },
+                      "filter": {
+                        "name": "GHL 2xx",
+                        "conditions": [
+                          [
+                            {
+                              "a": "{{13.statusCode}}",
+                              "o": "number:greaterorequal",
+                              "b": "200"
+                            },
+                            {
+                              "a": "{{13.statusCode}}",
+                              "o": "number:less",
+                              "b": "300"
+                            }
+                          ]
+                        ]
+                      }
+                    }
+                  ]
+                },
+                {
+                  "flow": [
+                    {
+                      "id": 16,
+                      "module": "http:ActionSendData",
+                      "version": 3,
+                      "parameters": {
+                        "handleErrors": true,
+                        "useNewZLibDeCompress": true
+                      },
+                      "mapper": {
+                        "ca": "",
+                        "qs": [],
+                        "url": "https://jsklabrbirsidlnxpgmw.supabase.co/rest/v1/webhook_deliveries?id=eq.{{12.data[1].id}}",
+                        "gzip": true,
+                        "method": "patch",
+                        "headers": [
+                          {
+                            "name": "apikey",
+                            "value": "{{2.supabase_service_key}}"
+                          },
+                          {
+                            "name": "Authorization",
+                            "value": "Bearer {{2.supabase_service_key}}"
+                          },
+                          {
+                            "name": "Content-Type",
+                            "value": "application/json"
+                          }
+                        ],
+                        "timeout": "",
+                        "useMtls": false,
+                        "authPass": "",
+                        "authUser": "",
+                        "bodyType": "raw",
+                        "serializeUrl": false,
+                        "shareCookies": false,
+                        "parseResponse": false,
+                        "followRedirect": true,
+                        "useQuerystring": false,
+                        "followAllRedirects": false,
+                        "rejectUnauthorized": true,
+                        "contentType": "application/json",
+                        "data": "{\"status\":\"failed\",\"attempts\":1,\"last_error\":\"HTTP {{13.statusCode}}\",\"next_attempt_at\":\"{{formatDate(addMinutes(now; 15); \"YYYY-MM-DD HH:mm:ss\"; \"UTC\")}}\"}"
+                      },
+                      "metadata": {
+                        "designer": {
+                          "x": 3000,
+                          "y": 300
+                        },
+                        "restore": {
+                          "expect": {
+                            "qs": {
+                              "mode": "chose"
+                            },
+                            "method": {
+                              "mode": "chose",
+                              "label": "PATCH"
+                            },
+                            "headers": {
+                              "mode": "chose"
+                            },
+                            "bodyType": {
+                              "label": "Raw"
+                            },
+                            "contentType": {
+                              "label": "JSON (application/json)"
+                            }
+                          }
+                        }
+                      },
+                      "filter": {
+                        "name": "GHL non-2xx",
+                        "conditions": [
+                          [
+                            {
+                              "a": "{{13.statusCode}}",
+                              "o": "number:greaterorequal",
+                              "b": "300"
+                            }
+                          ]
+                        ]
+                      }
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "metadata": {
+    "instant": true,
+    "version": 1,
+    "scenario": {
+      "roundtrips": 1,
+      "maxErrors": 3,
+      "autoCommit": true,
+      "autoCommitTriggerLast": true,
+      "sequential": false,
+      "slots": null,
+      "confidential": false,
+      "dataloss": false,
+      "dlq": false,
+      "freshVariables": false
+    },
+    "designer": {
+      "orphans": []
+    }
+  }
+}

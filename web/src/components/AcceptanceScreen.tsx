@@ -95,12 +95,20 @@ export function AcceptanceScreen({
           Purchases from minors are not permitted. This deal cannot be completed
           and there is no override.
         </p>
-        <button
-          onClick={onAbort}
-          className="min-h-12 px-8 rounded-md bg-white text-red-700 text-base font-semibold hover:bg-red-50"
-        >
-          End Deal — Start New Customer
-        </button>
+        <div className="flex flex-col items-center gap-3">
+          <button
+            onClick={() => intake.setField('dob', '')}
+            className="min-h-12 px-8 rounded-md bg-white text-red-700 text-base font-semibold hover:bg-red-50"
+          >
+            Entered the date wrong — re-enter date of birth
+          </button>
+          <button
+            onClick={onAbort}
+            className="min-h-12 px-8 rounded-md border-2 border-white/70 text-white text-base font-semibold hover:bg-red-600"
+          >
+            End Deal — Start New Customer
+          </button>
+        </div>
       </main>
     )
   }

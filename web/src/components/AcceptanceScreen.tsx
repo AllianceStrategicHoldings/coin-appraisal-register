@@ -1,8 +1,9 @@
-// Acceptance flow (SOW 2.6 + Section 4).
-// Payment selector → $9,500 cash hard stop (manager PIN) → mandatory final
-// lot photo → customer signature → offer-letter PDF generated client-side,
-// uploaded to cloud storage, and the accepted-deal webhook fired (queued
-// offline per 2.14 when unreachable).
+// Acceptance flow (SOW 2.6 + Section 4, restructured 2026-08-23).
+// Customer details (DOB with the relocated under-18 hard stop, zip, DL,
+// consent) → payment selector → $9,500 cash hard stop (manager PIN) →
+// mandatory final lot photo → customer signature → offer-letter PDF generated
+// client-side, uploaded to cloud storage, and the accepted-deal webhook fired
+// (queued offline per 2.14 when unreachable).
 
 import { useMemo, useState } from 'react'
 import type { CartLine, Margin, Spot } from '../api/types'
@@ -31,6 +32,8 @@ interface AcceptanceScreenProps {
   deployment: UseDeploymentResult
   onBack: () => void
   onComplete: (result: SubmitResult) => void
+  /** under-18 hard stop: end the deal and return to a fresh intake */
+  onAbort: () => void
 }
 
 export function AcceptanceScreen({
@@ -41,6 +44,7 @@ export function AcceptanceScreen({
   deployment,
   onBack,
   onComplete,
+  onAbort,
 }: AcceptanceScreenProps) {
   const totals = useMemo(
     () => dualPriceBag(lines, spot, margins),
@@ -71,12 +75,35 @@ export function AcceptanceScreen({
     }
   }
 
-  const missing: string[] = []
+  const missing: string[] = [...intake.dealMissing]
   if (!payment) missing.push('Payment method')
   if (needsCashStop) missing.push('Manager approval ($9,500 cash stop)')
   if (lotPhoto.status === 'none') missing.push('Final lot photo')
   if (!signature) missing.push('Customer signature')
-  const canComplete = missing.length === 0 && !submitting
+  const canComplete = missing.length === 0 && !intake.isUnder18 && !submitting
+
+  // Under-18 hard stop, relocated here from intake (2026-08-23). Fires the
+  // moment a complete DOB computes to under 18; no override, deal cannot
+  // complete. ageFromDob ignores partial dates, so it can't fire mid-typing.
+  if (intake.isUnder18) {
+    return (
+      <main className="min-h-dvh flex flex-col items-center justify-center bg-red-700 text-white px-8 text-center">
+        <div className="text-6xl mb-6" aria-hidden="true">⛔</div>
+        <h1 className="text-3xl font-bold mb-3">Cannot Proceed</h1>
+        <p className="text-lg mb-2">This customer is under 18 years old.</p>
+        <p className="text-red-100 mb-10">
+          Purchases from minors are not permitted. This deal cannot be completed
+          and there is no override.
+        </p>
+        <button
+          onClick={onAbort}
+          className="min-h-12 px-8 rounded-md bg-white text-red-700 text-base font-semibold hover:bg-red-50"
+        >
+          End Deal — Start New Customer
+        </button>
+      </main>
+    )
+  }
 
   async function handleComplete() {
     if (!canComplete || !payment || !signature) return
@@ -137,9 +164,10 @@ export function AcceptanceScreen({
         customer: {
           name: intake.fields.name,
           phone: intake.fields.phone,
+          email: intake.fields.email.trim() || undefined,
           dob: intake.fields.dob,
-          zip: intake.fields.zip,
-          dl_number: intake.fields.dlNumber,
+          zip: intake.fields.zip.trim() || undefined,
+          dl_number: intake.fields.dlNumber.trim() || undefined,
           tcpa_opt_in: intake.fields.tcpaOptIn,
         },
         selling_reason: intake.fields.sellingReason || undefined,
@@ -247,6 +275,86 @@ export function AcceptanceScreen({
       </header>
 
       <section className="flex-1 px-4 py-4 space-y-5 max-w-xl w-full mx-auto">
+        <div className="bg-white rounded-md border border-slate-200 px-3 py-3 space-y-3">
+          <h2 className="text-sm font-semibold text-slate-800">
+            Customer details
+          </h2>
+          <div className="grid grid-cols-2 gap-3">
+            <div>
+              <label
+                htmlFor="accept-dob"
+                className="block text-xs font-medium text-slate-600 mb-1"
+              >
+                Date of birth
+              </label>
+              <input
+                id="accept-dob"
+                type="date"
+                value={intake.fields.dob}
+                onChange={(e) => intake.setField('dob', e.target.value)}
+                className="w-full min-h-11 px-3 rounded-md border border-slate-300 bg-white text-base"
+              />
+            </div>
+            <div>
+              <label
+                htmlFor="accept-zip"
+                className="block text-xs font-medium text-slate-600 mb-1"
+              >
+                Zip code{' '}
+                <span className="font-normal text-slate-400">(optional)</span>
+              </label>
+              <input
+                id="accept-zip"
+                type="text"
+                inputMode="numeric"
+                maxLength={5}
+                autoComplete="off"
+                value={intake.fields.zip}
+                onChange={(e) =>
+                  intake.setField('zip', e.target.value.replace(/\D/g, ''))
+                }
+                className="w-full min-h-11 px-3 rounded-md border border-slate-300 bg-white text-base"
+              />
+            </div>
+          </div>
+          <div>
+            <label
+              htmlFor="accept-dl"
+              className="block text-xs font-medium text-slate-600 mb-1"
+            >
+              Driver's license #{' '}
+              <span className="font-normal text-slate-400">(optional)</span>
+            </label>
+            <input
+              id="accept-dl"
+              type="text"
+              autoComplete="off"
+              value={intake.fields.dlNumber}
+              onChange={(e) => intake.setField('dlNumber', e.target.value)}
+              className="w-full min-h-11 px-3 rounded-md border border-slate-300 bg-white text-base"
+            />
+          </div>
+          <PhotoCapture
+            label="Driver's license photo (optional)"
+            kind="dl_photo"
+            dealDraftId={intake.dealDraftId}
+            photo={intake.dlPhoto}
+            onChange={intake.setDlPhoto}
+          />
+          <label className="flex items-start gap-3 py-1 cursor-pointer">
+            <input
+              type="checkbox"
+              checked={intake.fields.tcpaOptIn}
+              onChange={(e) => intake.setField('tcpaOptIn', e.target.checked)}
+              className="mt-1 h-5 w-5 rounded border-slate-300"
+            />
+            <span className="text-sm text-slate-700">
+              Customer consents to receive calls/texts about this transaction
+              (TCPA). Required to complete.
+            </span>
+          </label>
+        </div>
+
         <div>
           <span className="block text-sm font-medium text-slate-700 mb-2">
             Payment method

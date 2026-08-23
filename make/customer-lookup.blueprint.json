@@ -84,7 +84,7 @@
       "mapper": {
         "ca": "",
         "qs": [],
-        "url": "https://jsklabrbirsidlnxpgmw.supabase.co/rest/v1/customer_master?phone=eq.{{1.phone}}&dob=eq.{{1.dob}}&select=id,name,zip,dl_number,tcpa_opt_in,deal_log(deal_number,accepted_at,total_actual_offer,status)",
+        "url": "https://jsklabrbirsidlnxpgmw.supabase.co/rest/v1/customer_master?phone=eq.{{1.phone}}&order=created_at.desc&limit=1&select=id,name,zip,dl_number,tcpa_opt_in,deal_log(deal_number,accepted_at,total_actual_offer,status)",
         "gzip": true,
         "method": "get",
         "headers": [

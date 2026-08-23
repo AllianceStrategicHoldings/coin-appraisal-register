@@ -102,17 +102,17 @@ export function normalizeCustomerLookup(
 }
 
 /**
- * Returning-customer lookup by phone + DOB (SOW 2.1) against Customer_Master.
- * Returns null when the lookup backend is not yet configured — callers treat
- * that as "no match" and proceed as a new customer.
+ * Returning-customer lookup by phone alone (2026-08-23 restructure — DOB is
+ * no longer collected at intake) against Customer_Master. Returns null when
+ * the lookup backend is not yet configured — callers treat that as "no match"
+ * and proceed as a new customer.
  */
 export async function lookupCustomer(
   phone: string,
-  dob: string,
 ): Promise<CustomerLookupResponse | null> {
   const url = import.meta.env.VITE_CUSTOMER_LOOKUP_URL
   if (!url) return null
-  return normalizeCustomerLookup(await postJSON<RawCustomerLookup>(url, { phone, dob }))
+  return normalizeCustomerLookup(await postJSON<RawCustomerLookup>(url, { phone }))
 }
 
 export async function calculateBulk(

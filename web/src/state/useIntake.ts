@@ -1,5 +1,8 @@
-// Customer intake state (SOW 2.1). All five required fields must be complete
-// before the calculator opens; DOB under 18 is a hard block with no override.
+// Customer intake state (SOW 2.1, restructured per operator feedback
+// 2026-08-23). Intake collects name / phone / email / reason / source, with
+// only name + reason required to open the calculator. DOB, zip, DL, photos
+// and TCPA consent are collected AFTER the customer agrees to a deal; the
+// under-18 hard stop (no override) fires there and blocks completion.
 
 import { useCallback, useMemo, useState } from 'react'
 import type { CustomerLookupResponse } from '../api/types'
@@ -37,7 +40,8 @@ export const REFERRAL_SOURCES: Array<{ value: ReferralSource; label: string }> =
 export interface IntakeFields {
   name: string
   phone: string
-  /** ISO date from <input type="date"> */
+  email: string
+  /** ISO date from <input type="date">; collected post-agreement (2026-08-23) */
   dob: string
   zip: string
   tcpaOptIn: boolean
@@ -67,6 +71,7 @@ export interface PhotoState {
 const EMPTY_FIELDS: IntakeFields = {
   name: '',
   phone: '',
+  email: '',
   dob: '',
   zip: '',
   tcpaOptIn: false,
@@ -86,6 +91,11 @@ const EMPTY_PHOTO: PhotoState = { status: 'none', objectKey: null, previewUrl: n
 
 export function ageFromDob(dobIso: string, now = new Date()): number | null {
   if (!/^\d{4}-\d{2}-\d{2}$/.test(dobIso)) return null
+  // iPad Safari's date input commits interim values while the year is being
+  // typed (e.g. 0002-05-14). Treat implausible years as "still typing" so the
+  // under-18 stop can't fire on a half-entered date.
+  const year = parseInt(dobIso.slice(0, 4), 10)
+  if (year < 1900 || year > now.getFullYear()) return null
   const dob = new Date(`${dobIso}T00:00:00`)
   if (Number.isNaN(dob.getTime())) return null
   let age = now.getFullYear() - dob.getFullYear()
@@ -137,9 +147,11 @@ export interface UseIntakeResult {
   age: number | null
   /** DOB entered and under 18 — hard stop, no override (2.1) */
   isUnder18: boolean
-  /** every gate to open the calculator */
+  /** gates to open the calculator (name + reason only, 2026-08-23) */
   missing: string[]
   isComplete: boolean
+  /** gates to COMPLETE an accepted deal (post-agreement fields, 2026-08-23) */
+  dealMissing: string[]
   reset: () => void
 }
 
@@ -191,19 +203,21 @@ export function useIntake(): UseIntakeResult {
   const missing = useMemo(() => {
     const out: string[] = []
     if (fields.name.trim().length < 2) out.push('Customer name')
-    if (normalizePhone(fields.phone).length < 10) out.push('Phone (10 digits)')
-    if (age === null) out.push('Date of birth')
-    if (!/^\d{5}$/.test(fields.zip.trim())) out.push('Zip (5 digits)')
-    if (!fields.tcpaOptIn) out.push('TCPA consent')
-    if (fields.dlNumber.trim().length < 4) out.push("Driver's license number")
-    if (!fields.sellingReason) out.push('Selling reason')
-    if (!fields.referralSource) out.push('Referral source')
-    if (lotPhoto.status === 'none') out.push('Lot photo')
-    if (dlPhoto.status === 'none') out.push("Driver's license photo")
+    if (!fields.sellingReason) out.push('Reason for coming in')
     return out
-  }, [fields, age, lotPhoto.status, dlPhoto.status])
+  }, [fields])
 
-  const isComplete = missing.length === 0 && !isUnder18
+  const isComplete = missing.length === 0
+
+  // Post-agreement gates (2026-08-23): DOB is required so the under-18 stop
+  // cannot be skipped; TCPA consent is required before the record is sent.
+  // Zip / DL number / DL photo are collected here but optional.
+  const dealMissing = useMemo(() => {
+    const out: string[] = []
+    if (age === null) out.push('Date of birth')
+    if (!fields.tcpaOptIn) out.push('TCPA consent')
+    return out
+  }, [age, fields.tcpaOptIn])
 
   return {
     fields,
@@ -221,6 +235,7 @@ export function useIntake(): UseIntakeResult {
     isUnder18,
     missing,
     isComplete,
+    dealMissing,
     reset,
   }
 }

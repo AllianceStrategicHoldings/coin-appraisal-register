@@ -99,8 +99,8 @@ export interface BulkCalcResponse {
 
 export interface CustomerLookupRequest {
   phone: string
-  /** ISO date, e.g. 1980-01-31 */
-  dob: string
+  /** ISO date; no longer sent at intake (2026-08-23 phone-only lookup) */
+  dob?: string
 }
 
 export interface CustomerPriorDeal {

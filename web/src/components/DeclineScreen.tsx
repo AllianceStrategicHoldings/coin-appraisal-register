@@ -62,12 +62,16 @@ export function DeclineScreen({
       event_type: 'deal_declined',
       deal_draft_id: intake.dealDraftId,
       submitted_at: new Date().toISOString(),
+      // Declined deals carry intake fields only — DOB / zip / DL / consent are
+      // collected post-agreement, which a declined customer never reaches
+      // (2026-08-23 restructure). Prefilled lookup values pass through if set.
       customer: {
         name: intake.fields.name,
         phone,
-        dob: intake.fields.dob,
-        zip: intake.fields.zip,
-        dl_number: intake.fields.dlNumber,
+        email: intake.fields.email.trim() || undefined,
+        dob: intake.fields.dob || undefined,
+        zip: intake.fields.zip.trim() || undefined,
+        dl_number: intake.fields.dlNumber.trim() || undefined,
         tcpa_opt_in: intake.fields.tcpaOptIn,
       },
       selling_reason: intake.fields.sellingReason || undefined,

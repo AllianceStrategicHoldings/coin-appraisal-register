@@ -15,9 +15,11 @@ export interface DealSubmission {
   customer: {
     name: string
     phone: string
-    dob: string
-    zip: string
-    dl_number: string
+    email?: string
+    /** collected post-agreement (2026-08-23); absent on declined deals */
+    dob?: string
+    zip?: string
+    dl_number?: string
     tcpa_opt_in: boolean
   }
   /** operator analytics fields (2026-07-20): intake dropdowns + rep-entered */

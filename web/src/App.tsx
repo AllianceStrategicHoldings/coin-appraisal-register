@@ -160,6 +160,7 @@ function App() {
           setSubmitResult(result)
           setPhase('accepted-done')
         }}
+        onAbort={startNewCustomer}
       />
     )
   }

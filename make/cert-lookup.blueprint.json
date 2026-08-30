@@ -278,7 +278,7 @@
       "version": 1,
       "parameters": {},
       "mapper": {
-        "body": "{\"pcgs_message\":\"{{3.data.ServerMessage}}\",\"pcgs_no\":\"{{3.data.PCGSNo}}\",\"name\":\"{{3.data.Name}}\",\"grade\":\"{{3.data.Grade}}\",\"cdn_price\":\"{{get(map(4.data.Data[1].PricingData; \"CpgVal\"); 1)}}\",\"cdn_label\":\"{{get(map(4.data.Data; \"Name\"); 1)}}\",\"comps_prices\":\"{{join(map(5.data; \"soldPrice\"); \",\")}}\"}",
+        "body": "{\"pcgs_message\":\"{{3.data.ServerMessage}}\",\"pcgs_no\":\"{{3.data.PCGSNo}}\",\"name\":\"{{3.data.Name}}\",\"grade\":\"{{3.data.Grade}}\",\"cdn_price\":\"{{ifempty(get(map(4.data.Data[1].PricingData; \"GreyVal\"); 1); get(map(4.data.Data[1].PricingData; \"CpgVal\"); 1))}}\",\"cdn_label\":\"{{get(map(4.data.Data; \"Name\"); 1)}}\",\"comps_prices\":\"{{join(map(5.data; \"soldPrice\"); \",\")}}\"}",
         "status": "200",
         "headers": [
           {

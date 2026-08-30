@@ -52,6 +52,8 @@ export function AcceptanceScreen({
   )
 
   const [payment, setPayment] = useState<PaymentMethod | null>(null)
+  // check number / wire number / "other" description (2026-08-30)
+  const [paymentDetail, setPaymentDetail] = useState('')
   const [cashAck, setCashAck] = useState(false)
   const [showPin, setShowPin] = useState(false)
   const [lotPhoto, setLotPhoto] = useState<PhotoState>({
@@ -75,13 +77,28 @@ export function AcceptanceScreen({
 
   function choosePayment(m: PaymentMethod) {
     setPayment(m)
+    setPaymentDetail('') // a check number must not survive a switch to wire
     if (m === 'cash' && totals.totalActualOffer > CASH_STOP_THRESHOLD && !cashAck) {
       setShowPin(true)
     }
   }
 
+  const PAYMENT_DETAIL_META: Partial<
+    Record<PaymentMethod, { label: string; missing: string; placeholder: string }>
+  > = {
+    check: { label: 'Check number', missing: 'Check number', placeholder: 'e.g. 1047' },
+    wire: { label: 'Wire number', missing: 'Wire number', placeholder: 'wire reference #' },
+    other: {
+      label: 'Describe the payment',
+      missing: 'Payment description',
+      placeholder: 'e.g. store credit, trade',
+    },
+  }
+  const detailMeta = payment ? PAYMENT_DETAIL_META[payment] : undefined
+
   const missing: string[] = [...intake.dealMissing]
   if (!payment) missing.push('Payment method')
+  if (detailMeta && !paymentDetail.trim()) missing.push(detailMeta.missing)
   if (needsCashStop) missing.push('Manager approval ($9,500 cash stop)')
   if (lotPhoto.status === 'none') missing.push('Final lot photo')
   if (!signature) missing.push('Customer signature')
@@ -232,6 +249,7 @@ export function AcceptanceScreen({
         },
         spot,
         payment_method: payment,
+        payment_detail: paymentDetail.trim() || undefined,
         cash_over_9500_ack: cashAck || undefined,
         object_keys: {
           intake_lot: intake.lotPhoto.objectKey,
@@ -316,8 +334,7 @@ export function AcceptanceScreen({
                 htmlFor="accept-zip"
                 className="block text-xs font-medium text-slate-600 mb-1"
               >
-                Zip code{' '}
-                <span className="font-normal text-slate-400">(optional)</span>
+                Zip code
               </label>
               <input
                 id="accept-zip"
@@ -338,8 +355,7 @@ export function AcceptanceScreen({
               htmlFor="accept-dl"
               className="block text-xs font-medium text-slate-600 mb-1"
             >
-              Driver's license #{' '}
-              <span className="font-normal text-slate-400">(optional)</span>
+              Driver's license #
             </label>
             <input
               id="accept-dl"
@@ -351,7 +367,7 @@ export function AcceptanceScreen({
             />
           </div>
           <PhotoCapture
-            label="Driver's license photo (optional)"
+            label="Driver's license photo"
             kind="dl_photo"
             dealDraftId={intake.dealDraftId}
             photo={intake.dlPhoto}
@@ -393,6 +409,25 @@ export function AcceptanceScreen({
           {payment === 'cash' && cashAck && (
             <div className="mt-2 text-xs text-emerald-700 font-medium">
               Manager approved cash over $9,500 ✓
+            </div>
+          )}
+          {detailMeta && (
+            <div className="mt-3">
+              <label
+                htmlFor="payment-detail"
+                className="block text-sm font-medium text-slate-700 mb-1"
+              >
+                {detailMeta.label}
+              </label>
+              <input
+                id="payment-detail"
+                type="text"
+                autoComplete="off"
+                placeholder={detailMeta.placeholder}
+                value={paymentDetail}
+                onChange={(e) => setPaymentDetail(e.target.value)}
+                className="w-full min-h-11 px-3 rounded-md border border-slate-300 bg-white text-base"
+              />
             </div>
           )}
         </div>

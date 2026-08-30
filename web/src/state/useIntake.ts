@@ -209,15 +209,18 @@ export function useIntake(): UseIntakeResult {
 
   const isComplete = missing.length === 0
 
-  // Post-agreement gates (2026-08-23): DOB is required so the under-18 stop
-  // cannot be skipped; TCPA consent is required before the record is sent.
-  // Zip / DL number / DL photo are collected here but optional.
+  // Post-agreement gates (2026-08-30 per operator): DOB, zip, DL number,
+  // DL photo and TCPA consent are all required to complete a deal. DOB being
+  // required is also what makes the under-18 stop unskippable.
   const dealMissing = useMemo(() => {
     const out: string[] = []
     if (age === null) out.push('Date of birth')
+    if (!/^\d{5}$/.test(fields.zip.trim())) out.push('Zip (5 digits)')
+    if (fields.dlNumber.trim().length < 4) out.push("Driver's license number")
+    if (dlPhoto.status === 'none') out.push("Driver's license photo")
     if (!fields.tcpaOptIn) out.push('TCPA consent')
     return out
-  }, [age, fields.tcpaOptIn])
+  }, [age, fields.zip, fields.dlNumber, fields.tcpaOptIn, dlPhoto.status])
 
   return {
     fields,

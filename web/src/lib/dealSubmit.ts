@@ -62,6 +62,8 @@ export interface DealSubmission {
   }
   spot: { gold: number; silver: number; platinum: number } | null
   payment_method?: string
+  /** check number / wire number / "other" description (2026-08-30) */
+  payment_detail?: string
   cash_over_9500_ack?: boolean
   price_lock_24hr?: boolean
   price_lock_expires_at?: string

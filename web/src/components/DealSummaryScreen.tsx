@@ -1,10 +1,12 @@
 // Deal Summary & Customer View (SOW 2.5).
 //
 // Rep-facing summary: line items, Value/Max/Offer/Delta totals, margin %,
-// Accept / Decline. A swipe gesture (or the toggle button) transitions to a
-// clean customer-facing view that hides ALL margin information — no melt
-// value, no Max Payout, no delta, no percentages. Same screen flow; no
-// separate customer UI.
+// Accept / Decline. The Customer View button (or a left swipe) transitions to
+// a clean customer-facing view that hides ALL margin information — no melt
+// value, no Max Payout, no delta, no percentages. Customer View is LOCKED
+// (operator feedback 2026-08-30): no gesture leads back; returning to the
+// employee view requires the shared passcode, so the customer can hold the
+// iPad without any path to our numbers.
 
 import { useMemo, useRef, useState } from 'react'
 import type { CartLine, Margin, Spot } from '../api/types'
@@ -12,10 +14,16 @@ import { dualPriceBag, dualPriceLine } from '../lib/pricing'
 import type { ApprovalTrigger } from '../lib/approvalRequest'
 import type { DealExtras } from '../state/useIntake'
 import { ManagerRequestBar } from './ManagerRequestBar'
+import { NumericKeypad } from './NumericKeypad'
 
 const usd = new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' })
 
 const SWIPE_THRESHOLD_PX = 60
+
+// Shared employee passcode to leave Customer View. Checked locally so a dead
+// venue connection can never strand a rep in the locked view. M3 will replace
+// this with the rep's own PIN (server-checked) once rep PINs land (3.1).
+const CUSTOMER_VIEW_PASSCODE = '1234'
 
 export type DealDecision = 'accept' | 'decline'
 
@@ -53,6 +61,11 @@ export function DealSummaryScreen({
 
   const touchStartX = useRef<number | null>(null)
 
+  // Passcode gate for leaving Customer View (2.5 lockdown).
+  const [unlockOpen, setUnlockOpen] = useState(false)
+  const [unlockValue, setUnlockValue] = useState('')
+  const [unlockError, setUnlockError] = useState(false)
+
   const totals = useMemo(
     () => dualPriceBag(lines, spot, margins),
     [lines, spot, margins],
@@ -68,19 +81,33 @@ export function DealSummaryScreen({
     if (start === null) return
     const end = e.changedTouches[0]?.clientX ?? start
     const dx = end - start
-    // Swipe left: rep -> customer. Swipe right: customer -> rep.
+    // Swipe left: rep -> customer. There is deliberately NO gesture out of
+    // customer view — only the passcode returns to the employee screen.
     if (dx < -SWIPE_THRESHOLD_PX && view === 'rep') setView('customer')
-    if (dx > SWIPE_THRESHOLD_PX && view === 'customer') setView('rep')
+  }
+
+  function handleUnlockInput(next: string) {
+    const digits = next.replace(/\D/g, '').slice(0, 4)
+    setUnlockValue(digits)
+    setUnlockError(false)
+    if (digits.length === 4) {
+      if (digits === CUSTOMER_VIEW_PASSCODE) {
+        setUnlockOpen(false)
+        setUnlockValue('')
+        setView('rep')
+      } else {
+        setUnlockValue('')
+        setUnlockError(true)
+      }
+    }
   }
 
   // ---------------------------------------------------------------- customer
+  // Locked view (2.5): no touch handlers are attached here, so no gesture
+  // exists that reveals the rep screen. The only way back is the passcode.
   if (view === 'customer') {
     return (
-      <main
-        className="min-h-dvh flex flex-col bg-white"
-        onTouchStart={handleTouchStart}
-        onTouchEnd={handleTouchEnd}
-      >
+      <main className="min-h-dvh flex flex-col bg-white">
         <header className="px-6 pt-8 pb-4 text-center border-b border-slate-100">
           <div className="text-xs uppercase tracking-widest text-slate-400 mb-1">
             Offer Summary
@@ -106,7 +133,14 @@ export function DealSummaryScreen({
               return (
                 <li key={line.id} className="py-3 flex items-baseline justify-between gap-4">
                   <div className="min-w-0">
-                    <div className="text-base text-slate-900">{line.name}</div>
+                    <div className="text-base text-slate-900">
+                      {line.name}
+                      {line.grade === 'slabbed' && (
+                        <span className="ml-2 inline-block px-1.5 py-0.5 rounded bg-slate-100 text-slate-500 text-[10px] uppercase tracking-wide align-middle">
+                          Slabbed
+                        </span>
+                      )}
+                    </div>
                     <div className="text-sm text-slate-400">{qty}</div>
                   </div>
                   <div className="text-base font-medium text-slate-900 tabular-nums shrink-0">
@@ -130,13 +164,60 @@ export function DealSummaryScreen({
 
         <footer className="px-6 pb-8 pt-2 text-center">
           <button
-            onClick={() => setView('rep')}
-            className="text-xs text-slate-300 min-h-11 px-4"
-            aria-label="Back to rep view"
+            onClick={() => {
+              setUnlockValue('')
+              setUnlockError(false)
+              setUnlockOpen(true)
+            }}
+            className="text-xs text-slate-400 min-h-11 px-4"
           >
-            ‹ swipe
+            Employee View
           </button>
         </footer>
+
+        {unlockOpen && (
+          <div className="fixed inset-0 z-50 bg-black/50 flex flex-col items-center justify-center px-8">
+            <div className="bg-white rounded-xl px-6 py-6 w-full max-w-xs text-center mb-4">
+              <div className="text-sm font-semibold text-slate-900 mb-1">
+                Employee passcode
+              </div>
+              <div className="text-xs text-slate-500 mb-4">
+                Enter the passcode to return to the employee view.
+              </div>
+              <div className="flex justify-center gap-3 mb-3" aria-label="Passcode entry">
+                {[0, 1, 2, 3].map((i) => (
+                  <span
+                    key={i}
+                    className={`w-4 h-4 rounded-full border-2 ${
+                      unlockValue.length > i
+                        ? 'bg-slate-900 border-slate-900'
+                        : 'border-slate-300'
+                    }`}
+                  />
+                ))}
+              </div>
+              {unlockError && (
+                <div role="alert" className="text-xs font-semibold text-red-700 mb-2">
+                  Wrong passcode — try again.
+                </div>
+              )}
+              <button
+                onClick={() => setUnlockOpen(false)}
+                className="text-sm text-slate-500 min-h-11 px-4"
+              >
+                Cancel
+              </button>
+            </div>
+            <NumericKeypad
+              isOpen
+              value={unlockValue}
+              allowDecimal={false}
+              label="Employee passcode"
+              onChange={handleUnlockInput}
+              onClose={() => setUnlockOpen(false)}
+            />
+          </div>
+        )}
       </main>
     )
   }

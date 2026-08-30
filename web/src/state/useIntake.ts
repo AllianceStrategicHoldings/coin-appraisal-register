@@ -204,23 +204,25 @@ export function useIntake(): UseIntakeResult {
     const out: string[] = []
     if (fields.name.trim().length < 2) out.push('Customer name')
     if (!fields.sellingReason) out.push('Reason for coming in')
+    // Marketing consent moved to intake (2026-08-30) so declined customers
+    // are contactable too — it gates the calculator, not deal completion.
+    if (!fields.tcpaOptIn) out.push('Marketing consent (TCPA)')
     return out
   }, [fields])
 
   const isComplete = missing.length === 0
 
-  // Post-agreement gates (2026-08-30 per operator): DOB, zip, DL number,
-  // DL photo and TCPA consent are all required to complete a deal. DOB being
-  // required is also what makes the under-18 stop unskippable.
+  // Post-agreement gates (2026-08-30 per operator): DOB, zip, DL number and
+  // DL photo are required to complete a deal. DOB being required is also
+  // what makes the under-18 stop unskippable. TCPA consent moved to intake.
   const dealMissing = useMemo(() => {
     const out: string[] = []
     if (age === null) out.push('Date of birth')
     if (!/^\d{5}$/.test(fields.zip.trim())) out.push('Zip (5 digits)')
     if (fields.dlNumber.trim().length < 4) out.push("Driver's license number")
     if (dlPhoto.status === 'none') out.push("Driver's license photo")
-    if (!fields.tcpaOptIn) out.push('TCPA consent')
     return out
-  }, [age, fields.zip, fields.dlNumber, fields.tcpaOptIn, dlPhoto.status])
+  }, [age, fields.zip, fields.dlNumber, dlPhoto.status])
 
   return {
     fields,

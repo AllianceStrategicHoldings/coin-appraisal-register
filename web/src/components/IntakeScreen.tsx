@@ -191,9 +191,22 @@ export function IntakeScreen({ intake, onOpenCalculator }: IntakeScreenProps) {
           </div>
         </div>
 
+        <label className="flex items-start gap-3 py-1 cursor-pointer">
+          <input
+            type="checkbox"
+            checked={fields.tcpaOptIn}
+            onChange={(e) => setField('tcpaOptIn', e.target.checked)}
+            className="mt-1 h-5 w-5 rounded border-slate-300"
+          />
+          <span className="text-sm text-slate-700">
+            Customer consents to receive calls/texts about this transaction and
+            future offers (TCPA). Required to proceed.
+          </span>
+        </label>
+
         <p className="text-xs text-slate-500">
-          Date of birth, ID photo, lot photo and consent are collected after the
-          customer agrees to a deal.
+          Date of birth, ID photo and lot photo are collected after the customer
+          agrees to a deal.
         </p>
       </section>
 

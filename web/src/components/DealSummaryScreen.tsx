@@ -251,7 +251,7 @@ export function DealSummaryScreen({
                       {line.name}
                     </span>
                     <span className="ml-2 text-xs text-slate-500">{qty}</span>
-                    {line.priced_by === 'times_face' && line.grade ? (
+                    {line.grade ? (
                       <span className="ml-2 inline-block px-1.5 py-0.5 rounded bg-slate-100 text-slate-700 text-[10px] uppercase tracking-wide">
                         {line.grade}
                       </span>

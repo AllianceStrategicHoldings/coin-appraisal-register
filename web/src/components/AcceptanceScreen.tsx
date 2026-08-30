@@ -225,7 +225,7 @@ export function AcceptanceScreen({
             quantity:
               line.priced_by === 'weight_grams' ? line.weight_grams : line.quantity,
             unit_label: line.unit_label,
-            grade: line.priced_by === 'times_face' ? line.grade : undefined,
+            grade: line.grade,
             max_payout: dual?.maxPayout ?? null,
             actual_offer: dual?.actualOffer ?? null,
             manual_offer:
@@ -373,18 +373,6 @@ export function AcceptanceScreen({
             photo={intake.dlPhoto}
             onChange={intake.setDlPhoto}
           />
-          <label className="flex items-start gap-3 py-1 cursor-pointer">
-            <input
-              type="checkbox"
-              checked={intake.fields.tcpaOptIn}
-              onChange={(e) => intake.setField('tcpaOptIn', e.target.checked)}
-              className="mt-1 h-5 w-5 rounded border-slate-300"
-            />
-            <span className="text-sm text-slate-700">
-              Customer consents to receive calls/texts about this transaction
-              (TCPA). Required to complete.
-            </span>
-          </label>
         </div>
 
         <div>

@@ -151,6 +151,8 @@ interface CartLineBase {
   hallmark_acknowledged?: boolean
   /** true once a manager PIN cleared the Pre-1933 US Gold stop (2.2 / 3.2) */
   pre1933_ack?: boolean
+  /** grading selector, available on every coin-unit item (2026-08-30) */
+  grade?: Grade
 
   // --- lookup integrations (2.3) ---
   /** manually entered PCGS certification number */
@@ -176,7 +178,7 @@ export interface ManualEntryDetails {
 export type CartLine =
   | (CartLineBase & { priced_by: 'each_metal'; quantity: number })
   | (CartLineBase & { priced_by: 'weight_grams'; weight_grams: number })
-  | (CartLineBase & { priced_by: 'times_face'; quantity: number; grade?: Grade })
+  | (CartLineBase & { priced_by: 'times_face'; quantity: number })
   | (CartLineBase & {
       priced_by: 'manual'
       quantity: number

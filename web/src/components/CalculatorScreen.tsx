@@ -290,7 +290,7 @@ export function CalculatorScreen({
                       </div>
                       <div className="text-xs text-slate-500">
                         {value} {line.unit_label}
-                        {line.priced_by === 'times_face' && line.grade ? (
+                        {line.grade ? (
                           <span className="ml-2 inline-block px-1.5 py-0.5 rounded bg-slate-100 text-slate-700 text-[10px] uppercase tracking-wide">
                             {line.grade}
                           </span>

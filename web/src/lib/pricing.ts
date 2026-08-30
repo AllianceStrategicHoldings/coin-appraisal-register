@@ -30,7 +30,10 @@ function multiplierForLine(
       uncirculated: line.mult_uncirculated,
       slabbed: line.mult_slabbed,
     }
-    return byGrade[line.grade] ?? null
+    // A grade on a coin without per-grade multipliers (grading is open to all
+    // coin types since 2026-08-30) falls back to the fixed multiplier rather
+    // than making the line unpriceable.
+    return byGrade[line.grade] ?? line.fixed_multiplier ?? null
   }
   return line.fixed_multiplier ?? null
 }

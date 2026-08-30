@@ -98,7 +98,7 @@ export function DeclineScreen({
           quantity:
             line.priced_by === 'weight_grams' ? line.weight_grams : line.quantity,
           unit_label: line.unit_label,
-          grade: line.priced_by === 'times_face' ? line.grade : undefined,
+          grade: line.grade,
           max_payout: dual?.maxPayout ?? null,
           actual_offer: dual?.actualOffer ?? null,
           manual_offer: line.priced_by === 'manual' ? line.manual_offer : undefined,

@@ -120,6 +120,20 @@ export function AddCoinModal({
   const numValue = parseFloat(value)
   const isManual = selected?.priced_by === 'manual'
   const needsGrade = selected?.metal_type === 'numismatic' && !isManual
+  // Grading is open to every coin-unit item (spec: "extended to all graded
+  // categories", 2026-08-30) — any coin can be slabbed. Scrap (by weight) and
+  // paper money are not gradable. Grade stays REQUIRED only for numismatic.
+  const gradable =
+    selected !== null && !isManual && selected.priced_by !== 'weight_grams'
+  // Slabbed on any coin opens the cert lookup + manual wholesale override;
+  // numismatic items show it up front as before (lookup stands in for grade).
+  const showLookup = needsGrade || (gradable && grade === 'slabbed')
+
+  // Switching away from Slabbed hides the panel — its resolved price must not
+  // keep pricing the line from behind a closed panel.
+  useEffect(() => {
+    if (!showLookup) setLookup(null)
+  }, [showLookup])
   const overrideNum = parseFloat(purityOverride)
   const purityValid =
     !selected?.allow_purity_override ||
@@ -204,7 +218,12 @@ export function AddCoinModal({
         ...(grade ? { grade } : {}),
       })
     } else {
-      onAdd({ ...base, priced_by: 'each_metal', quantity: qtyLocked ? 1 : numValue })
+      onAdd({
+        ...base,
+        priced_by: 'each_metal',
+        quantity: qtyLocked ? 1 : numValue,
+        ...(grade ? { grade } : {}),
+      })
     }
     onClose()
   }
@@ -345,7 +364,7 @@ export function AddCoinModal({
               </div>
             )}
 
-            {needsGrade && margins && (
+            {showLookup && margins && (
               <div className="pb-1 border-b border-slate-200">
                 <CertLookupPanel
                   marginPct={
@@ -361,10 +380,13 @@ export function AddCoinModal({
               </div>
             )}
 
-            {needsGrade && (
+            {gradable && (
               <div>
                 <span className="block text-sm font-medium text-slate-700 mb-1">
                   Grade
+                  {!needsGrade && (
+                    <span className="ml-1 font-normal text-slate-400">(optional)</span>
+                  )}
                 </span>
                 <div className="grid grid-cols-3 gap-2">
                   {GRADES.map((g) => {

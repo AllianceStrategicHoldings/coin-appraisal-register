@@ -64,6 +64,11 @@ export function AcceptanceScreen({
   )
   const [submitting, setSubmitting] = useState(false)
   const [submitError, setSubmitError] = useState<string | null>(null)
+  // iPad Safari's date popover commits its default value (today) the moment
+  // it opens, which read as "age 0" and slammed the under-18 stop over the
+  // form while the picker was still up (client video 2026-08-30). Track
+  // focus so the stop only fires once the field is committed, not mid-edit.
+  const [dobEditing, setDobEditing] = useState(false)
 
   const needsCashStop =
     payment === 'cash' && totals.totalActualOffer > CASH_STOP_THRESHOLD && !cashAck
@@ -82,10 +87,11 @@ export function AcceptanceScreen({
   if (!signature) missing.push('Customer signature')
   const canComplete = missing.length === 0 && !intake.isUnder18 && !submitting
 
-  // Under-18 hard stop, relocated here from intake (2026-08-23). Fires the
-  // moment a complete DOB computes to under 18; no override, deal cannot
-  // complete. ageFromDob ignores partial dates, so it can't fire mid-typing.
-  if (intake.isUnder18) {
+  // Under-18 hard stop, relocated here from intake (2026-08-23). Fires when
+  // a committed DOB computes to under 18 — never while the field is still
+  // being edited; no override, deal cannot complete (canComplete also checks
+  // isUnder18 directly, so an uncommitted under-18 date can't slip through).
+  if (intake.isUnder18 && !dobEditing) {
     return (
       <main className="min-h-dvh flex flex-col items-center justify-center bg-red-700 text-white px-8 text-center">
         <div className="text-6xl mb-6" aria-hidden="true">⛔</div>
@@ -300,6 +306,8 @@ export function AcceptanceScreen({
                 type="date"
                 value={intake.fields.dob}
                 onChange={(e) => intake.setField('dob', e.target.value)}
+                onFocus={() => setDobEditing(true)}
+                onBlur={() => setDobEditing(false)}
                 className="w-full min-h-11 px-3 rounded-md border border-slate-300 bg-white text-base"
               />
             </div>

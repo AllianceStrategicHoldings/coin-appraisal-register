@@ -34,18 +34,42 @@
 <h1>Demo Playbook — Coin Appraisal Register</h1>
 <p>Written 2026-07-26 against the live production app
 (<a href="https://coin-appraisal-register.vercel.app">https://coin-appraisal-register.vercel.app</a>) running on your own
-Supabase, Cloudflare R2 and Make.com accounts.</p>
+Supabase, Cloudflare R2, Make.com and GoHighLevel accounts.
+<strong>Updated 2026-09-01</strong> for the restructured intake, the relocated
+under-18 stop, required customer details with payment detail, grading on every
+coin type, the locked Customer View, and the live GHL fan-out.</p>
 <p>Purpose: a guided tour of the app in five scenarios. The &quot;Why it works this
 way&quot; sections explain the design decisions behind each behaviour.</p>
 <hr>
 <h1>PART 0 — Before the demo</h1>
-<h2>0.1 Two things worth knowing up front</h2>
+<h2>0.1 Installing the app on an iPad (from scratch)</h2>
+<ol>
+<li>Open <strong>Safari</strong> (it must be Safari — other browsers can&#39;t install
+web apps on iPadOS) and go to
+<a href="https://coin-appraisal-register.vercel.app">https://coin-appraisal-register.vercel.app</a>.</li>
+<li>Tap the <strong>Share</strong> icon (the square with the up arrow) →
+<strong>Add to Home Screen</strong> → <strong>Add</strong>.</li>
+<li>Close Safari and launch the app <strong>from its home-screen icon</strong>. It runs
+full-screen with no browser bars — this is the mode reps should always use.</li>
+<li>The first time you tap <strong>Take photo</strong>, iPadOS asks for camera
+permission — tap <strong>Allow</strong>.</li>
+<li>Updates ship automatically: fully closing and reopening the app picks up
+the latest version. No App Store, no profiles, nothing to manage.</li>
+<li>After the first load the app works with no signal — completed deals queue
+on the device and send themselves when connection returns.</li>
+<li><em>Recommended for customer handoffs:</em> enable <strong>Guided Access</strong>
+(Settings → Accessibility → Guided Access). Triple-click the side button
+before handing the iPad over and the device is pinned to the app; the
+in-app Customer View lock hides your numbers, Guided Access additionally
+stops the customer leaving the app.</li>
+</ol>
+<h2>0.2 Two things worth knowing up front</h2>
 <p><strong>① Demoing the returning-customer lookup needs a customer with history.</strong>
 There is none in the database — it&#39;s clean. So during the demo: run
-<strong>Scenario 1 first</strong>, then start a new intake using the <em>same phone and DOB</em>
-just used. The banner appears with the deal that was just done. That&#39;s a
-stronger demo than seeded data, because the history is created live, not
-staged.</p>
+<strong>Scenario 1 first</strong>, then start a new intake and type the <em>same phone
+number</em> (the lookup matches on phone alone). The banner appears with the
+deal that was just done. That&#39;s a stronger demo than seeded data, because the
+history is created live, not staged.</p>
 <p><strong>② The bullion premiums are placeholders, and they make the app offer
 ABOVE melt.</strong>
 Example: 1 American Gold Eagle = 1.0 ozt × $4,051 spot = $4,051 melt, plus the
@@ -54,7 +78,7 @@ placeholder $75 premium = <strong>$4,126 offered</strong>. Spec 2.2 defines bull
 number, and a real buy-side premium is usually much smaller or negative.
 Realistic buy premiums can be set in <code>config_coin_types</code> at any time — these
 are placeholders until your real numbers go in.</p>
-<h2>0.2 Demo data cheat sheet</h2>
+<h2>0.3 Demo data cheat sheet</h2>
 <table>
 <thead>
 <tr>
@@ -71,6 +95,10 @@ are placeholders until your real numbers go in.</p>
 <td><strong>1234</strong></td>
 </tr>
 <tr>
+<td><strong>Customer View exit passcode</strong></td>
+<td><strong>1234</strong> (shared for now; becomes the rep&#39;s own PIN in M3)</td>
+</tr>
+<tr>
 <td>Rep in the dropdown</td>
 <td>Test Rep</td>
 </tr>
@@ -81,6 +109,10 @@ are placeholders until your real numbers go in.</p>
 <tr>
 <td>Cert that returns nothing</td>
 <td>99999999 (use to show the fallback chain)</td>
+</tr>
+<tr>
+<td>Check number for the payment step</td>
+<td>any, e.g. 1047</td>
 </tr>
 <tr>
 <td>Trips the $9,500 cash stop</td>
@@ -99,23 +131,24 @@ are placeholders until your real numbers go in.</p>
 <td><strong>74104</strong> (Tulsa) — 237 mi from Dallas, 2.4 mi from the Tulsa venue</td>
 </tr>
 <tr>
-<td>Adult DOB</td>
+<td>Adult DOB (entered at the accept step)</td>
 <td>any pre-2008 date</td>
 </tr>
 <tr>
-<td>Under-18 DOB</td>
+<td>Under-18 DOB (entered at the accept step)</td>
 <td>any post-2008 date</td>
 </tr>
 <tr>
 <td>Returning customer</td>
-<td>reuse the phone + DOB from a deal already completed</td>
+<td>reuse the phone number from a deal already completed (lookup is phone-only)</td>
 </tr>
 </tbody></table>
 <p><strong>The database is empty of deals and customers</strong> — cleaned after testing. The
-first deal in the demo will be the first real row.</p>
+first deal in the demo will be the first real row, and every completed deal
+also posts to your GHL hooks within seconds (the 2.9/2.10 fan-out is live).</p>
 <p><strong>PCGS rate-limits.</strong> After roughly ten rapid cert lookups it goes quiet and
 returns nothing, so the cert lookup is done <strong>once</strong> per run-through.</p>
-<h2>0.3 Resetting between scenarios</h2>
+<h2>0.4 Resetting between scenarios</h2>
 <p>The cleanest reset is finishing a deal and pressing <strong>New Customer</strong> — that
 clears the intake, the bag and the deal state.</p>
 <p>If you need to reset mid-deal, in Safari: Settings → clear website data for
@@ -134,18 +167,16 @@ mode, indigo = event mode.</p>
 <p><strong>~8 minutes. The core loop — the spine of the demo.</strong></p>
 <h3>Goal</h3>
 <p>Show a complete, ordinary transaction end to end, and land the two ideas that
-matter most: <em>the rep can&#39;t skip steps</em>, and <em>the customer never sees your
-margin</em>.</p>
+matter most: <em>the customer walks in fast but a deal can&#39;t close without the
+full audit trail</em>, and <em>the customer never sees your margin</em>.</p>
 <h3>Steps</h3>
 <ol>
-<li><strong>Open the app.</strong> It lands on <strong>Customer Intake</strong> — there is no way past
-it.</li>
-<li>Fill in: name, phone, DOB (adult), zip <strong>74104</strong>, driver&#39;s licence number,
-<strong>Reason for selling</strong> = Estate, <strong>How did they find us</strong> = Google.</li>
-<li>Tap <strong>Take photo</strong> for the driver&#39;s licence, then for the lot photo.</li>
-<li>Tick the <strong>TCPA consent</strong> box.</li>
-<li>Watch the <strong>&quot;Missing:&quot;</strong> line at the bottom shrink as you go. When it
-empties, <strong>Open Calculator</strong> turns green.</li>
+<li><strong>Open the app.</strong> It lands on <strong>Customer Intake</strong> — a light gate now:
+name, phone <em>(optional but powers the returning-customer lookup)</em>,
+email <em>(optional, flows to your CRM)</em>, <strong>Reason for coming in</strong> = Estate,
+How did they find us = Google, and the <strong>marketing consent</strong> checkbox.</li>
+<li>Watch the <strong>&quot;Missing:&quot;</strong> line — only name, reason and consent gate the
+calculator. When it empties, <strong>Open Calculator</strong> turns green.</li>
 <li>Choose <strong>Test Rep</strong> in the Rep dropdown.</li>
 <li><strong>Add Coin</strong> → <em>Morgan Silver Dollar</em> → quantity <strong>20</strong> → <strong>Add to Bag</strong>.</li>
 <li>Stop and read the four tiles: <strong>Total Value</strong>, <strong>Max Payout</strong>,
@@ -154,46 +185,59 @@ empties, <strong>Open Calculator</strong> turns green.</li>
 to $240). Watch <strong>Delta</strong> and the margin % move.</li>
 <li><strong>Review Deal</strong> → the rep summary. In the <strong>Deal notes (optional)</strong>
 section, fill in the two rep-entered analytics fields: <em>&quot;When did the
-customer acquire the items?&quot;</em> (estimated collection age) and
-<em>&quot;Competitor offers received?&quot;</em> with the amount if known.</li>
-<li>Tap <strong>Customer View →</strong> (on iPad, swipe left). Let it sit for a beat.</li>
-<li>Swipe back → <strong>Accept</strong>.</li>
-<li>Payment method: <strong>Check</strong>.</li>
+customer acquire the items?&quot;</em> and <em>&quot;Competitor offers received?&quot;</em> with the
+amount if known.</li>
+<li>Tap <strong>Customer View →</strong> and hand the iPad over. Let it sit for a beat —
+then <strong>try to swipe back</strong>. Nothing moves: the view is locked. Tap
+<strong>Employee View</strong> → enter a wrong code (rejected) → <strong>1234</strong> → you&#39;re
+back in your numbers.</li>
+<li><strong>Accept</strong> → the customer details step: <strong>DOB</strong> (the calendar opens and
+stays open while you pick — an adult date), <strong>zip 74104</strong>, driver&#39;s
+licence number, <strong>DL photo</strong>.</li>
+<li>Payment method: <strong>Check</strong> → a <strong>Check number</strong> field appears — enter one
+(e.g. 1047). Wire and Other ask for their own detail; Cash does not.</li>
 <li>Take the <strong>final lot photo</strong>, then have &quot;the customer&quot; sign.</li>
-<li><strong>Complete Deal</strong> → <em>Deal Complete</em>.</li>
-<li><strong>New Customer</strong>, then type the <strong>same phone and DOB</strong> again. The blue
+<li><strong>Complete Deal</strong> → <em>Deal Complete</em>. Within seconds the deal is also in
+your GHL trigger history — accepted deals hit the accepted hook.</li>
+<li><strong>New Customer</strong>, then type the <strong>same phone number</strong>. The blue
 <strong>&quot;Returning customer&quot;</strong> banner appears with the deal just completed,
 and name / zip / licence pre-fill.</li>
 </ol>
 <h3>Key points</h3>
 <blockquote>
-<p>&quot;Nothing here is optional. The rep cannot reach the calculator until intake
-is complete — ID photographed, licence number typed, consent given. That&#39;s
-not a UI preference, it&#39;s the audit trail for every deal.&quot;</p>
+<p>&quot;Intake takes ten seconds — a name, a reason, a consent box — so the line
+keeps moving. But nothing skips the audit trail: the deal physically cannot
+complete until ID is photographed, the licence number is typed, the payment
+is documented and the customer has signed.&quot;</p>
 </blockquote>
-<p>At step 11:</p>
+<p>At step 8:</p>
 <blockquote>
-<p>&quot;This is the same screen. One swipe. Your margin, the max payout, the
-negotiation delta — all gone. The customer sees the items and the offer,
-nothing else.&quot;</p>
+<p>&quot;This is the same screen. One tap. Your margin, the max payout, the
+negotiation delta — all gone. And it&#39;s locked: the customer can hold the
+iPad and there is no swipe, no gesture, no path back to our numbers without
+the employee passcode.&quot;</p>
 </blockquote>
-<p>At step 16:</p>
+<p>At step 13:</p>
 <blockquote>
-<p>&quot;Same customer walks back in next month. The rep types the phone and date of
-birth and immediately sees what we paid last time — before quoting anything.&quot;</p>
+<p>&quot;Same customer walks back in next month. The rep types the phone number and
+immediately sees what we paid last time — before quoting anything.&quot;</p>
 </blockquote>
 <h3>Why it works this way</h3>
 <ul>
-<li><strong>The intake gate</strong> is a hard block, not a warning. The Missing list is
-computed from the same rules that gate the button, so the rep always knows
-precisely what&#39;s outstanding.</li>
+<li><strong>The audit gate moved to the close</strong> (operator decision 2026-08-23): the
+calculator opens on name + reason + consent, but completing a deal requires
+DOB, zip, licence number and photo, payment method with its detail, the lot
+photo and the signature. Speed at the door, rigour at the close.</li>
+<li><strong>Consent lives at intake</strong> so declined customers are contactable too —
+the walk-aways are exactly who your follow-up campaigns need.</li>
 <li><strong>Max Payout vs Actual Offer</strong> is the dual pricing engine (spec 2.4). Max
 Payout is the calculated ceiling — melt × your margin. Actual Offer is what
 the rep actually offers. The gap is the Delta: negotiation room the rep
 captured, and the number you&#39;ll use to measure them later.</li>
 <li><strong>The customer view hides margin by rendering a different component</strong>, not
-by hiding elements with CSS. There is no way to reveal margin data on that
-screen because it was never sent to it.</li>
+by hiding elements with CSS. The wholesale price, comps, Max Payout and
+delta are never sent to that screen — there is nothing on it to reveal, and
+the passcode lock (2.5) means there&#39;s no way off it either.</li>
 <li><strong>The offer letter PDF is generated on the iPad</strong>, with the signature
 embedded above the signature line, then uploaded to your storage. It works
 with no signal.</li>
@@ -210,14 +254,18 @@ on, or it looks like it hung.</li>
 <p>Show that the app stops a rep from making the four expensive mistakes, and
 that a manager — not the rep — decides when to proceed.</p>
 <h3>Steps</h3>
-<p><strong>A. Under-18 hard stop</strong></p>
+<p><strong>A. Under-18 hard stop (fires at the close)</strong></p>
 <ol>
-<li>Start a new customer, enter a DOB after 2008.</li>
+<li>Run a quick deal to the <strong>Accept</strong> step, and in Date of birth pick a
+post-2008 date, then close the picker.</li>
 <li>The screen goes full red: <strong>&quot;Cannot Proceed.&quot;</strong></li>
-<li>Show there&#39;s no way forward — only <em>End — Start New Customer</em>.</li>
+<li>Show the two exits: <em>Entered the date wrong — re-enter</em> (a typo escape
+that keeps the whole deal intact) and <em>End Deal — Start New Customer</em>.
+There is no third option and no override — an under-18 date can never
+complete a deal.</li>
 </ol>
 <p><strong>B. Sterling hallmark check</strong>
-4. New customer (adult), reach the calculator.
+4. New customer, reach the calculator.
 5. <strong>Add Coin</strong> → <strong>Sterling Silver</strong>.
 6. The hallmark popup fires <em>the moment you select it</em>, before any weight can
    be entered. Note the STERLING / 925 guidance and the EPNS warning.
@@ -252,11 +300,13 @@ issue a one-time code for a specific deal — that&#39;s the next piece of work.
 </blockquote>
 <h3>Why it works this way</h3>
 <ul>
+<li><strong>The under-18 stop rides on the DOB</strong>, which is collected at the close —
+so that&#39;s where it fires. DOB is a required completion field precisely so
+the stop can&#39;t be skipped by leaving the date blank. The stop waits for a
+<em>committed</em> date, so the calendar picker can&#39;t trip it mid-selection, and
+the typo escape means a fat-fingered year doesn&#39;t cost the rep the deal.</li>
 <li><strong>The gates fire on selection</strong>, not on save. If the hallmark popup appeared
 after weighing, the rep would already have anchored on a number.</li>
-<li><strong>Under-18 has no override at all</strong> — spec 2.1 calls it a hard block, and
-the code has no path past it. That&#39;s deliberate: it&#39;s a legal line, not a
-judgement call.</li>
 <li><strong>PIN checking is server-side.</strong> The app sends the PIN to a Make scenario
 which SHA-256s it and matches <code>reps_master.pin_hash</code>. If the check can&#39;t be
 reached, it fails <strong>closed</strong> — no PIN passes. A stolen iPad can&#39;t approve
@@ -282,18 +332,23 @@ low/median/high with the number of sales.</li>
 <li>Add to bag. Note the line is priced from the lookup, not from a grade
 multiplier, and its quantity is fixed at 1 — one cert, one coin.</li>
 </ol>
-<p><strong>B. The fallback chain</strong>
-5. <strong>Add Coin</strong> → graded again → cert <strong>99999999</strong> → <strong>Look up</strong>.
-6. &quot;PCGS has no record of this certification number.&quot;
-7. A <strong>Manual price override</strong> field appears. Type 200 → it shows the offer at
-   your margin ($60.00).
-8. Clear the field → the <strong>Ask Manager</strong> escalation appears instead.</p>
-<p><strong>C. Other item types (quick tour)</strong>
-9. <strong>American Gold Eagle 1 oz</strong> — the picker shows <em>+$75.00 premium</em>; bullion
-   is priced spot + premium, not spot × margin.
-10. <strong>Other Foreign Silver</strong> — purity is prefilled at 0.800 and is editable;
+<p><strong>B. Any coin can be slabbed</strong>
+5. <strong>Add Coin</strong> → <strong>Mercury Dime</strong> — the <strong>Grade</strong> row now appears on every
+   coin type (optional here, required on the numismatic items).
+6. Tap <strong>Slabbed</strong> → the same cert-number entry and manual wholesale
+   override slide in. Point out this works on every coin in the list.</p>
+<p><strong>C. The fallback chain</strong>
+7. In that panel, enter cert <strong>99999999</strong> → <strong>Look up</strong>.
+8. &quot;PCGS has no record of this certification number.&quot;
+9. A <strong>Manual price override</strong> field appears. Type 200 → it shows the offer
+   at your margin ($60.00).
+10. Clear the field → the <strong>Ask Manager</strong> escalation appears instead.</p>
+<p><strong>D. Other item types (quick tour)</strong>
+11. <strong>American Gold Eagle 1 oz</strong> — the picker shows <em>+$75.00 premium</em>; bullion
+    is priced spot + premium, not spot × margin.
+12. <strong>Other Foreign Silver</strong> — purity is prefilled at 0.800 and is editable;
     change it to 0.900 and watch the price move.
-11. <strong>Paper Money</strong> — denomination / year / condition, and the rep types the
+13. <strong>Paper Money</strong> — denomination / year / condition, and the rep types the
     offer directly. The manager-review note is always on screen.</p>
 <h3>Key points</h3>
 <blockquote>
@@ -301,7 +356,7 @@ multiplier, and its quantity is fixed at 1 — one cert, one coin.</li>
 dealer wholesale, and eBay tells us what these actually sold for in the last
 90 days. The rep sees all three next to the offer.&quot;</p>
 </blockquote>
-<p>On B:</p>
+<p>On C:</p>
 <blockquote>
 <p>&quot;This is the part that matters operationally. When the price sources come
 back empty, the app doesn&#39;t guess and it doesn&#39;t stall — it steps down:
@@ -309,6 +364,9 @@ Greysheet, then a manual price, then a manager. Every deal has a next step.&quot
 </blockquote>
 <h3>Why it works this way</h3>
 <ul>
+<li><strong>Grading is open to every coin type</strong> (spec: &quot;extended to all graded
+categories&quot;) — any coin can be slabbed, so Slabbed opens the cert flow
+everywhere. Scrap by weight and paper money are the only exceptions.</li>
 <li><strong>Cert entry is manual by design.</strong> Spec 2.3 explicitly excludes a barcode
 scanner SDK, so the rep types the number off the slab.</li>
 <li><strong>CDN price and your offer sit side by side</strong> so the rep can see both the
@@ -353,7 +411,8 @@ that location.</li>
 10. Complete a deal all the way to <strong>Complete Deal</strong>.
 11. It succeeds and says the record is <strong>queued</strong> — &quot;will send automatically
     when connection returns.&quot;
-12. Turn signal back on, then <strong>reload the app</strong>. The queue flushes.</p>
+12. Turn signal back on, then <strong>reload the app</strong>. The queue flushes — and the
+    deal reaches both your database and your GHL hook.</p>
 <h3>Key points</h3>
 <blockquote>
 <p>&quot;At a roadshow the venue Wi-Fi is always terrible. The rep never sees a
@@ -393,28 +452,36 @@ Both retry when the app next starts.</li>
 <h3>Steps</h3>
 <ol>
 <li><strong>Supabase → Table Editor → <code>deal_log</code>.</strong> Show the deal just created:
-totals, spot prices captured at that moment, payment method, the manager
-acknowledgments, and all five analytics fields — <code>selling_reason</code>,
-<code>referral_source</code>, <code>estimated_collection_age</code>,
-<code>competitor_offers_received</code> (with <code>competitor_offer_amount</code>), and
-<code>customer_zip_radius_miles</code>.</li>
-<li>Open <code>deal_line_items</code> — every item on that deal.</li>
+totals, spot prices captured at that moment, payment method <em>and payment
+detail (the check number)</em>, the manager acknowledgments, and all five
+analytics fields — <code>selling_reason</code>, <code>referral_source</code>,
+<code>estimated_collection_age</code>, <code>competitor_offers_received</code> (with
+<code>competitor_offer_amount</code>), and <code>customer_zip_radius_miles</code>.</li>
+<li>Open <code>deal_line_items</code> — every item on that deal, with grade and cert
+number where captured. <code>customer_master</code> holds the profile, including
+the new <code>email</code> field.</li>
+<li><strong><code>webhook_deliveries</code></strong> — the fan-out audit: for that deal, one row per
+destination (<code>primary_db</code> and <code>ghl</code>), each marked delivered with a
+timestamp. Failed sends are retried automatically every 15 minutes.</li>
+<li><strong>GoHighLevel → your webhook trigger history</strong> — the same deal, seconds
+after completion, with customer name, phone, email, totals and the
+analytics fields ready for your follow-up campaigns.</li>
 <li><strong><code>config_coin_types</code>.</strong> This is the &quot;edit without a developer&quot; moment:
 change <strong>Silver</strong> margin in <code>config_margins</code> from <code>0.30</code> to <code>0.35</code>, then in
 the app tap <strong>Refresh Config</strong> and re-add a coin. The offer changes.
 <strong>Change it back afterwards.</strong></li>
 <li><strong>Cloudflare → R2 → <code>coin-appraisal-register-production</code>.</strong> Show the lot
-photos, licence photo, signature PNG and the offer-letter PDF from the
+photo, licence photo, signature PNG and the offer-letter PDF from the
 deal — open the PDF.</li>
-<li><strong>Make → the five scenarios</strong>, and the run history showing the deal.</li>
+<li><strong>Make → the scenarios</strong>, and the run history showing the deal.</li>
 </ol>
 <h3>Key points</h3>
 <blockquote>
 <p>&quot;Everything you&#39;re looking at is in your accounts. Your Supabase, your
-Cloudflare, your Make. I&#39;m a collaborator on all three and you can remove me
+Cloudflare, your Make, your GHL. I&#39;m a collaborator and you can remove me
 at any time. Nothing about this build is hostage to me.&quot;</p>
 </blockquote>
-<p>On step 3:</p>
+<p>On step 5:</p>
 <blockquote>
 <p>&quot;Margins, coin types, premiums, rep records — all editable here by you, in a
 spreadsheet view, no developer involved. That&#39;s what the Loom walkthroughs
@@ -442,16 +509,6 @@ the demo:</p>
 </tr>
 </thead>
 <tbody><tr>
-<td>GHL accepted/declined webhooks</td>
-<td>2.9</td>
-<td>Waiting on your webhook URLs</td>
-</tr>
-<tr>
-<td>Four-destination fan-out</td>
-<td>2.10</td>
-<td>Waiting on your webhook URLs</td>
-</tr>
-<tr>
 <td>Override code mechanism</td>
 <td>2.13</td>
 <td>Not built</td>
@@ -460,6 +517,11 @@ the demo:</p>
 <td>Loom walkthroughs</td>
 <td>2.16</td>
 <td>Not recorded</td>
+</tr>
+<tr>
+<td>Zoho + fourth fan-out destination</td>
+<td>2.10</td>
+<td>Dormant by design — URLs are NULL until you configure them</td>
 </tr>
 <tr>
 <td>3-strike PIN lockout</td>
@@ -472,8 +534,13 @@ the demo:</p>
 <td>M3</td>
 </tr>
 </tbody></table>
+<p><strong>Now live since the first version of this playbook:</strong> the GHL accepted /
+declined webhooks and the fan-out with delivery logging and 15-minute retry
+(2.9/2.10) went live 2026-08-21 — every completed deal reaches your CRM
+automatically.</p>
 <p><strong>Milestone framing:</strong> what&#39;s being demonstrated is <strong>Milestone 2 — deal flow
-with dual pricing working end to end on iPad (30%, $3,180)</strong>. It is <em>not</em>
-Milestone 3 (full M2 acceptance), which needs the four items above.</p>
+with dual pricing working end to end on iPad (30%, $3,180)</strong>. Remaining for
+full M2 acceptance: the override-code mechanism (2.13) and the Loom
+walkthroughs (2.16).</p>
 
 </body></html>

@@ -156,7 +156,7 @@
       "mapper": {
         "ca": "",
         "qs": [],
-        "url": "https://cpgpublicapiv2.greysheet.com/GetPricingRequest?PcgsNumber={{3.data.PCGSNo}}&Grade={{replace(3.data.Grade; \"/[^0-9]/g\"; \"\")}}",
+        "url": "https://cpgpublicapiv2.greysheet.com/GetPricingRequest?PcgsNumber={{3.data.PCGSNo}}&Grade={{replace(3.data.Grade; \"/[^0-9]/g\"; \"\")}}&apiLevel=advanced",
         "gzip": true,
         "method": "get",
         "headers": [

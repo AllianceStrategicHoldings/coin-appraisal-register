@@ -45,7 +45,7 @@
       "mapper": {
         "ca": "",
         "qs": [],
-        "url": "https://jsklabrbirsidlnxpgmw.supabase.co/rest/v1/config_operator?id=eq.1&select=ghl_accepted_webhook_url,ghl_declined_webhook_url,zoho_webhook_url,fourth_webhook_url",
+        "url": "https://jsklabrbirsidlnxpgmw.supabase.co/rest/v1/webhook_deliveries?status=eq.failed&next_attempt_at=lte.{{formatDate(now; \"YYYY-MM-DD HH:mm:ss\"; \"UTC\")}}&select=id,event_type,destination,attempts,payload::text",
         "gzip": true,
         "method": "get",
         "headers": [
@@ -111,7 +111,7 @@
       "mapper": {
         "ca": "",
         "qs": [],
-        "url": "https://jsklabrbirsidlnxpgmw.supabase.co/rest/v1/webhook_deliveries?status=eq.failed&next_attempt_at=lte.{{formatDate(now; \"YYYY-MM-DD HH:mm:ss\"; \"UTC\")}}&select=id,event_type,destination,attempts,payload::text",
+        "url": "https://jsklabrbirsidlnxpgmw.supabase.co/rest/v1/config_operator?id=eq.1&select=ghl_accepted_webhook_url,ghl_declined_webhook_url,zoho_webhook_url,fourth_webhook_url",
         "gzip": true,
         "method": "get",
         "headers": [
@@ -164,6 +164,18 @@
             }
           }
         }
+      },
+      "filter": {
+        "name": "failed deliveries exist",
+        "conditions": [
+          [
+            {
+              "a": "{{length(2.data)}}",
+              "o": "number:greater",
+              "b": "0"
+            }
+          ]
+        ]
       }
     },
     {
@@ -172,7 +184,7 @@
       "version": 1,
       "parameters": {},
       "mapper": {
-        "array": "{{3.data}}"
+        "array": "{{2.data}}"
       },
       "metadata": {
         "designer": {
@@ -191,7 +203,7 @@
         "variables": [
           {
             "name": "dest_url",
-            "value": "{{if(4.destination = \"ghl\"; if(4.event_type = \"deal_accepted\"; 2.data[1].ghl_accepted_webhook_url; 2.data[1].ghl_declined_webhook_url); if(4.destination = \"zoho\"; 2.data[1].zoho_webhook_url; 2.data[1].fourth_webhook_url))}}"
+            "value": "{{if(4.destination = \"ghl\"; if(4.event_type = \"deal_accepted\"; 3.data[1].ghl_accepted_webhook_url; 3.data[1].ghl_declined_webhook_url); if(4.destination = \"zoho\"; 3.data[1].zoho_webhook_url; 3.data[1].fourth_webhook_url))}}"
           }
         ]
       },

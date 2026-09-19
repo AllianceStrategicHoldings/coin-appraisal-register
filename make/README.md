@@ -44,7 +44,11 @@ switch on → put the webhook URL in the matching Vercel `VITE_*` variable.
 3. Turn the old `deal-submit` scenario **off first**, then turn v2 **on**
    (two scenarios must never share the webhook while both are live).
 4. Import [webhook-retry.blueprint.json](webhook-retry.blueprint.json), replace
-   the same placeholder in its module 1, and schedule it **every 15 minutes**.
+   the same placeholder in its module 1, and schedule it **every 60 minutes**.
+   ⚠️ Not more often: each run costs Make operations even when idle. The
+   original 15-minute schedule burned ~380 credits/day (~11.5k/month) and
+   exhausted the 10k plan (2026-09-19). The restructured blueprint idles at
+   2 ops/run — hourly ≈ 1.5k credits/month.
 5. Verify: submit a test deal → `deal_log` row + line items as before, plus
    two `webhook_deliveries` rows (`primary_db` delivered, `ghl` delivered)
    and the deal visible in GHL's webhook trigger history.

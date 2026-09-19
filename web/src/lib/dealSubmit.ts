@@ -45,6 +45,8 @@ export interface DealSubmission {
     purity_factor_used?: number
     hallmark_acknowledged?: boolean
     pre1933_ack?: boolean
+    /** manager PIN approved this line's offer above Max Payout / melt */
+    over_max_ack?: boolean
   }>
   /** deal-level Pre-1933 gold manager acknowledgment (2.2 / 3.2) */
   pre1933_gold_ack?: boolean

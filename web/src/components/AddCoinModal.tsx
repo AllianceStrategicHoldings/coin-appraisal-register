@@ -4,7 +4,6 @@ import type { Margin } from '../api/types'
 import { CertLookupPanel, type CertLookupValue } from './CertLookupPanel'
 import { HallmarkAckModal } from './HallmarkAckModal'
 import { KeypadField } from './KeypadField'
-import { Pre1933GoldStop } from './Pre1933GoldStop'
 
 const GRADES: Array<{ value: Grade; label: string }> = [
   { value: 'circulated', label: 'Circulated' },
@@ -30,8 +29,6 @@ interface AddCoinModalProps {
   onClose: () => void
   coinTypes: CoinType[]
   onAdd: (line: CartLineInput) => void
-  /** records the timestamped Pre-1933 gold manager acknowledgment on the deal */
-  onPre1933Ack?: (at: string) => void
   /** margins, for showing CDN price beside our offer at margin (2.3) */
   margins?: Margin[]
   /** escalate to a manager when the fallback chain runs out (2.3) */
@@ -43,7 +40,6 @@ export function AddCoinModal({
   onClose,
   coinTypes,
   onAdd,
-  onPre1933Ack,
   margins,
   onAskManager,
 }: AddCoinModalProps) {
@@ -54,8 +50,6 @@ export function AddCoinModal({
   // 2.2 gates and overrides
   const [hallmarkAck, setHallmarkAck] = useState(false)
   const [showHallmark, setShowHallmark] = useState(false)
-  const [pre1933Ack, setPre1933Ack] = useState(false)
-  const [showPre1933, setShowPre1933] = useState(false)
   const [purityOverride, setPurityOverride] = useState<string>('')
 
   // cert lookup (2.3)
@@ -71,8 +65,6 @@ export function AddCoinModal({
     setGrade(null)
     setHallmarkAck(false)
     setShowHallmark(false)
-    setPre1933Ack(false)
-    setShowPre1933(false)
     setPurityOverride('')
     setLookup(null)
     setDenomination('')
@@ -110,8 +102,9 @@ export function AddCoinModal({
     setSelectedId(c.id)
     resetEntry()
     // Gates fire on selection so the rep can't enter values first (2.2).
-    if (c.is_pre1933_gold) setShowPre1933(true)
-    else if (c.requires_hallmark_ack) setShowHallmark(true)
+    // Pre-1933 gold no longer hard-stops here (operator rule 2026-09-19):
+    // it prices at melt, and only an above-melt offer needs a manager PIN.
+    if (c.requires_hallmark_ack) setShowHallmark(true)
     if (c.allow_purity_override && c.purity_factor != null) {
       setPurityOverride(String(c.purity_factor))
     }
@@ -140,9 +133,7 @@ export function AddCoinModal({
     (!Number.isNaN(overrideNum) && overrideNum > 0 && overrideNum <= 1)
 
   // Weight entry stays blocked until the hallmark popup is acknowledged (2.2)
-  const entryBlocked =
-    (selected?.requires_hallmark_ack === true && !hallmarkAck) ||
-    (selected?.is_pre1933_gold === true && !pre1933Ack)
+  const entryBlocked = selected?.requires_hallmark_ack === true && !hallmarkAck
 
   // Graded/numismatic items may be priced by cert lookup instead of the
   // grade multiplier (2.3). A lookup that resolved to a price stands in for
@@ -161,9 +152,18 @@ export function AddCoinModal({
 
   function handleAdd() {
     if (!selected || !canAdd) return
+    // Persist the PCGS-pulled title on lookup lines (operator 2026-09-19):
+    // "1878 7TF $1 Reverse of 1879, PL · MS64PL" beats "Morgan Silver
+    // Dollar (Graded)" on the deal record.
+    const certTitle = lookup?.result?.cert.found
+      ? [lookup.result.cert.name, lookup.result.cert.grade]
+          .filter(Boolean)
+          .join(' · ')
+      : ''
     const base = {
       coin_type_id: selected.id,
-      name: selected.name,
+      name: certTitle || selected.name,
+      is_pre1933_gold: selected.is_pre1933_gold,
       metal_type: selected.metal_type,
       unit_label: selected.unit_label,
       face_value: selected.face_value,
@@ -179,7 +179,6 @@ export function AddCoinModal({
         ? { purity_factor_used: overrideNum }
         : {}),
       ...(selected.requires_hallmark_ack ? { hallmark_acknowledged: true } : {}),
-      ...(selected.is_pre1933_gold ? { pre1933_ack: true } : {}),
       ...(lookup
         ? {
             cert_number: lookup.certNumber || undefined,
@@ -231,23 +230,6 @@ export function AddCoinModal({
   if (!isOpen) return null
 
   // --- blocking gates render over everything (2.2) ---
-  if (showPre1933 && selected) {
-    return (
-      <Pre1933GoldStop
-        itemName={selected.name}
-        onAcknowledged={(at) => {
-          setPre1933Ack(true)
-          setShowPre1933(false)
-          onPre1933Ack?.(at)
-        }}
-        onCancel={() => {
-          setShowPre1933(false)
-          setSelectedId(null)
-        }}
-      />
-    )
-  }
-
   if (showHallmark && selected) {
     return (
       <HallmarkAckModal
@@ -321,8 +303,8 @@ export function AddCoinModal({
                           <span className="text-sm font-medium text-slate-900">
                             {c.name}
                             {c.is_pre1933_gold && (
-                              <span className="ml-2 inline-block px-1.5 py-0.5 rounded bg-red-100 text-red-700 text-[10px] font-bold uppercase tracking-wide">
-                                Manager
+                              <span className="ml-2 inline-block px-1.5 py-0.5 rounded bg-amber-100 text-amber-800 text-[10px] font-bold uppercase tracking-wide">
+                                Melt cap
                               </span>
                             )}
                           </span>
@@ -358,9 +340,10 @@ export function AddCoinModal({
                 Hallmark confirmed ✓
               </div>
             )}
-            {selected.is_pre1933_gold && pre1933Ack && (
-              <div className="text-xs text-emerald-700 font-medium">
-                Manager approved Pre-1933 US Gold ✓
+            {selected.is_pre1933_gold && (
+              <div className="px-3 py-2 rounded-md bg-amber-50 border border-amber-300 text-xs text-amber-900">
+                Pre-1933 US gold prices at melt. Offering above melt (a
+                numismatic premium) requires a manager PIN on the offer line.
               </div>
             )}
 
@@ -522,9 +505,7 @@ export function AddCoinModal({
               )}
               {entryBlocked && (
                 <div className="mt-1 text-xs text-amber-700 font-medium">
-                  {selected.is_pre1933_gold
-                    ? 'Manager approval required before this item can be added.'
-                    : 'Acknowledge the hallmark check before entering weight.'}
+                  Acknowledge the hallmark check before entering weight.
                 </div>
               )}
             </div>

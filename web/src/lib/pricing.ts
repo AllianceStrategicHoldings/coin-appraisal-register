@@ -82,6 +82,13 @@ export function valueLine(
   const melt =
     units * line.oz_metal_per_unit * purity * spotForMetal(spot, line.metal_type)
 
+  // Pre-1933 US gold prices at melt (operator rule 2026-09-19): the ceiling
+  // IS melt — no margin discount, no premium. Offers above melt go through
+  // the manager-PIN over-max gate instead of a hard stop.
+  if (line.is_pre1933_gold) {
+    return { meltValue: melt, offerValue: melt }
+  }
+
   // Bullion is priced at spot + a configurable per-unit premium rather than a
   // margin discount (spec 2.2). Premium applies per coin, so only for
   // each_metal lines.
@@ -151,15 +158,19 @@ export function dualPriceLine(
   if (v === null) return null
   const maxPayout = v.offerValue
   const entered = line.actual_offer
-  // Actual Offer must be <= Max Payout unless a manager override applies
-  // (2.13, M3). Until the override mechanism lands, entries are capped.
+  // Actual Offer must be <= Max Payout unless a manager approved the excess
+  // via PIN (over_max_ack, the 2.13 interim gate). Unapproved excess is capped.
   const actualOffer =
-    entered == null ? maxPayout : Math.min(entered, maxPayout)
+    entered == null
+      ? maxPayout
+      : line.over_max_ack
+        ? entered
+        : Math.min(entered, maxPayout)
   return {
     maxPayout,
     actualOffer,
     negotiationDelta: maxPayout - actualOffer,
-    capped: entered != null && entered > maxPayout,
+    capped: entered != null && entered > maxPayout && !line.over_max_ack,
   }
 }
 

@@ -151,6 +151,10 @@ interface CartLineBase {
   hallmark_acknowledged?: boolean
   /** true once a manager PIN cleared the Pre-1933 US Gold stop (2.2 / 3.2) */
   pre1933_ack?: boolean
+  /** pre-1933 US gold: ceiling is melt; above melt needs a manager PIN (2026-09-19) */
+  is_pre1933_gold?: boolean
+  /** manager PIN approved this line's Actual Offer above Max Payout (2.13 interim) */
+  over_max_ack?: boolean
   /** grading selector, available on every coin-unit item (2026-08-30) */
   grade?: Grade
 

@@ -29,8 +29,12 @@ export interface UseCartResult {
   addLine: (line: CartLineInput) => void
   removeLine: (id: string) => void
   updateLine: (id: string, value: number) => void
-  /** Rep-entered Actual Offer for a line; null resets to "= Max Payout" (SOW 2.4) */
-  setActualOffer: (id: string, value: number | null) => void
+  /**
+   * Rep-entered Actual Offer for a line; null resets to "= Max Payout"
+   * (SOW 2.4). overMaxAck marks a manager-PIN-approved offer above Max
+   * Payout; any plain edit clears the approval.
+   */
+  setActualOffer: (id: string, value: number | null, overMaxAck?: boolean) => void
   clear: () => void
 }
 
@@ -63,11 +67,16 @@ export function useCart(): UseCartResult {
     )
   }, [])
 
-  const setActualOffer = useCallback((id: string, value: number | null) => {
-    setLines((prev) =>
-      prev.map((l) => (l.id === id ? { ...l, actual_offer: value } : l)),
-    )
-  }, [])
+  const setActualOffer = useCallback(
+    (id: string, value: number | null, overMaxAck = false) => {
+      setLines((prev) =>
+        prev.map((l) =>
+          l.id === id ? { ...l, actual_offer: value, over_max_ack: overMaxAck } : l,
+        ),
+      )
+    },
+    [],
+  )
 
   const clear = useCallback(() => setLines([]), [])
 

@@ -239,6 +239,7 @@ export function AcceptanceScreen({
             purity_factor_used: line.purity_factor_used,
             hallmark_acknowledged: line.hallmark_acknowledged,
             pre1933_ack: line.pre1933_ack,
+            over_max_ack: line.over_max_ack || undefined,
           }
         }),
         totals: {

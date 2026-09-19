@@ -7,6 +7,7 @@ import type { UseSessionResult } from '../state/useSession'
 import type { ApprovalTrigger } from '../lib/approvalRequest'
 import { AddCoinModal } from './AddCoinModal'
 import { KeypadField } from './KeypadField'
+import { ManagerPinModal } from './ManagerPinModal'
 import { ManagerRequestBar } from './ManagerRequestBar'
 
 const usd = new Intl.NumberFormat('en-US', {
@@ -43,6 +44,14 @@ export function CalculatorScreen({
   const [showAddCoin, setShowAddCoin] = useState(false)
   // lineId -> the over-ceiling amount the rep attempted (2.13)
   const [offerWarn, setOfferWarn] = useState<Map<string, number>>(new Map())
+  // Over-max offer awaiting a manager PIN (2.13 interim gate, 2026-09-19)
+  const [overMaxRequest, setOverMaxRequest] = useState<{
+    lineId: string
+    name: string
+    value: number
+    maxPayout: number
+    isPre1933: boolean
+  } | null>(null)
 
   const prevRepRef = useRef<string | null>(null)
   useEffect(() => {
@@ -78,6 +87,44 @@ export function CalculatorScreen({
   const canShowLiveOffer = effectiveSpot !== null && hasMargins
   const canShowLiveMelt = effectiveSpot !== null
   const spot = config.spot
+
+  if (overMaxRequest) {
+    return (
+      <ManagerPinModal
+        title={
+          overMaxRequest.isPre1933
+            ? 'Pre-1933 Gold — Offer Above Melt'
+            : 'Offer Above Max Payout'
+        }
+        message={`${overMaxRequest.name}: offering ${usd.format(
+          overMaxRequest.value,
+        )} exceeds the ${
+          overMaxRequest.isPre1933 ? 'melt value' : 'Max Payout'
+        } of ${usd.format(
+          overMaxRequest.maxPayout,
+        )}. A manager must approve before this offer can stand.`}
+        onApproved={() => {
+          cart.setActualOffer(overMaxRequest.lineId, overMaxRequest.value, true)
+          if (overMaxRequest.isPre1933) {
+            onPre1933Ack?.(new Date().toISOString())
+          }
+          setOfferWarn((prev) => {
+            if (!prev.has(overMaxRequest.lineId)) return prev
+            const m = new Map(prev)
+            m.delete(overMaxRequest.lineId)
+            return m
+          })
+          setOverMaxRequest(null)
+        }}
+        onCancel={() => {
+          setOfferWarn((prev) =>
+            new Map(prev).set(overMaxRequest.lineId, overMaxRequest.value),
+          )
+          setOverMaxRequest(null)
+        }}
+      />
+    )
+  }
 
   return (
     <main
@@ -381,10 +428,16 @@ export function CalculatorScreen({
                             const v = parseFloat(next)
                             if (Number.isNaN(v) || v < 0) return
                             if (v > dual.maxPayout) {
-                              // Above Max Payout needs a manager override code
-                              // (2.13). Not stored, but named in the warning so
-                              // the keypad doesn't feel dead.
-                              setOfferWarn((prev) => new Map(prev).set(line.id, v))
+                              // Above Max Payout requires a manager PIN
+                              // (2.13 interim gate). The offer is held until
+                              // the PIN clears; cancel discards it.
+                              setOverMaxRequest({
+                                lineId: line.id,
+                                name: line.name,
+                                value: v,
+                                maxPayout: dual.maxPayout,
+                                isPre1933: line.is_pre1933_gold === true,
+                              })
                               return
                             }
                             clearWarn()
@@ -425,9 +478,9 @@ export function CalculatorScreen({
                       role="alert"
                       className="mt-1 ml-1 text-xs font-semibold text-red-700"
                     >
-                      Can't offer {usd.format(attemptedOver)} — the ceiling is{' '}
-                      {usd.format(dual.maxPayout)}. Above it needs a manager
-                      override code.
+                      {usd.format(attemptedOver)} was not applied — the ceiling
+                      is {usd.format(dual.maxPayout)} and the manager PIN was
+                      not entered. Re-enter the offer to try again.
                     </div>
                   )}
                   {attemptedOver == null && dual?.capped && (
@@ -436,7 +489,7 @@ export function CalculatorScreen({
                       className="mt-1 ml-1 text-xs font-semibold text-amber-700"
                     >
                       Entered offer exceeds Max Payout — capped at{' '}
-                      {usd.format(dual.maxPayout)} (manager override required to
+                      {usd.format(dual.maxPayout)} (manager PIN required to
                       exceed).
                     </div>
                   )}
@@ -476,7 +529,6 @@ export function CalculatorScreen({
         onClose={() => setShowAddCoin(false)}
         coinTypes={config.coinTypes}
         onAdd={cart.addLine}
-        onPre1933Ack={onPre1933Ack}
         margins={effectiveMargins}
         onAskManager={() => onManagerRequest?.('ask_manager')}
       />

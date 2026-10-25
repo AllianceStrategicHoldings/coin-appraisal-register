@@ -61,8 +61,12 @@ export function CertLookupPanel({
 
   async function runLookup() {
     const cert = certNumber.trim()
-    if (cert.length < 6) {
-      setError('Enter the full certification number (7–8 digits).')
+    // PCGS certs are 7 or 8 digits (operator 2026-10-25). Anything else is
+    // told so plainly before we spend an API call.
+    if (!/^\d{7,8}$/.test(cert)) {
+      setError(
+        'PCGS certification numbers are 7 or 8 digits. Check the slab and re-enter — NGC and other certs are not supported.',
+      )
       return
     }
     setLoading(true)
@@ -72,7 +76,9 @@ export function CertLookupPanel({
       setResult(r)
       emit({ result: r, certNumber: cert })
       if (!r.cert.found) {
-        setError('PCGS has no record of this certification number. Check the slab, or use Ask Manager.')
+        setError(
+          'Not a valid PCGS cert, or not found. Enter a manual price or use Ask Manager.',
+        )
       }
     } catch (err) {
       setResult(null)
@@ -81,8 +87,15 @@ export function CertLookupPanel({
         setError('No connection — enter a manual price or use Ask Manager.')
       } else if (err instanceof HttpError && err.status === 503) {
         setError('Lookup service not connected yet — enter a manual price or use Ask Manager.')
+      } else if (err instanceof HttpError && err.status === 502) {
+        setError(
+          'The lookup service is not responding right now — enter a manual price or use Ask Manager.',
+        )
       } else {
-        setError(err instanceof Error ? err.message : String(err))
+        // Never show a raw technical message to the rep (2026-10-25).
+        setError(
+          'Lookup failed — not a valid PCGS cert, or the service had a problem. Enter a manual price or use Ask Manager.',
+        )
       }
     } finally {
       setLoading(false)

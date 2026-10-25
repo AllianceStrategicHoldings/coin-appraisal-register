@@ -134,5 +134,14 @@ export async function lookupCert(certNumber: string): Promise<LookupResult> {
     throw new NetworkError()
   }
   if (!res.ok) throw new HttpError(res.status, `Lookup failed (${res.status})`)
-  return normalizeLookup((await res.json()) as RawLookupResponse)
+  let raw: RawLookupResponse
+  try {
+    raw = (await res.json()) as RawLookupResponse
+  } catch {
+    // Make answered with something that isn't the scenario's JSON — e.g. the
+    // literal "Accepted" when the scenario is off or queued on a timed
+    // trigger. Surface as a service fault, never a raw parser message.
+    throw new HttpError(502, 'Lookup service returned no result')
+  }
+  return normalizeLookup(raw)
 }

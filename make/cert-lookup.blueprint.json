@@ -215,7 +215,7 @@
       "module": "http:ActionSendData",
       "version": 3,
       "parameters": {
-        "handleErrors": false,
+        "handleErrors": true,
         "useNewZLibDeCompress": true
       },
       "mapper": {
@@ -270,7 +270,25 @@
             }
           }
         }
-      }
+      },
+      "onerror": [
+        {
+          "id": 7,
+          "module": "builtin:Resume",
+          "version": 1,
+          "parameters": {},
+          "mapper": {
+            "data": "{{emptyarray}}",
+            "statusCode": "200"
+          },
+          "metadata": {
+            "designer": {
+              "x": 1200,
+              "y": 250
+            }
+          }
+        }
+      ]
     },
     {
       "id": 6,
